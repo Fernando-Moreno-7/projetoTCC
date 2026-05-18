@@ -35,3 +35,4 @@ const Usuarios = db.define (
     }
 
 );
+export default Usuarios;
