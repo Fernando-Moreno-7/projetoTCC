@@ -1,0 +1,68 @@
+import Usuarios from "../models/Usuarios.js"
+import Logger from "../db/logger.js"
+import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken"
+import sequelize from "../db/db.js"
+import getToken from "../helpers/get-token.js"
+
+
+export default class UserController {
+    static async register(req, res) {
+        const { nome, email, senha, confSenha, } = req.body;
+
+        // validations
+        if (!nome) {
+            res.status(422).json({ message: "O nome de usuario é obrigatorio" });
+            return;
+        }
+
+        if (!email) {
+            res.status(422).json({ message: "O email é obrigatório!" });
+            return;
+        }
+        if (!senha) {
+            res.status(422).json({ message: "A senha é obrigatório!" });
+            return;
+        }
+
+        if (!confSenha) {
+            res.status(422).json({ message: "A confirmação da senha é obrigatório!" });
+            return;
+        }
+        if (senha != confSenha) {
+            res.status(422).json({ message: "Por favor coloque senhas iguais!" });
+            return;
+        }
+
+
+
+        // check if turma exists
+        const usuarioExists = await Usuarios.findOne({ where: { email: email } });
+        if (usuarioExists) {
+            res.status(422).json({
+                message: "Por favor, utilize outro email. Este já foi cadastrado!",
+            });
+            return;
+        }
+        // create hash password 
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(senha, salt);
+       
+       
+        const usuarios = new Usuarios({
+            nome: nome,
+            email: email,
+            senha: passwordHash,
+        });
+
+        // save turma on db
+        try {
+            const newUsuarios = await Usuarios.save();
+            res.status(200).json({ message: "O seu usuario foi cadastrado com sucesso!" });
+        } catch (error) {
+            Logger.error(`Erro ao criar um usuario no banco: ${error}`);
+            res.status(500).json({ message: "Erro ao criar um usuario no banco!" });
+        }
+    }
+}
+
