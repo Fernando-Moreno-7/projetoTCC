@@ -57,7 +57,7 @@ export default class UserController {
 
         // save turma on db
         try {
-            const newUsuarios = await Usuarios.save();
+            const newUsuarios = await usuarios.save();
             res.status(200).json({ message: "O seu usuario foi cadastrado com sucesso!" });
         } catch (error) {
             Logger.error(`Erro ao criar um usuario no banco: ${error}`);
