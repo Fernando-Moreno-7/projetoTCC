@@ -64,5 +64,48 @@ export default class UserController {
             res.status(500).json({ message: "Erro ao criar um usuario no banco!" });
         }
     }
+    
+    static async updateUser (req, res){
+        const nome = req.body.nome;
+        const senha = req.body.senha;
+        const confSenha = req.body.confSenha;
+        const idUsuario = req.body.idUsuario
+        if (!nome) {
+            res.status(422).json({ message: "O nome é obrigatorio  " });
+            return;
+        }
+         if (!senha) {
+            res.status(422).json({ message: "A senha é obrigatoria" });
+            return;
+        }
+         if (!confSenha) {
+            res.status(422).json({ message: "A confirmação da senha é obrigatoria" });
+            return;
+        }
+        if(senha != confSenha){
+            res.status(422).json({ message: "A senhas não são iguais" });
+            return;
+        }
+
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(senha, salt);
+
+        try {
+            const uptadeUsuarios = await Usuarios.update(
+                {
+                    nome: nome,
+                    senha: passwordHash,
+                },
+                {
+                    where: {id:  idUsuario},
+                }
+            );
+            
+            res.status(200).json({ message: "O seu usuario foi atualizado com sucesso!" });
+        } catch (error) {
+            Logger.error(`Erro ao atualizar o usuario no banco: ${error}`);
+            res.status(500).json({ message: "Erro ao atualizar o usuario no banco!" });
+        }
+    }
 }
 
