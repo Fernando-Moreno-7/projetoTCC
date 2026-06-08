@@ -91,7 +91,7 @@ export default class UserController {
         const passwordHash = await bcrypt.hash(senha, salt);
 
         try {
-            const uptadeUsuarios = await Usuarios.update(
+            const updateUsuarios = await Usuarios.update(
                 {
                     nome: nome,
                     senha: passwordHash,
@@ -107,5 +107,45 @@ export default class UserController {
             res.status(500).json({ message: "Erro ao atualizar o usuario no banco!" });
         }
     }
+    static async deleteUser(req, res) {
+
+    const idUsuario = req.body.idUsuario;
+
+    if (!idUsuario) {
+        return res.status(422).json({
+            message: "selecione um usuário!"
+        });
+    }
+
+    try {
+
+        const usuario = await Usuarios.findOne({
+            where: { id: idUsuario }
+        });
+
+        if (!usuario) {
+            return res.status(404).json({
+                message: "Usuário não encontrado!"
+            });
+        }
+
+        await Usuarios.destroy({
+            where: { id: idUsuario }
+        });
+
+        return res.status(200).json({
+            message: "Usuário excluído com sucesso!"
+        });
+
+    } catch (error) {
+
+        Logger.error(`Erro ao excluir usuário: ${error}`);
+
+        return res.status(500).json({
+            message: "Erro ao excluir usuário!"
+        });
+    }
+}
+    
 }
 
