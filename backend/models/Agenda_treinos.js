@@ -1,8 +1,7 @@
-import {DataTypes} from "sequelize"
-import db from "./db/db.js"
-import Usuarios from "./Usuarios.js"
-import Treinos from "./Treinos.js"
-
+import { DataTypes } from "sequelize";
+import db from "../db/db.js";
+import Usuarios from "./Usuarios.js";
+import Treinos from "./Treinos.js";
 
 const Agenda_treinos = db.define (
     "agenda_treinos",
@@ -20,7 +19,7 @@ const Agenda_treinos = db.define (
                 model:Usuarios, 
                 key: "id",
             },
-            onUpdade: "CASCADE",
+            onUpdate: "CASCADE",
             onDelete: "CASCADE",
         },
         treino_id: {
@@ -30,7 +29,7 @@ const Agenda_treinos = db.define (
                 model:Treinos, 
                 key: "id",
             },
-            onUpdade: "CASCADE",
+            onUpdate: "CASCADE",
             onDelete: "CASCADE",
         },
 

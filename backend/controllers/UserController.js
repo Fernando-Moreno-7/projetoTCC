@@ -4,6 +4,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import sequelize from "../db/db.js"
 import getToken from "../helpers/get-token.js"
+import Agenda_treinos from "../models/Agenda_treinos.js";
 
 
 export default class UserController {
@@ -113,7 +114,7 @@ export default class UserController {
 
     if (!idUsuario) {
         return res.status(422).json({
-            message: "selecione um usuário!"
+            message: "Selecione um usuário!"
         });
     }
 
@@ -129,8 +130,18 @@ export default class UserController {
             });
         }
 
+        // Apaga os registros da agenda relacionados ao usuário
+        await Agenda_treinos.destroy({
+            where: {
+                usuario_id: idUsuario
+            }
+        });
+
+        // Apaga o usuário
         await Usuarios.destroy({
-            where: { id: idUsuario }
+            where: {
+                id: idUsuario
+            }
         });
 
         return res.status(200).json({
@@ -142,7 +153,8 @@ export default class UserController {
         Logger.error(`Erro ao excluir usuário: ${error}`);
 
         return res.status(500).json({
-            message: "Erro ao excluir usuário!"
+            message: "Erro ao excluir usuário!",
+            error: error.message
         });
     }
 }

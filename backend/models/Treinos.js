@@ -1,6 +1,5 @@
 import {DataTypes, MEDIUMINT} from "sequelize"
-import db from "./db/db.js"
-
+import db from "../db/db.js"
 
 const Treinos = db.define (
     "treinos",
