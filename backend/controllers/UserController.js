@@ -158,6 +158,57 @@ export default class UserController {
         });
     }
 }
+static async getAllUsers(req, res) {
+
+    try {
+
+        const usuarios = await Usuarios.findAll({
+            attributes: {
+                exclude: ["senha"]
+            }
+        });
+
+        return res.status(200).json(usuarios);
+
+    } catch (error) {
+
+        Logger.error(`Erro ao buscar usuários: ${error}`);
+
+        return res.status(500).json({
+            message: "Erro ao buscar usuários!"
+        });
+    }
+}
+
+static async getUserById(req, res) {
+
+    const idUsuario = req.params.id;
+
+    try {
+
+        const usuario = await Usuarios.findByPk(idUsuario, {
+            attributes: {
+                exclude: ["senha"]
+            }
+        });
+
+        if (!usuario) {
+            return res.status(404).json({
+                message: "Usuário não encontrado!"
+            });
+        }
+
+        return res.status(200).json(usuario);
+
+    } catch (error) {
+
+        Logger.error(`Erro ao buscar usuário: ${error}`);
+
+        return res.status(500).json({
+            message: "Erro ao buscar usuário!"
+        });
+    }
+}
     
 }
 
