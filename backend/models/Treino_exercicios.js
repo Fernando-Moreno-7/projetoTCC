@@ -1,5 +1,5 @@
 import {DataTypes} from "sequelize"
-import db from "./db/db.js"
+import db from "../db/db.js"
 import Exercicios from "./Exercicios.js"
 import Treinos from "./Treinos.js"
 
@@ -20,7 +20,7 @@ const Treino_exercicios = db.define (
                 model:Exercicios, 
                 key: "id",
             },
-            onUpdade: "CASCADE",
+            onUpdate: "CASCADE",
             onDelete: "CASCADE",
         },
         treino_id: {
@@ -30,7 +30,7 @@ const Treino_exercicios = db.define (
                 model:Treinos, 
                 key: "id",
             },
-            onUpdade: "CASCADE",
+            onUpdate: "CASCADE",
             onDelete: "CASCADE",
         },
 
@@ -50,18 +50,20 @@ const Treino_exercicios = db.define (
     }
 
 );
-
 Treino_exercicios.belongsTo(Exercicios,{
-    foreignKey:"usuario_id",
+    foreignKey:"exercicio_id",
 });
+
+Exercicios.hasMany(Treino_exercicios,{
+    foreignKey:"exercicio_id",
+});
+
 Treino_exercicios.belongsTo(Treinos,{
     foreignKey:"treino_id",
 });
-Exercicios.hasMany(Treino_exercicios,{
-    foreignKey:"usuario_id",
-});
+
 Treinos.hasMany(Treino_exercicios,{
     foreignKey:"treino_id",
 });
 
-export default treino_exercicios;
+export default Treino_exercicios;
