@@ -3,6 +3,8 @@ import express from "express";
 import UserRoutes from "./routes/UserRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
 import TreinoRoutes from "./routes/TreinoRoutes.js";
+import ExercicioRoutes from "./routes/ExercicioRoutes.js";
+import AgendaTreinoRoutes from "./routes/AgendaTreinoRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -18,6 +20,8 @@ app.use("/", AuthRoutes);
 app.use("/treino", TreinoRoutes);
 
 app.listen(port_server);
+app.use("/exercicio", ExercicioRoutes);
+app.use("/agenda", AgendaTreinoRoutes);
 
 
 
