@@ -5,6 +5,7 @@ import AuthRoutes from "./routes/AuthRoutes.js";
 import TreinoRoutes from "./routes/TreinoRoutes.js";
 import ExercicioRoutes from "./routes/ExercicioRoutes.js";
 import AgendaTreinoRoutes from "./routes/AgendaTreinoRoutes.js";
+import TreinoExercicioRoutes from "./routes/TreinoExercicioRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -22,6 +23,7 @@ app.use("/treino", TreinoRoutes);
 app.listen(port_server);
 app.use("/exercicio", ExercicioRoutes);
 app.use("/agenda", AgendaTreinoRoutes);
+app.use("/treino-exercicio", TreinoExercicioRoutes);
 
 
 
