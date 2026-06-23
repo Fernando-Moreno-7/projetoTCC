@@ -20,12 +20,24 @@ const Exercicios = db.define (
             type: DataTypes.STRING(25),
             allowNull:false,
         },
+        imagem: {
+            type: DataTypes.STRING(100),
+            allowNull: false,
+        },
+        descricao: {
+            type: DataTypes.TEXT("long"),
+            allowNull: false,
+        },
         
     },
     {
         tableName: "exercicios",
         timestamps: false,
+        
     }
+    
+
+    
 
 );
 export default Exercicios;
