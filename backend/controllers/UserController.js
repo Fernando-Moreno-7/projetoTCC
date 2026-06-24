@@ -8,207 +8,185 @@ import Agenda_treinos from "../models/Agenda_treinos.js";
 
 
 export default class UserController {
+
     static async register(req, res) {
-        const { nome, email, senha, confSenha, } = req.body;
+        const {
+            nome,
+            email,
+            senha,
+            confSenha,
+            peso,
+            altura,
+            genero,
+            idade,
+            objetivo
+        } = req.body;
 
-        // validations
-        if (!nome) {
-            res.status(422).json({ message: "O nome de usuario é obrigatorio" });
-            return;
-        }
+        if (!nome) return res.status(422).json({ message: "O nome de usuario é obrigatorio" });
+        if (!email) return res.status(422).json({ message: "O email é obrigatório!" });
+        if (!senha) return res.status(422).json({ message: "A senha é obrigatório!" });
+        if (!confSenha) return res.status(422).json({ message: "A confirmação da senha é obrigatório!" });
+        if (senha != confSenha) return res.status(422).json({ message: "Por favor coloque senhas iguais!" });
 
-        if (!email) {
-            res.status(422).json({ message: "O email é obrigatório!" });
-            return;
-        }
-        if (!senha) {
-            res.status(422).json({ message: "A senha é obrigatório!" });
-            return;
-        }
-
-        if (!confSenha) {
-            res.status(422).json({ message: "A confirmação da senha é obrigatório!" });
-            return;
-        }
-        if (senha != confSenha) {
-            res.status(422).json({ message: "Por favor coloque senhas iguais!" });
-            return;
-        }
-
-
-
-        // check if turma exists
-        const usuarioExists = await Usuarios.findOne({ where: { email: email } });
+        const usuarioExists = await Usuarios.findOne({ where: { email } });
         if (usuarioExists) {
-            res.status(422).json({
-                message: "Por favor, utilize outro email. Este já foi cadastrado!",
+            return res.status(422).json({ message: "Este email já foi cadastrado!" });
+        }
+
+        const salt = await bcrypt.genSalt(12);
+        const passwordHash = await bcrypt.hash(senha, salt);
+
+        let imc = null;
+        if (peso && altura) {
+            imc = peso / ((altura / 100) * (altura / 100));
+            imc = Number(imc.toFixed(2));
+        }
+
+        try {
+            await Usuarios.create({
+                nome,
+                email,
+                senha: passwordHash,
+                peso,
+                altura,
+                genero,
+                idade,
+                objetivo,
+                imc
             });
-            return;
-        }
-        // create hash password 
-        const salt = await bcrypt.genSalt(12);
-        const passwordHash = await bcrypt.hash(senha, salt);
-       
-       
-        const usuarios = new Usuarios({
-            nome: nome,
-            email: email,
-            senha: passwordHash,
-        });
 
-        // save turma on db
-        try {
-            const newUsuarios = await usuarios.save();
-            res.status(200).json({ message: "O seu usuario foi cadastrado com sucesso!" });
+            return res.status(200).json({ message: "Usuário cadastrado com sucesso!" });
+
         } catch (error) {
-            Logger.error(`Erro ao criar um usuario no banco: ${error}`);
-            res.status(500).json({ message: "Erro ao criar um usuario no banco!" });
+            Logger.error(error);
+            return res.status(500).json({ message: "Erro ao criar usuário!" });
         }
     }
-    
-    static async updateUser (req, res){
-        const nome = req.body.nome;
-        const senha = req.body.senha;
-        const confSenha = req.body.confSenha;
-        const idUsuario = req.body.idUsuario
-        if (!nome) {
-            res.status(422).json({ message: "O nome é obrigatorio  " });
-            return;
-        }
-         if (!senha) {
-            res.status(422).json({ message: "A senha é obrigatoria" });
-            return;
-        }
-         if (!confSenha) {
-            res.status(422).json({ message: "A confirmação da senha é obrigatoria" });
-            return;
-        }
-        if(senha != confSenha){
-            res.status(422).json({ message: "A senhas não são iguais" });
-            return;
-        }
+
+    static async updateUser(req, res) {
+
+        const {
+            nome,
+            senha,
+            confSenha,
+            idUsuario,
+            peso,
+            altura,
+            genero,
+            idade,
+            objetivo
+        } = req.body;
+
+        if (!idUsuario) return res.status(422).json({ message: "Selecione um usuário!" });
+        if (!nome) return res.status(422).json({ message: "O nome é obrigatório" });
+        if (!senha) return res.status(422).json({ message: "A senha é obrigatória" });
+        if (!confSenha) return res.status(422).json({ message: "Confirmação obrigatória" });
+        if (senha !== confSenha) return res.status(422).json({ message: "Senhas não conferem" });
+
+        const usuario = await Usuarios.findByPk(idUsuario);
+        if (!usuario) return res.status(404).json({ message: "Usuário não encontrado!" });
 
         const salt = await bcrypt.genSalt(12);
         const passwordHash = await bcrypt.hash(senha, salt);
 
+        let imc = null;
+        if (peso && altura) {
+            imc = peso / ((altura / 100) * (altura / 100));
+            imc = Number(imc.toFixed(2));
+        }
+
         try {
-            const updateUsuarios = await Usuarios.update(
+            await Usuarios.update(
                 {
-                    nome: nome,
+                    nome,
                     senha: passwordHash,
+                    peso,
+                    altura,
+                    genero,
+                    idade,
+                    objetivo,
+                    imc
                 },
-                {
-                    where: {id:  idUsuario},
-                }
+                { where: { id: idUsuario } }
             );
-            
-            res.status(200).json({ message: "O seu usuario foi atualizado com sucesso!" });
+
+            return res.status(200).json({ message: "Usuário atualizado com sucesso!" });
+
         } catch (error) {
-            Logger.error(`Erro ao atualizar o usuario no banco: ${error}`);
-            res.status(500).json({ message: "Erro ao atualizar o usuario no banco!" });
+            Logger.error(error);
+            return res.status(500).json({ message: "Erro ao atualizar usuário!" });
         }
     }
+
     static async deleteUser(req, res) {
 
-    const idUsuario = req.body.idUsuario;
+        const idUsuario = req.body.idUsuario;
 
-    if (!idUsuario) {
-        return res.status(422).json({
-            message: "Selecione um usuário!"
-        });
-    }
-
-    try {
-
-        const usuario = await Usuarios.findOne({
-            where: { id: idUsuario }
-        });
-
-        if (!usuario) {
-            return res.status(404).json({
-                message: "Usuário não encontrado!"
-            });
+        if (!idUsuario) {
+            return res.status(422).json({ message: "Selecione um usuário!" });
         }
 
-        // Apaga os registros da agenda relacionados ao usuário
-        await Agenda_treinos.destroy({
-            where: {
-                usuario_id: idUsuario
+        try {
+
+            const usuario = await Usuarios.findOne({ where: { id: idUsuario } });
+
+            if (!usuario) {
+                return res.status(404).json({ message: "Usuário não encontrado!" });
             }
-        });
 
-        // Apaga o usuário
-        await Usuarios.destroy({
-            where: {
-                id: idUsuario
-            }
-        });
+            await Agenda_treinos.destroy({
+                where: { usuario_id: idUsuario }
+            });
 
-        return res.status(200).json({
-            message: "Usuário excluído com sucesso!"
-        });
+            await Usuarios.destroy({
+                where: { id: idUsuario }
+            });
 
-    } catch (error) {
+            return res.status(200).json({ message: "Usuário excluído com sucesso!" });
 
-        Logger.error(`Erro ao excluir usuário: ${error}`);
+        } catch (error) {
+            Logger.error(error);
 
-        return res.status(500).json({
-            message: "Erro ao excluir usuário!",
-            error: error.message
-        });
-    }
-}
-static async getAllUsers(req, res) {
-
-    try {
-
-        const usuarios = await Usuarios.findAll({
-            attributes: {
-                exclude: ["senha"]
-            }
-        });
-
-        return res.status(200).json(usuarios);
-
-    } catch (error) {
-
-        Logger.error(`Erro ao buscar usuários: ${error}`);
-
-        return res.status(500).json({
-            message: "Erro ao buscar usuários!"
-        });
-    }
-}
-
-static async getUserById(req, res) {
-
-    const idUsuario = req.params.id;
-
-    try {
-
-        const usuario = await Usuarios.findByPk(idUsuario, {
-            attributes: {
-                exclude: ["senha"]
-            }
-        });
-
-        if (!usuario) {
-            return res.status(404).json({
-                message: "Usuário não encontrado!"
+            return res.status(500).json({
+                message: "Erro ao excluir usuário!",
+                error: error.message
             });
         }
+    }
 
-        return res.status(200).json(usuario);
+    static async getAllUsers(req, res) {
+        try {
+            const usuarios = await Usuarios.findAll({
+                attributes: { exclude: ["senha"] }
+            });
 
-    } catch (error) {
+            return res.status(200).json(usuarios);
 
-        Logger.error(`Erro ao buscar usuário: ${error}`);
+        } catch (error) {
+            Logger.error(error);
+            return res.status(500).json({ message: "Erro ao buscar usuários!" });
+        }
+    }
 
-        return res.status(500).json({
-            message: "Erro ao buscar usuário!"
-        });
+    static async getUserById(req, res) {
+
+        const idUsuario = req.params.id;
+
+        try {
+
+            const usuario = await Usuarios.findByPk(idUsuario, {
+                attributes: { exclude: ["senha"] }
+            });
+
+            if (!usuario) {
+                return res.status(404).json({ message: "Usuário não encontrado!" });
+            }
+
+            return res.status(200).json(usuario);
+
+        } catch (error) {
+            Logger.error(error);
+            return res.status(500).json({ message: "Erro ao buscar usuário!" });
+        }
     }
 }
-    
-}
-
