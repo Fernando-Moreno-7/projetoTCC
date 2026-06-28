@@ -2,6 +2,8 @@ import Agenda_treinos from "../models/Agenda_treinos.js";
 import Logger from "../db/logger.js";
 import Usuarios from "../models/Usuarios.js";
 import Treinos from "../models/Treinos.js";
+import Treino_exercicios from "../models/Treino_exercicios.js";
+import Exercicios from "../models/Exercicios.js";
 
 export default class AgendaTreinoController {
 
@@ -170,6 +172,53 @@ static async delete(req, res) {
             message: "Erro ao remover agenda!"
         });
     }
+}
+static async getTreinoDoUsuario(req, res) {
+
+    const { usuario_id } = req.params;
+
+    try {
+
+        const agenda = await Agenda_treinos.findOne({
+            where: {
+                usuario_id
+            }
+        });
+
+        if (!agenda) {
+            return res.status(404).json({
+                message: "Usuário não possui treino cadastrado!"
+            });
+        }
+
+        const treino = await Treinos.findByPk(agenda.treino_id);
+
+        const treinoExercicios = await Treino_exercicios.findAll({
+            where: {
+                treino_id: treino.id
+            },
+            include: [
+                {
+                    model: Exercicios
+                }
+            ]
+        });
+
+        return res.status(200).json({
+            treino,
+            exercicios: treinoExercicios
+        });
+
+    } catch (error) {
+
+        Logger.error(error);
+
+        return res.status(500).json({
+            message: "Erro ao buscar treino do usuário!"
+        });
+
+    }
+
 }
 
 }
