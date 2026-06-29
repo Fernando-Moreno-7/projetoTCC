@@ -9,4 +9,9 @@ router.post(
     HistoricoCargasController.create
 );
 
+router.get(
+    "/exercicio/:id",
+    HistoricoCargasController.getHistoricoPorExercicio
+);
+
 export default router;

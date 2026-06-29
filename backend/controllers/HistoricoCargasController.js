@@ -57,4 +57,45 @@ export default class HistoricoCargasController {
             });
         }
     }
+    static async getHistoricoPorExercicio(req, res) {
+
+    const { id } = req.params;
+
+    try {
+
+        const treinoExercicio = await Treino_exercicios.findByPk(id);
+
+        if (!treinoExercicio) {
+            return res.status(404).json({
+                message: "Treino/Exercício não encontrado!"
+            });
+        }
+
+        const historico = await Historico_cargas.findAll({
+            where: {
+                treino_exercicios_id: id
+            },
+            attributes: [
+                "peso",
+                "data_inicial"
+            ],
+            order: [
+                ["data_inicial", "ASC"]
+            ]
+        });
+
+        return res.status(200).json(historico);
+
+    } catch (error) {
+
+        Logger.error(
+            `Erro ao buscar histórico de cargas: ${error}`
+        );
+
+        return res.status(500).json({
+            message: "Erro ao buscar histórico de cargas!"
+        });
+    }
+}
+
 }
