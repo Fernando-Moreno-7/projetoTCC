@@ -7,6 +7,7 @@ import ExercicioRoutes from "./routes/ExercicioRoutes.js";
 import AgendaTreinoRoutes from "./routes/AgendaTreinoRoutes.js";
 import TreinoExercicioRoutes from "./routes/TreinoExercicioRoutes.js";
 import HistoricoCargasRoutes from "./routes/HistoricoCargasRoutes.js";
+import DashboardRoutes from "./routes/DashboardRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +25,7 @@ app.use("/exercicio", ExercicioRoutes);
 app.use("/agenda", AgendaTreinoRoutes);
 app.use("/treino-exercicio", TreinoExercicioRoutes);
 app.use("/historico-cargas", HistoricoCargasRoutes);
+app.use("/dashboard", DashboardRoutes);
 
 // Inicia o servidor
 app.listen(port_server, () => {
