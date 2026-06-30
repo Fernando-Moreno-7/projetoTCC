@@ -3,6 +3,7 @@ import Agenda_treinos from "../models/Agenda_treinos.js";
 import Treinos from "../models/Treinos.js";
 import Treino_exercicios from "../models/Treino_exercicios.js";
 import Logger from "../db/logger.js";
+import Historico_cargas from "../models/Historico_cargas.js";
 
 export default class DashboardController {
 
@@ -50,6 +51,54 @@ export default class DashboardController {
                         usuario_id
                     }
                 });
+                const quantidadeTreinosConcluidos =
+    await Agenda_treinos.count({
+        where: {
+            usuario_id,
+            status: "concluido"
+        }
+    });
+
+let maiorCarga = null;
+let ultimaCarga = null;
+
+if (treino) {
+
+    const treinoExercicios = await Treino_exercicios.findAll({
+        where: {
+            treino_id: treino.id
+        }
+    });
+
+    const idsTreinoExercicios =
+        treinoExercicios.map(item => item.id);
+
+    if (idsTreinoExercicios.length > 0) {
+
+        const historicos =
+            await Historico_cargas.findAll({
+                where: {
+                    treino_exercicios_id:
+                        idsTreinoExercicios
+                },
+                order: [
+                    ["data_inicial", "DESC"]
+                ]
+            });
+
+        if (historicos.length > 0) {
+
+            ultimaCarga = historicos[0].peso;
+
+            maiorCarga = Math.max(
+                ...historicos.map(item => item.peso)
+            );
+
+        }
+
+    }
+
+}
 
             return res.status(200).json({
 
@@ -66,13 +115,22 @@ export default class DashboardController {
 
                 estatisticas: {
 
-                    treinos_agendados:
-                        quantidadeTreinos,
+    treinos_agendados:
+        quantidadeTreinos,
 
-                    exercicios_no_treino:
-                        quantidadeExercicios
+    treinos_concluidos:
+        quantidadeTreinosConcluidos,
 
-                }
+    exercicios_no_treino:
+        quantidadeExercicios,
+
+    maior_carga:
+        maiorCarga,
+
+    ultima_carga:
+        ultimaCarga
+
+}
 
             });
 
