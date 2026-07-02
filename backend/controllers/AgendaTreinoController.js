@@ -265,4 +265,38 @@ export default class AgendaTreinoController {
     }
 
 }
+static async historico(req, res) {
+
+    const { usuario_id } = req.params;
+
+    try {
+
+        const historico = await Agenda_treinos.findAll({
+            where: {
+                usuario_id,
+                status: "concluido"
+            },
+            include: [
+                {
+                    model: Treinos
+                }
+            ],
+            order: [
+                ["data", "DESC"]
+            ]
+        });
+
+        return res.status(200).json(historico);
+
+    } catch (error) {
+
+        Logger.error(error);
+
+        return res.status(500).json({
+            message: "Erro ao buscar histórico!"
+        });
+
+    }
+
+}
 }

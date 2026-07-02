@@ -8,7 +8,7 @@ router.get("/list", AgendaTreinoController.list);
 
 // Nova rota
 router.get("/usuario/:usuario_id", AgendaTreinoController.getTreinoDoUsuario);
-
+router.get(  "/historico/:usuario_id",AgendaTreinoController.historico);
 router.get("/:id", AgendaTreinoController.getById);
 router.post("/update", AgendaTreinoController.update);
 router.delete("/delete", AgendaTreinoController.delete);
