@@ -12,5 +12,8 @@ router.get("/usuario/:usuario_id", AgendaTreinoController.getTreinoDoUsuario);
 router.get("/:id", AgendaTreinoController.getById);
 router.post("/update", AgendaTreinoController.update);
 router.delete("/delete", AgendaTreinoController.delete);
+router.post("/finalizar",AgendaTreinoController.finalizarTreino)
+router.get("/usuario/:usuario_id", AgendaTreinoController.getTreinoDoUsuario);
+    
 
 export default router;

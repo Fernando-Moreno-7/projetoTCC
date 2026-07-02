@@ -219,4 +219,50 @@ export default class AgendaTreinoController {
 
         }
     }
+    static async finalizarTreino(req, res) {
+
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(422).json({
+            message: "Informe o ID do agendamento!"
+        });
+    }
+
+    try {
+
+        const agenda = await Agenda_treinos.findByPk(id);
+
+        if (!agenda) {
+            return res.status(404).json({
+                message: "Agendamento não encontrado!"
+            });
+        }
+
+        await Agenda_treinos.update(
+            {
+                status: "concluido"
+            },
+            {
+                where: {
+                    id
+                }
+            }
+        );
+
+        return res.status(200).json({
+            message: "Treino finalizado com sucesso!"
+        });
+
+    } catch (error) {
+
+        Logger.error(error);
+
+        return res.status(500).json({
+            message: "Erro ao finalizar treino!"
+        });
+
+    }
+
+}
 }
