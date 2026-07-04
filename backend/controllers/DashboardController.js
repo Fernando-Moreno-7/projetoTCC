@@ -8,6 +8,7 @@ import Historico_cargas from "../models/Historico_cargas.js";
 export default class DashboardController {
 
     static async getDashboard(req, res) {
+        // FUNÇÕES DO ALUNO
 
         const { usuario_id } = req.params;
 

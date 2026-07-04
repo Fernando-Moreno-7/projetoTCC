@@ -5,6 +5,7 @@ import Treino_exercicios from "../models/Treino_exercicios.js";
 export default class TreinoController {
 
     static async createTreino(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const { nome, descricao } = req.body;
 
@@ -36,6 +37,7 @@ export default class TreinoController {
     }
 
     static async getAllTreinos(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         try {
 
@@ -54,6 +56,7 @@ export default class TreinoController {
     }
 
     static async getTreinoById(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idTreino = req.params.id;
 
@@ -80,6 +83,7 @@ export default class TreinoController {
     }
 
     static async updateTreino(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idTreino = req.body.idTreino;
         const nome = req.body.nome;
@@ -134,6 +138,7 @@ export default class TreinoController {
     }
 
     static async deleteTreino(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idTreino = req.body.idTreino;
 

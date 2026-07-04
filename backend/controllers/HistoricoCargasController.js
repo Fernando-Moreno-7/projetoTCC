@@ -5,6 +5,7 @@ import Logger from "../db/logger.js";
 export default class HistoricoCargasController {
 
     static async create(req, res) {
+        // FUNÇÕES DO ALUNO
 
         const {
             peso,
@@ -58,6 +59,7 @@ export default class HistoricoCargasController {
         }
     }
     static async getHistoricoPorExercicio(req, res) {
+        // FUNÇÕES DO ALUNO
 
     const { id } = req.params;
 

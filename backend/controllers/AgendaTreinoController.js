@@ -9,6 +9,7 @@ import Historico_cargas from "../models/Historico_cargas.js";
 export default class AgendaTreinoController {
 
     static async agendar(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const { usuario_id, treino_id, data, status } = req.body;
 
@@ -52,6 +53,7 @@ export default class AgendaTreinoController {
     }
 
     static async list(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         try {
 
@@ -98,6 +100,7 @@ export default class AgendaTreinoController {
     }
 
     static async update(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const { id, status } = req.body;
 
@@ -124,6 +127,7 @@ export default class AgendaTreinoController {
     }
 
     static async delete(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const { id } = req.body;
 
@@ -149,6 +153,7 @@ export default class AgendaTreinoController {
     }
 
     static async getTreinoDoUsuario(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const { usuario_id } = req.params;
 
@@ -220,6 +225,7 @@ export default class AgendaTreinoController {
         }
     }
     static async finalizarTreino(req, res) {
+        // FUNÇÕES DO ALUNO
 
     const { id } = req.body;
 
@@ -266,6 +272,7 @@ export default class AgendaTreinoController {
 
 }
 static async historico(req, res) {
+    // FUNÇÕES DO ALUNO
 
     const { usuario_id } = req.params;
 

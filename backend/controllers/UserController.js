@@ -8,6 +8,7 @@ import Agenda_treinos from "../models/Agenda_treinos.js";
 
 
 export default class UserController {
+    // FUNÇÕES DO ALUNO
 
     static async register(req, res) {
         const {
@@ -64,6 +65,7 @@ export default class UserController {
     }
 
     static async updateUser(req, res) {
+        // FUNÇÕES DO ALUNO
 
         const {
             nome,
@@ -88,6 +90,8 @@ export default class UserController {
 
         const salt = await bcrypt.genSalt(12);
         const passwordHash = await bcrypt.hash(senha, salt);
+
+        // FUNÇÕES DO PERSONAL
 
         let imc = null;
         if (peso && altura) {
@@ -119,6 +123,7 @@ export default class UserController {
     }
 
     static async deleteUser(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idUsuario = req.body.idUsuario;
 
@@ -155,6 +160,7 @@ export default class UserController {
     }
 
     static async getAllUsers(req, res) {
+        // FUNÇÕES DO PERSONAL
         try {
             const usuarios = await Usuarios.findAll({
                 attributes: { exclude: ["senha"] }
@@ -169,6 +175,7 @@ export default class UserController {
     }
 
     static async getUserById(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idUsuario = req.params.id;
 

@@ -4,6 +4,7 @@ import createUserToken from "../helpers/create-user-token.js";
 
 
 export default class AuthController{
+  // FUNÇÕES DO ALUNO E PERSONAL
     static async login(req, res) {
     const email = req.body.email;
     const password = req.body.password;

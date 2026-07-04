@@ -3,6 +3,7 @@ import Logger from "../db/logger.js";
 
 export default class ExercicioController {
 static async createExercicio(req, res) {
+    // FUNÇÕES DO PERSONAL
 
     const { nome, grupo_muscular, imagem, descricao } = req.body;
 
@@ -54,6 +55,7 @@ static async createExercicio(req, res) {
 }
     
     static async getAllExercicios(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         try {
 
@@ -72,6 +74,7 @@ static async createExercicio(req, res) {
     }
 
     static async getExercicioById(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idExercicio = req.params.id;
 
@@ -98,6 +101,7 @@ static async createExercicio(req, res) {
     }
 
     static async updateExercicio(req, res) {
+        // FUNÇÕES DO PERSONAL
          console.log(req.body);
 
     const idExercicio = req.body.idExercicio;
@@ -175,6 +179,7 @@ static async createExercicio(req, res) {
 }
 
     static async deleteExercicio(req, res) {
+        // FUNÇÕES DO PERSONAL
 
         const idExercicio = req.body.idExercicio;
 

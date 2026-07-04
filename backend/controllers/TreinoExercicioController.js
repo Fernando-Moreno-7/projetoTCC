@@ -6,6 +6,7 @@ import Logger from "../db/logger.js";
 export default class TreinoExercicioController {
 
     static async add(req, res) {
+        // FUNÇÕES DO PERSONAL
         const { treino_id, exercicio_id, series, repeticoes } = req.body;
 
         if (!treino_id || !exercicio_id || !series || !repeticoes) {
@@ -51,6 +52,7 @@ export default class TreinoExercicioController {
     }
 
     static async list(req, res) {
+        // FUNÇÕES DO PERSONAL
         try {
             const treinoExercicios = await Treino_exercicios.findAll();
 
@@ -66,6 +68,7 @@ export default class TreinoExercicioController {
     }
 
     static async update(req, res) {
+        // FUNÇÕES DO PERSONAL
         const { id, series, repeticoes } = req.body;
 
         if (!id) {
