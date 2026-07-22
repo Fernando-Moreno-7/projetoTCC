@@ -1,0 +1,75 @@
+import {
+    LayoutDashboard,
+    Dumbbell,
+    ChartColumn,
+    History,
+    User,
+    LogOut
+} from "lucide-react";
+
+export default function Sidebar() {
+
+    return (
+
+        <aside className="w-64 h-screen bg-purple-800 text-white flex flex-col">
+
+            <div className="p-6 border-b border-purple-700">
+
+                <h1 className="text-3xl font-bold">
+
+                    EvolutionFit
+
+                </h1>
+
+            </div>
+
+            <nav className="flex-1 p-5">
+
+                <ul className="space-y-4">
+
+                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                        <LayoutDashboard size={20} />
+                        Dashboard
+                    </li>
+
+                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                        <Dumbbell size={20} />
+                        Treinos
+                    </li>
+
+                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                        <ChartColumn size={20} />
+                        Evolução
+                    </li>
+
+                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                        <History size={20} />
+                        Histórico
+                    </li>
+
+                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                        <User size={20} />
+                        Perfil
+                    </li>
+
+                </ul>
+
+            </nav>
+
+            <div className="p-5 border-t border-purple-700">
+
+                <button className="flex items-center gap-3 hover:text-red-300 cursor-pointer">
+
+                    <LogOut size={20} />
+
+                    Sair
+
+                </button>
+
+            </div>
+
+        </aside>
+
+    );
+
+}
