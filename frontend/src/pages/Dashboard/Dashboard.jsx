@@ -1,6 +1,7 @@
 import Layout from "../../components/Layout/Layout";
 import Card from "../../components/Card/Card";
 import TreinoHoje from "../../components/TreinoHoje/TreinoHoje";
+import GraficoEvolucao from "../../components/GraficoEvolucao/GraficoEvolucao";
 
 import {
     Activity,
@@ -59,22 +60,17 @@ export default function Dashboard() {
     <div className="grid grid-cols-2 gap-6 mt-8">
 
     <TreinoHoje />
+<div className="bg-white rounded-2xl shadow-md p-6">
 
-    <div className="bg-white rounded-2xl shadow-md p-6">
+    <h2 className="text-2xl font-bold mb-4">
 
-        <h2 className="text-2xl font-bold mb-4">
+        Evolução de Carga
 
-            Evolução de Carga
+    </h2>
 
-        </h2>
+    <GraficoEvolucao />
 
-        <div className="h-72 flex items-center justify-center text-gray-400">
-
-            Gráfico em construção...
-
-        </div>
-
-    </div>
+</div>
 
 </div>
 
