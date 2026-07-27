@@ -1,5 +1,5 @@
-import Dashboard from "./pages/Dashboard/Dashboard";
+import Treinos from "./pages/Treinos/Treinos";
 
 export default function App() {
-    return <Dashboard />;
+    return <Treinos />;
 }
