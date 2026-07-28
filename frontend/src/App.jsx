@@ -1,5 +1,5 @@
-import Treinos from "./pages/Treinos/Treinos";
+import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
 
 export default function App() {
-    return <Treinos />;
+    return <CadastrarTreino />;
 }
