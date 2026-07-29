@@ -1,6 +1,6 @@
 import { Trash2 } from "lucide-react";
 
-export default function ExercicioItem() {
+export default function ExercicioItem({ numero }) {
 
     return (
 
@@ -10,7 +10,7 @@ export default function ExercicioItem() {
 
                 <h3 className="font-semibold text-lg">
 
-                    Exercício
+                            Exercício {numero}
 
                 </h3>
 
