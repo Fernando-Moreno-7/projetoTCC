@@ -1,5 +1,6 @@
 import Layout from "../../components/Layout/Layout";
 import AlunoCard from "../../components/AlunoCard/AlunoCard";
+import { useNavigate } from "react-router-dom";
 
 import {
     UserPlus,
@@ -7,6 +8,8 @@ import {
 } from "lucide-react";
 
 export default function Alunos() {
+
+    const navigate = useNavigate();
 
     return (
 
@@ -32,7 +35,10 @@ export default function Alunos() {
 
                     </div>
 
-                    <button className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition">
+                    <button
+                        onClick={() => navigate("/cadastrar-aluno")}
+                        className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition"
+                    >
 
                         <UserPlus size={20} />
 
