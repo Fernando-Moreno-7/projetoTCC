@@ -1,3 +1,5 @@
+import { useNavigate } from "react-router-dom";
+
 import {
     LayoutDashboard,
     Dumbbell,
@@ -8,6 +10,8 @@ import {
 } from "lucide-react";
 
 export default function Sidebar() {
+
+    const navigate = useNavigate();
 
     return (
 
@@ -27,29 +31,57 @@ export default function Sidebar() {
 
                 <ul className="space-y-4">
 
-                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                    <li
+                        onClick={() => navigate("/dashboard")}
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+
                         <LayoutDashboard size={20} />
+
                         Dashboard
+
                     </li>
 
-                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                    <li
+                        onClick={() => navigate("/treinos")}
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+
                         <Dumbbell size={20} />
+
                         Treinos
+
                     </li>
 
-                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
+                    <li
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+
                         <ChartColumn size={20} />
+
                         Evolução
+
                     </li>
 
-                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
-                        <History size={20} />
-                        Histórico
-                    </li>
+                    <li
+                        onClick={() => navigate("/alunos")}
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
 
-                    <li className="flex items-center gap-3 cursor-pointer hover:text-purple-300">
                         <User size={20} />
-                        Perfil
+
+                        Alunos
+
+                    </li>
+
+                    <li
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+
+                        <History size={20} />
+
+                        Histórico
+
                     </li>
 
                 </ul>
@@ -58,7 +90,10 @@ export default function Sidebar() {
 
             <div className="p-5 border-t border-purple-700">
 
-                <button className="flex items-center gap-3 hover:text-red-300 cursor-pointer">
+                <button
+                    onClick={() => navigate("/")}
+                    className="flex items-center gap-3 hover:text-red-300 transition cursor-pointer"
+                >
 
                     <LogOut size={20} />
 
