@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
     Dumbbell,
-    ChartColumn,
-    History,
-    User,
+    CalendarDays,
+    ClipboardCheck,
+    Users,
     LogOut
 } from "lucide-react";
 
@@ -43,6 +43,17 @@ export default function Sidebar() {
                     </li>
 
                     <li
+                        onClick={() => navigate("/alunos")}
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+
+                        <Users size={20} />
+
+                        Alunos
+
+                    </li>
+
+                    <li
                         onClick={() => navigate("/treinos")}
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
@@ -54,23 +65,13 @@ export default function Sidebar() {
                     </li>
 
                     <li
+                        onClick={() => navigate("/agenda")}
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
 
-                        <ChartColumn size={20} />
+                        <CalendarDays size={20} />
 
-                        Evolução
-
-                    </li>
-
-                    <li
-                        onClick={() => navigate("/alunos")}
-                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
-                    >
-
-                        <User size={20} />
-
-                        Alunos
+                        Agenda
 
                     </li>
 
@@ -78,9 +79,9 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
 
-                        <History size={20} />
+                        <ClipboardCheck size={20} />
 
-                        Histórico
+                        Avaliações
 
                     </li>
 

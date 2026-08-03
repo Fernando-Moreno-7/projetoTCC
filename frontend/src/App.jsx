@@ -6,6 +6,8 @@ import Treinos from "./pages/Treinos/Treinos";
 import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
 import Alunos from "./pages/Alunos/Alunos";
 import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
+import Agenda from "./pages/Agenda/Agenda";
+import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
 
 export default function App() {
 
@@ -26,6 +28,10 @@ export default function App() {
                 <Route path="/alunos" element={<Alunos />} />
 
                 <Route path="/cadastrar-aluno" element={<CadastrarAluno />} />
+
+                <Route path="/agenda" element={<Agenda />} />
+
+                <Route path="/cadastrar-agenda" element={<CadastrarAgenda />} />
 
             </Routes>
 
