@@ -76,6 +76,7 @@ export default function Sidebar() {
                     </li>
 
                     <li
+                        onClick={() => navigate("/avaliacoes")}
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
 
