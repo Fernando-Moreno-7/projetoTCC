@@ -9,6 +9,7 @@ import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
+import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
 
 export default function App() {
 
@@ -35,6 +36,11 @@ export default function App() {
                 <Route path="/cadastrar-agenda" element={<CadastrarAgenda />} />
 
                 <Route path="/avaliacoes" element={<Avaliacoes />} />
+
+                <Route path="/cadastrar-avaliacao" element={<CadastrarAvaliacao />} />
+     
+   
+
 
             </Routes>
 
