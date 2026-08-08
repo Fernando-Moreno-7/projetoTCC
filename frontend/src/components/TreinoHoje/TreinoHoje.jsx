@@ -1,11 +1,31 @@
 import { Play, Dumbbell } from "lucide-react";
 
-
 import Button from "../Button/Button";
 
-
-
 export default function TreinoHoje() {
+
+    const exercicios = [
+        {
+            nome: "Supino reto",
+            series: 4,
+            repeticoes: 12
+        },
+        {
+            nome: "Supino inclinado",
+            series: 3,
+            repeticoes: 10
+        },
+        {
+            nome: "Crucifixo",
+            series: 3,
+            repeticoes: 12
+        },
+        {
+            nome: "Tríceps pulley",
+            series: 4,
+            repeticoes: 12
+        }
+    ];
 
     return (
 
@@ -40,11 +60,47 @@ export default function TreinoHoje() {
 
                 </p>
 
-                <p className="text-gray-600">
+            </div>
 
-                    Exercícios: 8
+            <div className="mt-6 space-y-3">
 
-                </p>
+                <h4 className="font-semibold text-gray-700">
+
+                    Exercícios
+
+                </h4>
+
+                {exercicios.map((exercicio, index) => (
+
+                    <div
+                        key={index}
+                        className="flex items-center justify-between bg-gray-50 rounded-xl p-4"
+                    >
+
+                        <div className="flex items-center gap-3">
+
+                            <Dumbbell
+                                size={20}
+                                className="text-purple-700"
+                            />
+
+                            <span className="font-medium">
+
+                                {exercicio.nome}
+
+                            </span>
+
+                        </div>
+
+                        <span className="text-gray-600">
+
+                            {exercicio.series} × {exercicio.repeticoes}
+
+                        </span>
+
+                    </div>
+
+                ))}
 
             </div>
 
