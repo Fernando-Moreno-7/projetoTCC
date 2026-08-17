@@ -1,106 +1,121 @@
-import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
-    Dumbbell,
-    Mail,
-    Lock,
-    Eye,
-    EyeOff
+    User,
+    Lock
 } from "lucide-react";
-
-import Button from "../../components/Button/Button";
-import Input from "../../components/Input/Input";
 
 export default function Login() {
 
-    const [mostrarSenha, setMostrarSenha] = useState(false);
+    const navigate = useNavigate();
 
     return (
 
-        <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 flex items-center justify-center p-6">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center p-6">
 
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-10">
+            <div className="w-full max-w-md">
 
-                <div className="flex flex-col items-center mb-10">
+                <div className="bg-white rounded-2xl shadow-md p-8">
 
-                    <div className="bg-purple-700 w-24 h-24 rounded-full flex items-center justify-center shadow-xl">
+                    <div className="text-center mb-8">
 
-                        <Dumbbell
-                            size={42}
-                            className="text-white"
-                        />
+                        <h1 className="text-4xl font-bold text-purple-700">
+
+                            EvolutionFit
+
+                        </h1>
+
+                        <p className="text-gray-500 mt-2">
+
+                            Acesse sua conta
+
+                        </p>
 
                     </div>
 
-                    <h1 className="text-4xl font-bold text-purple-700 mt-6">
+                    <div className="space-y-6">
 
-                        EvolutionFit
+                        {/* E-mail */}
 
-                    </h1>
+                        <div>
 
-                    <p className="text-gray-500 mt-2">
+                            <label className="block text-gray-700 font-medium mb-2">
 
-                        Sistema de Gerenciamento de Academia
+                                E-mail
 
-                    </p>
+                            </label>
 
-                </div>
+                            <div className="relative">
 
-                <form className="space-y-6">
+                                <User
+                                    size={18}
+                                    className="absolute left-4 top-4 text-gray-400"
+                                />
 
-                    <Input
-                        icon={<Mail size={18} />}
-                        label="E-mail"
-                        type="email"
-                        placeholder="Digite seu e-mail"
-                    />
+                                <input
+                                    type="email"
+                                    placeholder="Digite seu e-mail"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
 
-                    <div>
+                            </div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
+                        </div>
 
-                            Senha
+                        {/* Senha */}
 
-                        </label>
+                        <div>
 
-                        <div className="relative">
+                            <label className="block text-gray-700 font-medium mb-2">
 
-                            <Lock
-                                size={18}
-                                className="absolute left-4 top-4 text-gray-400"
-                            />
+                                Senha
 
-                            <input
+                            </label>
 
-                                type={mostrarSenha ? "text" : "password"}
+                            <div className="relative">
 
-                                placeholder="Digite sua senha"
+                                <Lock
+                                    size={18}
+                                    className="absolute left-4 top-4 text-gray-400"
+                                />
 
-                                className="w-full rounded-xl border border-gray-300 py-3 pl-11 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                <input
+                                    type="password"
+                                    placeholder="Digite sua senha"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
 
-                            />
+                            </div>
+
+                        </div>
+
+                        {/* Entrar */}
+
+                        <button
+                            onClick={() => navigate("/dashboard")}
+                            className="w-full bg-purple-700 hover:bg-purple-800 text-white py-3 rounded-xl font-semibold transition"
+                        >
+
+                            Entrar
+
+                        </button>
+
+                        {/* Criar conta */}
+
+                        <div className="text-center pt-2">
+
+                            <p className="text-gray-500 text-sm">
+
+                                Ainda não possui uma conta?
+
+                            </p>
 
                             <button
-
-                                type="button"
-
-                                onClick={() =>
-                                    setMostrarSenha(!mostrarSenha)
-                                }
-
-                                className="absolute right-4 top-3 text-gray-500"
-
+                                onClick={() => navigate("/cadastrar-usuario")}
+                                className="text-purple-700 hover:text-purple-900 font-semibold mt-1 transition"
                             >
 
-                                {mostrarSenha ?
-
-                                    <EyeOff size={20} />
-
-                                    :
-
-                                    <Eye size={20} />
-
-                                }
+                                Criar uma conta
 
                             </button>
 
@@ -108,29 +123,7 @@ export default function Login() {
 
                     </div>
 
-                    <Button>
-
-                        Entrar
-
-                    </Button>
-
-                    <div className="text-center">
-
-                        <button
-
-                            type="button"
-
-                            className="text-purple-700 hover:underline text-sm"
-
-                        >
-
-                            Esqueci minha senha
-
-                        </button>
-
-                    </div>
-
-                </form>
+                </div>
 
             </div>
 
