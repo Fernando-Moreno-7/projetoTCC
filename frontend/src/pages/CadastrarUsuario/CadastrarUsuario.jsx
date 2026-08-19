@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
     ArrowLeft,
     User,
     Mail,
-    Lock,
-    Phone
+    Lock
 } from "lucide-react";
 
 export default function CadastrarUsuario() {
@@ -15,17 +15,17 @@ export default function CadastrarUsuario() {
 
     const [nome, setNome] = useState("");
     const [email, setEmail] = useState("");
-    const [telefone, setTelefone] = useState("");
     const [senha, setSenha] = useState("");
     const [confirmarSenha, setConfirmarSenha] = useState("");
+    const [carregando, setCarregando] = useState(false);
 
-    const handleCadastrar = (e) => {
+    async function handleCadastrar(e) {
 
         e.preventDefault();
 
         if (!nome || !email || !senha || !confirmarSenha) {
 
-            alert("Preencha todos os campos obrigatórios!");
+            alert("Preencha todos os campos!");
 
             return;
         }
@@ -37,15 +37,54 @@ export default function CadastrarUsuario() {
             return;
         }
 
-        console.log({
-            nome,
-            email,
-            telefone,
-            senha
-        });
+        try {
 
-        alert("Cadastro validado com sucesso!");
-    };
+            setCarregando(true);
+
+            const response = await axios.post(
+                "http://localhost:5000/user/register",
+                {
+                    nome,
+                    email,
+                    senha,
+                    confSenha: confirmarSenha
+                }
+            );
+
+            alert(response.data.message);
+
+            setNome("");
+            setEmail("");
+            setSenha("");
+            setConfirmarSenha("");
+
+            navigate("/");
+
+        } catch (error) {
+
+            console.error(error);
+
+            if (error.response) {
+
+                alert(
+                    error.response.data.message ||
+                    "Erro ao cadastrar usuário!"
+                );
+
+            } else {
+
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
+
+            }
+
+        } finally {
+
+            setCarregando(false);
+
+        }
+    }
 
     return (
 
@@ -60,7 +99,7 @@ export default function CadastrarUsuario() {
 
                     <ArrowLeft size={20} />
 
-                    Voltar para Login
+                    <span>Voltar para Login</span>
 
                 </button>
 
@@ -87,8 +126,6 @@ export default function CadastrarUsuario() {
                         className="space-y-6"
                     >
 
-                        {/* Nome */}
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
@@ -101,7 +138,7 @@ export default function CadastrarUsuario() {
 
                                 <User
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
                                 <input
@@ -116,8 +153,6 @@ export default function CadastrarUsuario() {
 
                         </div>
 
-                        {/* E-mail */}
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
@@ -130,7 +165,7 @@ export default function CadastrarUsuario() {
 
                                 <Mail
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
                                 <input
@@ -145,37 +180,6 @@ export default function CadastrarUsuario() {
 
                         </div>
 
-                        {/* Telefone */}
-
-                        <div>
-
-                            <label className="block text-gray-700 font-medium mb-2">
-
-                                Telefone
-
-                            </label>
-
-                            <div className="relative">
-
-                                <Phone
-                                    size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
-                                />
-
-                                <input
-                                    type="text"
-                                    value={telefone}
-                                    onChange={(e) => setTelefone(e.target.value)}
-                                    placeholder="(11) 99999-9999"
-                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-                                />
-
-                            </div>
-
-                        </div>
-
-                        {/* Senha */}
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
@@ -188,7 +192,7 @@ export default function CadastrarUsuario() {
 
                                 <Lock
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
                                 <input
@@ -203,8 +207,6 @@ export default function CadastrarUsuario() {
 
                         </div>
 
-                        {/* Confirmar senha */}
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
@@ -217,13 +219,15 @@ export default function CadastrarUsuario() {
 
                                 <Lock
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
                                 <input
                                     type="password"
                                     value={confirmarSenha}
-                                    onChange={(e) => setConfirmarSenha(e.target.value)}
+                                    onChange={(e) =>
+                                        setConfirmarSenha(e.target.value)
+                                    }
                                     placeholder="Digite a senha novamente"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
@@ -232,16 +236,18 @@ export default function CadastrarUsuario() {
 
                         </div>
 
-                        {/* Botão */}
-
                         <div className="flex justify-end pt-6 border-t">
 
                             <button
                                 type="submit"
-                                className="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-xl font-semibold transition"
+                                disabled={carregando}
+                                className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white px-8 py-3 rounded-xl font-semibold transition"
                             >
 
-                                Criar Conta
+                                {carregando
+                                    ? "Cadastrando..."
+                                    : "Criar Conta"
+                                }
 
                             </button>
 
@@ -256,4 +262,5 @@ export default function CadastrarUsuario() {
         </div>
 
     );
+
 }
