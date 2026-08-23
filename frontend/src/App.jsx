@@ -12,6 +12,8 @@ import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
 import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
 import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
 
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+
 export default function App() {
 
     return (
@@ -20,30 +22,96 @@ export default function App() {
 
             <Routes>
 
-                <Route path="/" element={<Login />} />
+                <Route
+                    path="/"
+                    element={<Login />}
+                />
 
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route
+                    path="/cadastrar-usuario"
+                    element={<CadastrarUsuario />}
+                />
 
-                <Route path="/treinos" element={<Treinos />} />
+                <Route
+                    path="/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <Dashboard />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/cadastrar-treino" element={<CadastrarTreino />} />
+                <Route
+                    path="/treinos"
+                    element={
+                        <ProtectedRoute>
+                            <Treinos />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/alunos" element={<Alunos />} />
+                <Route
+                    path="/cadastrar-treino"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarTreino />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/cadastrar-aluno" element={<CadastrarAluno />} />
+                <Route
+                    path="/alunos"
+                    element={
+                        <ProtectedRoute>
+                            <Alunos />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/agenda" element={<Agenda />} />
+                <Route
+                    path="/cadastrar-aluno"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarAluno />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/cadastrar-agenda" element={<CadastrarAgenda />} />
+                <Route
+                    path="/agenda"
+                    element={
+                        <ProtectedRoute>
+                            <Agenda />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/avaliacoes" element={<Avaliacoes />} />
+                <Route
+                    path="/cadastrar-agenda"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarAgenda />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/cadastrar-avaliacao" element={<CadastrarAvaliacao />} />
+                <Route
+                    path="/avaliacoes"
+                    element={
+                        <ProtectedRoute>
+                            <Avaliacoes />
+                        </ProtectedRoute>
+                    }
+                />
 
-                <Route path="/cadastrar-usuario" element={<CadastrarUsuario />} />
-     
-   
-
+                <Route
+                    path="/cadastrar-avaliacao"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarAvaliacao />
+                        </ProtectedRoute>
+                    }
+                />
 
             </Routes>
 
