@@ -49,6 +49,53 @@ export default function Alunos() {
         }
     }
 
+    async function excluirAluno(idUsuario) {
+
+        const confirmar = window.confirm(
+            "Tem certeza que deseja excluir este aluno?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
+        try {
+
+            const response = await axios.delete(
+                "http://localhost:5000/user/delete",
+                {
+                    data: {
+                        idUsuario
+                    }
+                }
+            );
+
+            alert(response.data.message);
+
+            buscarAlunos();
+
+        } catch (error) {
+
+            console.error(error);
+
+            if (error.response) {
+
+                alert(
+                    error.response.data.message ||
+                    "Erro ao excluir aluno!"
+                );
+
+            } else {
+
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
+
+            }
+
+        }
+    }
+
     const alunosFiltrados = alunos.filter((aluno) =>
         aluno.nome
             .toLowerCase()
@@ -127,6 +174,7 @@ export default function Alunos() {
                                 email={aluno.email}
                                 telefone="Não informado"
                                 status="Ativo"
+                                onExcluir={() => excluirAluno(aluno.id)}
                             />
 
                         ))}

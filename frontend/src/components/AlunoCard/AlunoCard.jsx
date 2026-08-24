@@ -7,12 +7,11 @@ import {
 } from "lucide-react";
 
 export default function AlunoCard({
-
     nome,
     email,
     telefone,
-    status
-
+    status,
+    onExcluir
 }) {
 
     return (
@@ -35,15 +34,11 @@ export default function AlunoCard({
                     <div>
 
                         <h2 className="text-xl font-bold">
-
                             {nome}
-
                         </h2>
 
                         <span className="text-green-600 font-medium">
-
                             {status}
-
                         </span>
 
                     </div>
@@ -70,16 +65,17 @@ export default function AlunoCard({
 
             <div className="flex gap-3">
 
-                <button className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl transition">
-
+                <button
+                    className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl transition"
+                >
                     <Pencil size={18} />
-
                 </button>
 
-                <button className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl transition">
-
+                <button
+                    onClick={onExcluir}
+                    className="bg-red-500 hover:bg-red-600 text-white p-3 rounded-xl transition"
+                >
                     <Trash2 size={18} />
-
                 </button>
 
             </div>
