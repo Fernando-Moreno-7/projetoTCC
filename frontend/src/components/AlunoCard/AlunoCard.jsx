@@ -11,6 +11,7 @@ export default function AlunoCard({
     email,
     telefone,
     status,
+    onEditar,
     onExcluir
 }) {
 
@@ -66,6 +67,7 @@ export default function AlunoCard({
             <div className="flex gap-3">
 
                 <button
+                    onClick={onEditar}
                     className="bg-blue-500 hover:bg-blue-600 text-white p-3 rounded-xl transition"
                 >
                     <Pencil size={18} />

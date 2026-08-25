@@ -6,6 +6,7 @@ import Treinos from "./pages/Treinos/Treinos";
 import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
 import Alunos from "./pages/Alunos/Alunos";
 import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
+import EditarAluno from "./pages/EditarAluno/EditarAluno";
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
@@ -42,24 +43,6 @@ export default function App() {
                 />
 
                 <Route
-                    path="/treinos"
-                    element={
-                        <ProtectedRoute>
-                            <Treinos />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/cadastrar-treino"
-                    element={
-                        <ProtectedRoute>
-                            <CadastrarTreino />
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
                     path="/alunos"
                     element={
                         <ProtectedRoute>
@@ -73,6 +56,33 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <CadastrarAluno />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/editar-aluno/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditarAluno />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/treinos"
+                    element={
+                        <ProtectedRoute>
+                            <Treinos />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/cadastrar-treino"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarTreino />
                         </ProtectedRoute>
                     }
                 />

@@ -19,9 +19,7 @@ export default function Alunos() {
     const [carregando, setCarregando] = useState(true);
 
     useEffect(() => {
-
         buscarAlunos();
-
     }, []);
 
     async function buscarAlunos() {
@@ -174,7 +172,12 @@ export default function Alunos() {
                                 email={aluno.email}
                                 telefone="Não informado"
                                 status="Ativo"
-                                onExcluir={() => excluirAluno(aluno.id)}
+                                onEditar={() =>
+                                    navigate(`/editar-aluno/${aluno.id}`)
+                                }
+                                onExcluir={() =>
+                                    excluirAluno(aluno.id)
+                                }
                             />
 
                         ))}
