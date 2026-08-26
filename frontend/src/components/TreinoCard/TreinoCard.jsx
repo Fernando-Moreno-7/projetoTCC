@@ -1,11 +1,15 @@
-import { Dumbbell, Pencil, Trash2 } from "lucide-react";
+import {
+    Dumbbell,
+    Pencil,
+    Trash2
+} from "lucide-react";
 
 export default function TreinoCard({
-
     nome,
     descricao,
-    exercicios
-
+    exercicios,
+    onEditar,
+    onExcluir
 }) {
 
     return (
@@ -24,43 +28,39 @@ export default function TreinoCard({
                         />
 
                         <h2 className="text-2xl font-bold">
-
                             {nome}
-
                         </h2>
 
                     </div>
 
                     <p className="text-gray-500 mt-2">
-
                         {descricao}
-
                     </p>
 
-                    <p className="text-sm text-gray-400 mt-4">
+                    {exercicios !== undefined && (
 
-                        Exercícios: {exercicios}
+                        <p className="text-sm text-gray-400 mt-4">
+                            Exercícios: {exercicios}
+                        </p>
 
-                    </p>
+                    )}
 
                 </div>
 
                 <div className="flex gap-2">
 
                     <button
+                        onClick={onEditar}
                         className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition"
                     >
-
                         <Pencil size={18} />
-
                     </button>
 
                     <button
+                        onClick={onExcluir}
                         className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition"
                     >
-
                         <Trash2 size={18} />
-
                     </button>
 
                 </div>
