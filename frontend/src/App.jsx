@@ -2,15 +2,21 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login/Login";
 import Dashboard from "./pages/Dashboard/Dashboard";
+
 import Treinos from "./pages/Treinos/Treinos";
 import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
+import EditarTreino from "./pages/EditarTreino/EditarTreino";
+
 import Alunos from "./pages/Alunos/Alunos";
 import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
 import EditarAluno from "./pages/EditarAluno/EditarAluno";
+
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
+
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
 import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
+
 import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
 
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
@@ -83,6 +89,15 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <CadastrarTreino />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/editar-treino/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditarTreino />
                         </ProtectedRoute>
                     }
                 />
