@@ -2,7 +2,6 @@ import Treinos from "../models/Treinos.js";
 import Treino_exercicios from "../models/Treino_exercicios.js";
 import Historico_cargas from "../models/Historico_cargas.js";
 import Agenda_treinos from "../models/Agenda_treinos.js";
-
 import Logger from "../db/logger.js";
 
 export default class TreinoController {
@@ -14,22 +13,21 @@ export default class TreinoController {
         const { nome, descricao } = req.body;
 
         if (!nome) {
-
             return res.status(422).json({
                 message: "O nome do treino é obrigatório!"
             });
-
         }
 
         try {
 
-            await Treinos.create({
+            const treino = await Treinos.create({
                 nome,
                 descricao
             });
 
             return res.status(200).json({
-                message: "Treino cadastrado com sucesso!"
+                message: "Treino cadastrado com sucesso!",
+                treinoId: treino.id
             });
 
         } catch (error) {
@@ -41,7 +39,6 @@ export default class TreinoController {
             });
 
         }
-
     }
 
     static async getAllTreinos(req, res) {
@@ -63,7 +60,6 @@ export default class TreinoController {
             });
 
         }
-
     }
 
     static async getTreinoById(req, res) {
@@ -77,11 +73,9 @@ export default class TreinoController {
             const treino = await Treinos.findByPk(idTreino);
 
             if (!treino) {
-
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
-
             }
 
             return res.status(200).json(treino);
@@ -95,7 +89,6 @@ export default class TreinoController {
             });
 
         }
-
     }
 
     static async updateTreino(req, res) {
@@ -107,19 +100,15 @@ export default class TreinoController {
         const descricao = req.body.descricao;
 
         if (!idTreino) {
-
             return res.status(422).json({
                 message: "Selecione um treino!"
             });
-
         }
 
         if (!nome) {
-
             return res.status(422).json({
                 message: "O nome do treino é obrigatório!"
             });
-
         }
 
         try {
@@ -127,11 +116,9 @@ export default class TreinoController {
             const treino = await Treinos.findByPk(idTreino);
 
             if (!treino) {
-
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
-
             }
 
             await Treinos.update(
@@ -159,7 +146,6 @@ export default class TreinoController {
             });
 
         }
-
     }
 
     static async deleteTreino(req, res) {
@@ -169,11 +155,9 @@ export default class TreinoController {
         const idTreino = req.body.idTreino;
 
         if (!idTreino) {
-
             return res.status(422).json({
                 message: "Selecione um treino!"
             });
-
         }
 
         try {
@@ -181,11 +165,9 @@ export default class TreinoController {
             const treino = await Treinos.findByPk(idTreino);
 
             if (!treino) {
-
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
-
             }
 
             const treinoExercicios = await Treino_exercicios.findAll({
@@ -241,7 +223,5 @@ export default class TreinoController {
             });
 
         }
-
     }
-
 }
