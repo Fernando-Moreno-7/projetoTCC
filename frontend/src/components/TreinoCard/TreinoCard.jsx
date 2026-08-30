@@ -7,7 +7,7 @@ import {
 export default function TreinoCard({
     nome,
     descricao,
-    exercicios,
+    exercicios = [],
     onEditar,
     onExcluir
 }) {
@@ -16,9 +16,9 @@ export default function TreinoCard({
 
         <div className="bg-white rounded-2xl shadow-md p-6 hover:shadow-xl transition duration-300">
 
-            <div className="flex justify-between items-start">
+            <div className="flex justify-between items-start gap-4">
 
-                <div>
+                <div className="flex-1">
 
                     <div className="flex items-center gap-3">
 
@@ -37,11 +37,63 @@ export default function TreinoCard({
                         {descricao}
                     </p>
 
-                    {exercicios !== undefined && (
+                    <div className="mt-4">
 
-                        <p className="text-sm text-gray-400 mt-4">
-                            Exercícios: {exercicios}
+                        <p className="text-sm font-semibold text-gray-600">
+                            {exercicios.length}{" "}
+                            {exercicios.length === 1
+                                ? "exercício"
+                                : "exercícios"
+                            }
                         </p>
+
+                    </div>
+
+                    {exercicios.length > 0 && (
+
+                        <div className="mt-4 space-y-3">
+
+                            {exercicios.map((item) => (
+
+                                <div
+                                    key={item.id}
+                                    className="bg-gray-50 border border-gray-200 rounded-xl p-4"
+                                >
+
+                                    <div className="flex justify-between items-center gap-4">
+
+                                        <div>
+
+                                            <p className="font-semibold text-gray-800">
+                                                {item.exercicio?.nome || "Exercício"}
+                                            </p>
+
+                                            <p className="text-sm text-gray-500">
+                                                {item.exercicio?.grupo_muscular || "Grupo muscular não informado"}
+                                            </p>
+
+                                        </div>
+
+                                        <div className="text-sm text-gray-600 whitespace-nowrap">
+
+                                            <span className="font-semibold">
+                                                {item.series}
+                                            </span>{" "}
+                                            séries x{" "}
+                                            <span className="font-semibold">
+                                                {item.repeticoes}
+                                            </span>{" "}
+                                            repetições
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            ))}
+
+                        </div>
 
                     )}
 
@@ -70,5 +122,4 @@ export default function TreinoCard({
         </div>
 
     );
-
 }

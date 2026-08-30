@@ -2,6 +2,7 @@ import Treinos from "../models/Treinos.js";
 import Treino_exercicios from "../models/Treino_exercicios.js";
 import Historico_cargas from "../models/Historico_cargas.js";
 import Agenda_treinos from "../models/Agenda_treinos.js";
+import Exercicios from "../models/Exercicios.js";
 import Logger from "../db/logger.js";
 
 export default class TreinoController {
@@ -47,7 +48,29 @@ export default class TreinoController {
 
         try {
 
-            const treinos = await Treinos.findAll();
+            const treinos = await Treinos.findAll({
+                include: [
+                    {
+                        model: Treino_exercicios,
+                        attributes: [
+                            "id",
+                            "series",
+                            "repeticoes",
+                            "exercicio_id"
+                        ],
+                        include: [
+                            {
+                                model: Exercicios,
+                                attributes: [
+                                    "id",
+                                    "nome",
+                                    "grupo_muscular"
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
 
             return res.status(200).json(treinos);
 

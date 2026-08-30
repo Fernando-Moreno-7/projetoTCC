@@ -19,9 +19,7 @@ export default function Treinos() {
     const [carregando, setCarregando] = useState(true);
 
     useEffect(() => {
-
         buscarTreinos();
-
     }, []);
 
     async function buscarTreinos() {
@@ -90,9 +88,7 @@ export default function Treinos() {
                 alert(
                     "Não foi possível conectar ao servidor."
                 );
-
             }
-
         }
     }
 
@@ -143,7 +139,9 @@ export default function Treinos() {
                     <input
                         type="text"
                         value={pesquisa}
-                        onChange={(e) => setPesquisa(e.target.value)}
+                        onChange={(e) =>
+                            setPesquisa(e.target.value)
+                        }
                         placeholder="Pesquisar treino..."
                         className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                     />
@@ -172,9 +170,17 @@ export default function Treinos() {
                                 key={treino.id}
                                 nome={treino.nome}
                                 descricao={treino.descricao}
-                                onEditar={() =>
-                                    navigate(`/editar-treino/${treino.id}`)
+
+                                exercicios={
+                                    treino.treino_exercicios || []
                                 }
+
+                                onEditar={() =>
+                                    navigate(
+                                        `/editar-treino/${treino.id}`
+                                    )
+                                }
+
                                 onExcluir={() =>
                                     excluirTreino(treino.id)
                                 }
@@ -191,5 +197,4 @@ export default function Treinos() {
         </Layout>
 
     );
-
 }
