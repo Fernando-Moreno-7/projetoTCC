@@ -6,7 +6,8 @@ import {
     CalendarDays,
     ClipboardCheck,
     Users,
-    LogOut
+    LogOut,
+    Activity
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -34,7 +35,6 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
                         <LayoutDashboard size={20} />
-
                         Dashboard
                     </li>
 
@@ -43,7 +43,6 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
                         <Users size={20} />
-
                         Alunos
                     </li>
 
@@ -52,8 +51,15 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
                         <Dumbbell size={20} />
-
                         Treinos
+                    </li>
+
+                    <li
+                        onClick={() => navigate("/exercicios")}
+                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                    >
+                        <Activity size={20} />
+                        Exercícios
                     </li>
 
                     <li
@@ -61,7 +67,6 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
                         <CalendarDays size={20} />
-
                         Agenda
                     </li>
 
@@ -70,7 +75,6 @@ export default function Sidebar() {
                         className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
                     >
                         <ClipboardCheck size={20} />
-
                         Avaliações
                     </li>
 
@@ -82,14 +86,15 @@ export default function Sidebar() {
 
                 <button
                     onClick={() => {
+
                         localStorage.removeItem("token");
                         localStorage.removeItem("userId");
+
                         navigate("/");
                     }}
                     className="flex items-center gap-3 hover:text-red-300 transition cursor-pointer"
                 >
                     <LogOut size={20} />
-
                     Sair
                 </button>
 
@@ -98,5 +103,4 @@ export default function Sidebar() {
         </aside>
 
     );
-
 }

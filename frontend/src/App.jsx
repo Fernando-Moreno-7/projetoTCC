@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login/Login";
+
 import Dashboard from "./pages/Dashboard/Dashboard";
 
 import Treinos from "./pages/Treinos/Treinos";
@@ -10,6 +11,9 @@ import EditarTreino from "./pages/EditarTreino/EditarTreino";
 import Alunos from "./pages/Alunos/Alunos";
 import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
 import EditarAluno from "./pages/EditarAluno/EditarAluno";
+
+import Exercicios from "./pages/Exercicios/Exercicios";
+import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
 
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
@@ -29,6 +33,8 @@ export default function App() {
 
             <Routes>
 
+                {/* LOGIN */}
+
                 <Route
                     path="/"
                     element={<Login />}
@@ -39,6 +45,9 @@ export default function App() {
                     element={<CadastrarUsuario />}
                 />
 
+
+                {/* DASHBOARD */}
+
                 <Route
                     path="/dashboard"
                     element={
@@ -47,6 +56,9 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
+
+
+                {/* ALUNOS */}
 
                 <Route
                     path="/alunos"
@@ -75,6 +87,9 @@ export default function App() {
                     }
                 />
 
+
+                {/* TREINOS */}
+
                 <Route
                     path="/treinos"
                     element={
@@ -102,6 +117,30 @@ export default function App() {
                     }
                 />
 
+
+                {/* EXERCÍCIOS */}
+
+                <Route
+                    path="/exercicios"
+                    element={
+                        <ProtectedRoute>
+                            <Exercicios />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/cadastrar-exercicio"
+                    element={
+                        <ProtectedRoute>
+                            <CadastrarExercicio />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* AGENDA */}
+
                 <Route
                     path="/agenda"
                     element={
@@ -119,6 +158,9 @@ export default function App() {
                         </ProtectedRoute>
                     }
                 />
+
+
+                {/* AVALIAÇÕES */}
 
                 <Route
                     path="/avaliacoes"
@@ -143,5 +185,4 @@ export default function App() {
         </BrowserRouter>
 
     );
-
 }
