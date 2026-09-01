@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login/Login";
-
 import Dashboard from "./pages/Dashboard/Dashboard";
 
 import Treinos from "./pages/Treinos/Treinos";
@@ -14,6 +13,7 @@ import EditarAluno from "./pages/EditarAluno/EditarAluno";
 
 import Exercicios from "./pages/Exercicios/Exercicios";
 import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
+import EditarExercicio from "./pages/EditarExercicio/EditarExercicio";
 
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
@@ -25,6 +25,7 @@ import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
 
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
+
 export default function App() {
 
     return (
@@ -33,7 +34,7 @@ export default function App() {
 
             <Routes>
 
-                {/* LOGIN */}
+                {/* ROTAS PÚBLICAS */}
 
                 <Route
                     path="/"
@@ -134,6 +135,15 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <CadastrarExercicio />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/editar-exercicio/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditarExercicio />
                         </ProtectedRoute>
                     }
                 />
