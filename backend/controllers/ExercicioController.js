@@ -1,4 +1,5 @@
 import Exercicios from "../models/Exercicios.js";
+import Treino_exercicios from "../models/Treino_exercicios.js";
 import Logger from "../db/logger.js";
 
 export default class ExercicioController {
@@ -52,7 +53,6 @@ export default class ExercicioController {
             return res.status(500).json({
                 message: "Erro ao criar exercício!"
             });
-
         }
     }
 
@@ -74,7 +74,6 @@ export default class ExercicioController {
             return res.status(500).json({
                 message: "Erro ao buscar exercícios!"
             });
-
         }
     }
 
@@ -104,7 +103,6 @@ export default class ExercicioController {
             return res.status(500).json({
                 message: "Erro ao buscar exercício!"
             });
-
         }
     }
 
@@ -180,7 +178,6 @@ export default class ExercicioController {
             return res.status(500).json({
                 message: "Erro ao atualizar exercício!"
             });
-
         }
     }
 
@@ -207,6 +204,20 @@ export default class ExercicioController {
                 });
             }
 
+            // Verifica se o exercício está sendo utilizado em algum treino
+            const exercicioEmTreino = await Treino_exercicios.findOne({
+                where: {
+                    exercicio_id: idExercicio
+                }
+            });
+
+            if (exercicioEmTreino) {
+                return res.status(409).json({
+                    message:
+                        "Este exercício está sendo utilizado em um treino. Remova-o dos treinos antes de excluí-lo!"
+                });
+            }
+
             await Exercicios.destroy({
                 where: {
                     id: idExercicio
@@ -224,7 +235,6 @@ export default class ExercicioController {
             return res.status(500).json({
                 message: "Erro ao excluir exercício!"
             });
-
         }
     }
 }
