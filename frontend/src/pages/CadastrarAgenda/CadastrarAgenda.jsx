@@ -1,5 +1,8 @@
 import Layout from "../../components/Layout/Layout";
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
     ArrowLeft,
@@ -11,6 +14,153 @@ import {
 export default function CadastrarAgenda() {
 
     const navigate = useNavigate();
+
+    const [alunos, setAlunos] = useState([]);
+    const [treinos, setTreinos] = useState([]);
+
+    const [usuarioId, setUsuarioId] = useState("");
+    const [treinoId, setTreinoId] = useState("");
+    const [data, setData] = useState("");
+    const [status, setStatus] = useState("pendente");
+
+    const [carregando, setCarregando] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+
+
+    useEffect(() => {
+
+        async function carregarDados() {
+
+            try {
+
+                const [responseAlunos, responseTreinos] =
+                    await Promise.all([
+
+                        axios.get(
+                            "http://localhost:5000/user/list"
+                        ),
+
+                        axios.get(
+                            "http://localhost:5000/treino/list"
+                        )
+
+                    ]);
+
+
+                setAlunos(responseAlunos.data);
+
+                setTreinos(responseTreinos.data);
+
+
+            } catch (error) {
+
+                console.error(error);
+
+                alert(
+                    "Erro ao carregar alunos e treinos!"
+                );
+
+            } finally {
+
+                setCarregando(false);
+
+            }
+
+        }
+
+
+        carregarDados();
+
+    }, []);
+
+
+    async function handleSalvarAgenda(e) {
+
+        e.preventDefault();
+
+
+        if (!usuarioId) {
+
+            alert("Selecione um aluno!");
+
+            return;
+
+        }
+
+
+        if (!treinoId) {
+
+            alert("Selecione um treino!");
+
+            return;
+
+        }
+
+
+        if (!data) {
+
+            alert("Selecione a data do treino!");
+
+            return;
+
+        }
+
+
+        try {
+
+            setSalvando(true);
+
+
+            const response = await axios.post(
+                "http://localhost:5000/agenda/create",
+                {
+
+                    usuario_id: usuarioId,
+
+                    treino_id: treinoId,
+
+                    data,
+
+                    status
+
+                }
+            );
+
+
+            alert(response.data.message);
+
+
+            navigate("/agenda");
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            if (error.response) {
+
+                alert(
+                    error.response.data.message ||
+                    "Erro ao criar agendamento!"
+                );
+
+            } else {
+
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
+
+            }
+
+        } finally {
+
+            setSalvando(false);
+
+        }
+
+    }
+
 
     return (
 
@@ -27,6 +177,7 @@ export default function CadastrarAgenda() {
 
             </button>
 
+
             <div>
 
                 <h1 className="text-4xl font-bold">
@@ -35,128 +186,235 @@ export default function CadastrarAgenda() {
 
                 </h1>
 
+
                 <p className="text-gray-500 mt-2 mb-8">
 
                     Agende um treino para um aluno.
 
                 </p>
 
-                <div className="bg-white rounded-2xl shadow-md p-8 space-y-6">
+
+                <form
+                    onSubmit={handleSalvarAgenda}
+                    className="bg-white rounded-2xl shadow-md p-8 space-y-6"
+                >
+
+
+                    {/* ALUNO */}
+
                     <div>
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Aluno
-    </label>
+                        <label className="block text-gray-700 font-medium mb-2">
 
-    <div className="relative">
+                            Aluno
 
-        <User
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
+                        </label>
 
-        <select
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        >
 
-            <option>Fernando Moreno</option>
-            <option>João Silva</option>
-            <option>Maria Souza</option>
+                        <div className="relative">
 
-        </select>
+                            <User
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
 
-    </div>
 
-</div>
+                            <select
+                                value={usuarioId}
+                                onChange={(e) =>
+                                    setUsuarioId(e.target.value)
+                                }
+                                disabled={carregando}
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            >
 
-<div>
+                                <option value="">
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Treino
-    </label>
+                                    {carregando
+                                        ? "Carregando alunos..."
+                                        : "Selecione um aluno"}
 
-    <div className="relative">
+                                </option>
 
-        <Dumbbell
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
 
-        <select
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        >
+                                {alunos.map((aluno) => (
 
-            <option>Treino A</option>
-            <option>Treino B</option>
-            <option>Treino C</option>
+                                    <option
+                                        key={aluno.id}
+                                        value={aluno.id}
+                                    >
 
-        </select>
+                                        {aluno.nome}
 
-    </div>
+                                    </option>
 
-</div>
+                                ))}
 
-<div>
+                            </select>
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Data do Treino
-    </label>
+                        </div>
 
-    <div className="relative">
+                    </div>
 
-        <CalendarDays
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
 
-        <input
-            type="date"
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        />
 
-    </div>
+                    {/* TREINO */}
 
-</div>
+                    <div>
 
-<div>
+                        <label className="block text-gray-700 font-medium mb-2">
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Status
-    </label>
+                            Treino
 
-    <select
-        className="w-full border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-    >
+                        </label>
 
-        <option>Pendente</option>
-        <option>Concluído</option>
 
-    </select>
+                        <div className="relative">
 
-</div>
+                            <Dumbbell
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
 
-<div className="flex justify-end gap-4 pt-8 border-t">
 
-    <button
-        onClick={() => navigate("/agenda")}
-        className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
-    >
+                            <select
+                                value={treinoId}
+                                onChange={(e) =>
+                                    setTreinoId(e.target.value)
+                                }
+                                disabled={carregando}
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            >
 
-        Cancelar
+                                <option value="">
 
-    </button>
+                                    {carregando
+                                        ? "Carregando treinos..."
+                                        : "Selecione um treino"}
 
-    <button
-        className="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-xl font-semibold transition"
-    >
+                                </option>
 
-        Salvar Agendamento
 
-    </button>
+                                {treinos.map((treino) => (
 
-</div>
+                                    <option
+                                        key={treino.id}
+                                        value={treino.id}
+                                    >
 
-                </div>
+                                        {treino.nome}
+
+                                    </option>
+
+                                ))}
+
+                            </select>
+
+                        </div>
+
+                    </div>
+
+
+
+                    {/* DATA */}
+
+                    <div>
+
+                        <label className="block text-gray-700 font-medium mb-2">
+
+                            Data do Treino
+
+                        </label>
+
+
+                        <div className="relative">
+
+                            <CalendarDays
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
+
+
+                            <input
+                                type="date"
+                                value={data}
+                                onChange={(e) =>
+                                    setData(e.target.value)
+                                }
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            />
+
+                        </div>
+
+                    </div>
+
+
+
+                    {/* STATUS */}
+
+                    <div>
+
+                        <label className="block text-gray-700 font-medium mb-2">
+
+                            Status
+
+                        </label>
+
+
+                        <select
+                            value={status}
+                            onChange={(e) =>
+                                setStatus(e.target.value)
+                            }
+                            className="w-full border border-gray-300 rounded-xl py-3 px-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        >
+
+                            <option value="pendente">
+                                Pendente
+                            </option>
+
+                            <option value="concluido">
+                                Concluído
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+
+                    {/* BOTÕES */}
+
+                    <div className="flex justify-end gap-4 pt-8 border-t">
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate("/agenda")
+                            }
+                            className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
+                        >
+
+                            Cancelar
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            disabled={salvando || carregando}
+                            className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white px-8 py-3 rounded-xl font-semibold transition"
+                        >
+
+                            {salvando
+                                ? "Salvando..."
+                                : "Salvar Agendamento"}
+
+                        </button>
+
+                    </div>
+
+                </form>
 
             </div>
 

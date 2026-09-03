@@ -1,19 +1,64 @@
-import routerEX from "express";
+import express from "express";
+
 import AgendaTreinoController from "../controllers/AgendaTreinoController.js";
 
-const router = routerEX.Router();
+const router = express.Router();
 
-router.post("/create", AgendaTreinoController.agendar);
-router.get("/list", AgendaTreinoController.list);
 
-// Nova rota
-router.get("/usuario/:usuario_id", AgendaTreinoController.getTreinoDoUsuario);
-router.get(  "/historico/:usuario_id",AgendaTreinoController.historico);
-router.get("/:id", AgendaTreinoController.getById);
-router.post("/update", AgendaTreinoController.update);
-router.delete("/delete", AgendaTreinoController.delete);
-router.post("/finalizar",AgendaTreinoController.finalizarTreino)
-router.get("/usuario/:usuario_id", AgendaTreinoController.getTreinoDoUsuario);
-    
+// Criar agendamento
+router.post(
+    "/create",
+    AgendaTreinoController.agendar
+);
+
+
+// Listar todos os agendamentos
+router.get(
+    "/list",
+    AgendaTreinoController.list
+);
+
+
+// Buscar treino do usuário
+router.get(
+    "/usuario/:usuario_id",
+    AgendaTreinoController.getTreinoDoUsuario
+);
+
+
+// Histórico de treinos concluídos do usuário
+router.get(
+    "/historico/:usuario_id",
+    AgendaTreinoController.historico
+);
+
+
+// Buscar agendamento pelo ID
+router.get(
+    "/:id",
+    AgendaTreinoController.getById
+);
+
+
+// Atualizar agendamento
+router.post(
+    "/update",
+    AgendaTreinoController.update
+);
+
+
+// Excluir agendamento
+router.delete(
+    "/delete",
+    AgendaTreinoController.delete
+);
+
+
+// Finalizar treino
+router.post(
+    "/finalizar",
+    AgendaTreinoController.finalizarTreino
+);
+
 
 export default router;
