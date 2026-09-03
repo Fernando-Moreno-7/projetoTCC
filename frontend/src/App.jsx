@@ -1,22 +1,24 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Login from "./pages/Login/Login";
+
 import Dashboard from "./pages/Dashboard/Dashboard";
 
 import Treinos from "./pages/Treinos/Treinos";
 import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
 import EditarTreino from "./pages/EditarTreino/EditarTreino";
 
-import Alunos from "./pages/Alunos/Alunos";
-import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
-import EditarAluno from "./pages/EditarAluno/EditarAluno";
-
 import Exercicios from "./pages/Exercicios/Exercicios";
 import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
 import EditarExercicio from "./pages/EditarExercicio/EditarExercicio";
 
+import Alunos from "./pages/Alunos/Alunos";
+import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
+import EditarAluno from "./pages/EditarAluno/EditarAluno";
+
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
+import EditarAgenda from "./pages/EditarAgenda/EditarAgenda";
 
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
 import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
@@ -34,12 +36,15 @@ export default function App() {
 
             <Routes>
 
-                {/* ROTAS PÚBLICAS */}
+                {/* LOGIN */}
 
                 <Route
                     path="/"
                     element={<Login />}
                 />
+
+
+                {/* CADASTRO DE USUÁRIO */}
 
                 <Route
                     path="/cadastrar-usuario"
@@ -169,6 +174,15 @@ export default function App() {
                     }
                 />
 
+                <Route
+                    path="/editar-agenda/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditarAgenda />
+                        </ProtectedRoute>
+                    }
+                />
+
 
                 {/* AVALIAÇÕES */}
 
@@ -195,4 +209,5 @@ export default function App() {
         </BrowserRouter>
 
     );
+
 }

@@ -25,7 +25,6 @@ export default class AgendaTreinoController {
             status
         } = req.body;
 
-
         if (!usuario_id || !treino_id || !data) {
 
             return res.status(422).json({
@@ -34,13 +33,11 @@ export default class AgendaTreinoController {
 
         }
 
-
         try {
 
             const usuario = await Usuarios.findByPk(usuario_id);
 
             const treino = await Treinos.findByPk(treino_id);
-
 
             if (!usuario) {
 
@@ -50,7 +47,6 @@ export default class AgendaTreinoController {
 
             }
 
-
             if (!treino) {
 
                 return res.status(404).json({
@@ -58,7 +54,6 @@ export default class AgendaTreinoController {
                 });
 
             }
-
 
             await Agenda_treinos.create({
 
@@ -72,11 +67,9 @@ export default class AgendaTreinoController {
 
             });
 
-
             return res.status(200).json({
                 message: "Treino agendado com sucesso!"
             });
-
 
         } catch (error) {
 
@@ -89,7 +82,6 @@ export default class AgendaTreinoController {
         }
 
     }
-
 
 
     // =========================================
@@ -107,7 +99,6 @@ export default class AgendaTreinoController {
 
                     {
                         model: Usuarios,
-
                         attributes: [
                             "id",
                             "nome",
@@ -117,7 +108,6 @@ export default class AgendaTreinoController {
 
                     {
                         model: Treinos,
-
                         attributes: [
                             "id",
                             "nome",
@@ -133,9 +123,7 @@ export default class AgendaTreinoController {
 
             });
 
-
             return res.status(200).json(agenda);
-
 
         } catch (error) {
 
@@ -150,7 +138,6 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
     // BUSCAR AGENDAMENTO PELO ID
     // FUNÇÕES DO PERSONAL
@@ -160,7 +147,6 @@ export default class AgendaTreinoController {
 
         const id = req.params.id;
 
-
         try {
 
             const item = await Agenda_treinos.findByPk(id, {
@@ -169,7 +155,6 @@ export default class AgendaTreinoController {
 
                     {
                         model: Usuarios,
-
                         attributes: [
                             "id",
                             "nome",
@@ -179,7 +164,6 @@ export default class AgendaTreinoController {
 
                     {
                         model: Treinos,
-
                         attributes: [
                             "id",
                             "nome",
@@ -191,7 +175,6 @@ export default class AgendaTreinoController {
 
             });
 
-
             if (!item) {
 
                 return res.status(404).json({
@@ -200,9 +183,7 @@ export default class AgendaTreinoController {
 
             }
 
-
             return res.status(200).json(item);
-
 
         } catch (error) {
 
@@ -217,9 +198,8 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
-    // ATUALIZAR STATUS DO AGENDAMENTO
+    // ATUALIZAR AGENDAMENTO
     // FUNÇÕES DO PERSONAL
     // =========================================
 
@@ -227,9 +207,11 @@ export default class AgendaTreinoController {
 
         const {
             id,
+            usuario_id,
+            treino_id,
+            data,
             status
         } = req.body;
-
 
         if (!id) {
 
@@ -239,6 +221,29 @@ export default class AgendaTreinoController {
 
         }
 
+        if (!usuario_id) {
+
+            return res.status(422).json({
+                message: "Selecione um aluno!"
+            });
+
+        }
+
+        if (!treino_id) {
+
+            return res.status(422).json({
+                message: "Selecione um treino!"
+            });
+
+        }
+
+        if (!data) {
+
+            return res.status(422).json({
+                message: "Informe a data do treino!"
+            });
+
+        }
 
         if (!status) {
 
@@ -248,11 +253,9 @@ export default class AgendaTreinoController {
 
         }
 
-
         try {
 
             const agenda = await Agenda_treinos.findByPk(id);
-
 
             if (!agenda) {
 
@@ -262,10 +265,32 @@ export default class AgendaTreinoController {
 
             }
 
+            const usuario = await Usuarios.findByPk(usuario_id);
+
+            if (!usuario) {
+
+                return res.status(404).json({
+                    message: "Usuário não encontrado!"
+                });
+
+            }
+
+            const treino = await Treinos.findByPk(treino_id);
+
+            if (!treino) {
+
+                return res.status(404).json({
+                    message: "Treino não encontrado!"
+                });
+
+            }
 
             await Agenda_treinos.update(
 
                 {
+                    usuario_id,
+                    treino_id,
+                    data,
                     status
                 },
 
@@ -277,11 +302,9 @@ export default class AgendaTreinoController {
 
             );
 
-
             return res.status(200).json({
-                message: "Agenda atualizada com sucesso!"
+                message: "Agendamento atualizado com sucesso!"
             });
-
 
         } catch (error) {
 
@@ -296,7 +319,6 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
     // EXCLUIR AGENDAMENTO
     // FUNÇÕES DO PERSONAL
@@ -308,7 +330,6 @@ export default class AgendaTreinoController {
             id
         } = req.body;
 
-
         if (!id) {
 
             return res.status(422).json({
@@ -317,11 +338,9 @@ export default class AgendaTreinoController {
 
         }
 
-
         try {
 
             const agenda = await Agenda_treinos.findByPk(id);
-
 
             if (!agenda) {
 
@@ -331,7 +350,6 @@ export default class AgendaTreinoController {
 
             }
 
-
             await Agenda_treinos.destroy({
 
                 where: {
@@ -340,11 +358,9 @@ export default class AgendaTreinoController {
 
             });
 
-
             return res.status(200).json({
                 message: "Agendamento removido com sucesso!"
             });
-
 
         } catch (error) {
 
@@ -359,7 +375,6 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
     // BUSCAR TREINO DO USUÁRIO
     // FUNÇÕES DO ALUNO
@@ -370,7 +385,6 @@ export default class AgendaTreinoController {
         const {
             usuario_id
         } = req.params;
-
 
         try {
 
@@ -386,7 +400,6 @@ export default class AgendaTreinoController {
 
             });
 
-
             if (!agenda) {
 
                 return res.status(404).json({
@@ -395,11 +408,9 @@ export default class AgendaTreinoController {
 
             }
 
-
             const treino = await Treinos.findByPk(
                 agenda.treino_id
             );
-
 
             if (!treino) {
 
@@ -408,7 +419,6 @@ export default class AgendaTreinoController {
                 });
 
             }
-
 
             const treinoExercicios =
                 await Treino_exercicios.findAll({
@@ -427,9 +437,7 @@ export default class AgendaTreinoController {
 
                 });
 
-
             const exercicios = [];
-
 
             for (const item of treinoExercicios) {
 
@@ -445,7 +453,6 @@ export default class AgendaTreinoController {
                         ]
 
                     });
-
 
                 exercicios.push({
 
@@ -481,7 +488,6 @@ export default class AgendaTreinoController {
 
             }
 
-
             return res.status(200).json({
 
                 agenda,
@@ -491,7 +497,6 @@ export default class AgendaTreinoController {
                 exercicios
 
             });
-
 
         } catch (error) {
 
@@ -508,7 +513,6 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
     // FINALIZAR TREINO
     // FUNÇÕES DO ALUNO
@@ -520,7 +524,6 @@ export default class AgendaTreinoController {
             id
         } = req.body;
 
-
         if (!id) {
 
             return res.status(422).json({
@@ -529,11 +532,9 @@ export default class AgendaTreinoController {
 
         }
 
-
         try {
 
             const agenda = await Agenda_treinos.findByPk(id);
-
 
             if (!agenda) {
 
@@ -542,7 +543,6 @@ export default class AgendaTreinoController {
                 });
 
             }
-
 
             await Agenda_treinos.update(
 
@@ -558,11 +558,9 @@ export default class AgendaTreinoController {
 
             );
 
-
             return res.status(200).json({
                 message: "Treino finalizado com sucesso!"
             });
-
 
         } catch (error) {
 
@@ -579,7 +577,6 @@ export default class AgendaTreinoController {
     }
 
 
-
     // =========================================
     // HISTÓRICO DE TREINOS DO ALUNO
     // FUNÇÕES DO ALUNO
@@ -590,7 +587,6 @@ export default class AgendaTreinoController {
         const {
             usuario_id
         } = req.params;
-
 
         try {
 
@@ -625,9 +621,7 @@ export default class AgendaTreinoController {
 
                 });
 
-
             return res.status(200).json(historico);
-
 
         } catch (error) {
 
