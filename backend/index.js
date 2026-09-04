@@ -9,6 +9,8 @@ import TreinoExercicioRoutes from "./routes/TreinoExercicioRoutes.js";
 import HistoricoCargasRoutes from "./routes/HistoricoCargasRoutes.js";
 import DashboardRoutes from "./routes/DashboardRoutes.js";
 import cors from "cors";
+import AvaliacaoRoutes from "./routes/AvaliacaoRoutes.js";
+
 
 dotenv.config();
 
@@ -16,8 +18,6 @@ const app = express();
 
 const port_server = process.env.PORT_SERVER;
 app.use(cors());
-app.use(express.json());
-
 app.use(express.json());
 
 // Rotas
@@ -29,6 +29,7 @@ app.use("/agenda", AgendaTreinoRoutes);
 app.use("/treino-exercicio", TreinoExercicioRoutes);
 app.use("/historico-cargas", HistoricoCargasRoutes);
 app.use("/dashboard", DashboardRoutes);
+app.use("/avaliacao", AvaliacaoRoutes);
 
 // Inicia o servidor
 app.listen(port_server, () => {
