@@ -7,7 +7,8 @@ import axios from "axios";
 import {
     Search,
     Plus,
-    Trash2
+    Trash2,
+    Pencil
 } from "lucide-react";
 
 
@@ -155,15 +156,11 @@ export default function Avaliacoes() {
                     <div>
 
                         <h1 className="text-4xl font-bold">
-
                             Avaliações
-
                         </h1>
 
                         <p className="text-gray-500 mt-2">
-
                             Gerencie as avaliações físicas dos alunos.
-
                         </p>
 
                     </div>
@@ -183,7 +180,6 @@ export default function Avaliacoes() {
                     </button>
 
                 </div>
-
 
 
                 {/* PESQUISA */}
@@ -208,19 +204,15 @@ export default function Avaliacoes() {
                 </div>
 
 
-
                 {/* CARREGANDO */}
 
                 {carregando && (
 
                     <p className="text-gray-500">
-
                         Carregando avaliações...
-
                     </p>
 
                 )}
-
 
 
                 {/* NENHUMA AVALIAÇÃO */}
@@ -231,9 +223,7 @@ export default function Avaliacoes() {
                         <div className="bg-white rounded-2xl shadow-md p-8 text-center">
 
                             <p className="text-gray-500">
-
                                 Nenhuma avaliação encontrada.
-
                             </p>
 
                         </div>
@@ -241,101 +231,131 @@ export default function Avaliacoes() {
                     )}
 
 
-
                 {/* LISTAGEM */}
 
-                <div className="space-y-5">
+                {!carregando && (
 
-                    {avaliacoesFiltradas.map((avaliacao) => (
+                    <div className="space-y-5">
 
-                        <div
-                            key={avaliacao.id}
-                            className="bg-white rounded-2xl shadow-md p-6 flex justify-between items-center"
-                        >
+                        {avaliacoesFiltradas.map((avaliacao) => (
 
-
-                            {/* DADOS */}
-
-                            <div>
-
-                                <h2 className="text-xl font-bold">
-
-                                    {avaliacao.usuario?.nome ||
-                                        "Aluno não encontrado"}
-
-                                </h2>
+                            <div
+                                key={avaliacao.id}
+                                className="bg-white rounded-2xl shadow-md p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6"
+                            >
 
 
-                                <p className="text-gray-500">
+                                {/* DADOS DA AVALIAÇÃO */}
 
-                                    Peso: {avaliacao.peso} kg
+                                <div>
 
-                                </p>
+                                    <h2 className="text-xl font-bold">
 
+                                        {avaliacao.usuario?.nome ||
+                                            "Aluno não encontrado"}
 
-                                <p className="text-gray-500">
+                                    </h2>
 
-                                    Altura: {avaliacao.altura} m
-
-                                </p>
-
-
-                                <p className="text-gray-500">
-
-                                    IMC: {avaliacao.imc}
-
-                                </p>
-
-
-                                {avaliacao.observacoes && (
 
                                     <p className="text-gray-500 mt-2">
 
-                                        Observações:{" "}
-                                        {avaliacao.observacoes}
+                                        Peso: {avaliacao.peso} kg
 
                                     </p>
 
-                                )}
 
-                            </div>
+                                    <p className="text-gray-500">
+
+                                        Altura: {avaliacao.altura} m
+
+                                    </p>
 
 
+                                    <p className="text-gray-500">
 
-                            {/* DATA E AÇÕES */}
+                                        IMC: {avaliacao.imc}
 
-                            <div className="flex flex-col items-end gap-4">
+                                    </p>
 
-                                <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
 
-                                    {formatarData(
-                                        avaliacao.data_avaliacao
+                                    {avaliacao.observacoes && (
+
+                                        <p className="text-gray-500 mt-2">
+
+                                            Observações:{" "}
+                                            {avaliacao.observacoes}
+
+                                        </p>
+
                                     )}
 
-                                </span>
+                                </div>
 
 
-                                <button
-                                    onClick={() =>
-                                        excluirAvaliacao(avaliacao.id)
-                                    }
-                                    className="flex items-center gap-2 text-red-600 hover:text-red-800 transition"
-                                >
+                                {/* DATA E BOTÕES */}
 
-                                    <Trash2 size={18} />
+                                <div className="flex flex-col md:items-end gap-4">
 
-                                    Excluir
+                                    <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
 
-                                </button>
+                                        {formatarData(
+                                            avaliacao.data_avaliacao
+                                        )}
+
+                                    </span>
+
+
+                                    <div className="flex gap-4">
+
+
+                                        {/* EDITAR */}
+
+                                        <button
+                                            onClick={() =>
+                                                navigate(
+                                                    `/editar-avaliacao/${avaliacao.id}`
+                                                )
+                                            }
+                                            className="flex items-center gap-2 text-purple-700 hover:text-purple-900 transition"
+                                        >
+
+                                            <Pencil size={18} />
+
+                                            Editar
+
+                                        </button>
+
+
+                                        {/* EXCLUIR */}
+
+                                        <button
+                                            onClick={() =>
+                                                excluirAvaliacao(
+                                                    avaliacao.id
+                                                )
+                                            }
+                                            className="flex items-center gap-2 text-red-600 hover:text-red-800 transition"
+                                        >
+
+                                            <Trash2 size={18} />
+
+                                            Excluir
+
+                                        </button>
+
+
+                                    </div>
+
+                                </div>
+
 
                             </div>
 
+                        ))}
 
-                        </div>
+                    </div>
 
-                    ))}
-
-                </div>
+                )}
 
 
             </div>

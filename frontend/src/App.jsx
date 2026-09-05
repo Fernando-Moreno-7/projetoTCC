@@ -22,6 +22,7 @@ import EditarAgenda from "./pages/EditarAgenda/EditarAgenda";
 
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
 import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
+import EditarAvaliacao from "./pages/EditarAvaliacao/EditarAvaliacao";
 
 import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
 
@@ -36,15 +37,12 @@ export default function App() {
 
             <Routes>
 
-                {/* LOGIN */}
+                {/* ROTAS PÚBLICAS */}
 
                 <Route
                     path="/"
                     element={<Login />}
                 />
-
-
-                {/* CADASTRO DE USUÁRIO */}
 
                 <Route
                     path="/cadastrar-usuario"
@@ -200,6 +198,15 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <CadastrarAvaliacao />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/editar-avaliacao/:id"
+                    element={
+                        <ProtectedRoute>
+                            <EditarAvaliacao />
                         </ProtectedRoute>
                     }
                 />
