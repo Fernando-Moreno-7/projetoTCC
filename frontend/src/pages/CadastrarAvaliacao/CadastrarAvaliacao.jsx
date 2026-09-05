@@ -1,5 +1,8 @@
 import Layout from "../../components/Layout/Layout";
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 import {
     ArrowLeft,
@@ -7,17 +10,167 @@ import {
     Calendar,
     Weight,
     Ruler,
-    Activity,
     FileText
 } from "lucide-react";
+
 
 export default function CadastrarAvaliacao() {
 
     const navigate = useNavigate();
 
+    const [alunos, setAlunos] = useState([]);
+
+    const [usuarioId, setUsuarioId] = useState("");
+    const [dataAvaliacao, setDataAvaliacao] = useState("");
+    const [peso, setPeso] = useState("");
+    const [altura, setAltura] = useState("");
+    const [observacoes, setObservacoes] = useState("");
+
+    const [carregando, setCarregando] = useState(true);
+    const [salvando, setSalvando] = useState(false);
+
+
+    useEffect(() => {
+
+        async function carregarAlunos() {
+
+            try {
+
+                const response = await axios.get(
+                    "http://localhost:5000/user/list"
+                );
+
+                setAlunos(response.data);
+
+            } catch (error) {
+
+                console.error(error);
+
+                if (error.response) {
+
+                    alert(
+                        error.response.data.message ||
+                        "Erro ao carregar alunos!"
+                    );
+
+                } else {
+
+                    alert(
+                        "Não foi possível conectar ao servidor."
+                    );
+
+                }
+
+            } finally {
+
+                setCarregando(false);
+
+            }
+
+        }
+
+
+        carregarAlunos();
+
+    }, []);
+
+
+    async function handleSalvarAvaliacao(e) {
+
+        e.preventDefault();
+
+
+        if (!usuarioId) {
+
+            alert("Selecione um aluno!");
+
+            return;
+
+        }
+
+
+        if (!dataAvaliacao) {
+
+            alert("Informe a data da avaliação!");
+
+            return;
+
+        }
+
+
+        if (!peso) {
+
+            alert("Informe o peso!");
+
+            return;
+
+        }
+
+
+        if (!altura) {
+
+            alert("Informe a altura!");
+
+            return;
+
+        }
+
+
+        try {
+
+            setSalvando(true);
+
+
+            const response = await axios.post(
+                "http://localhost:5000/avaliacao/create",
+                {
+                    usuario_id: usuarioId,
+                    peso,
+                    altura,
+                    data_avaliacao: dataAvaliacao,
+                    observacoes
+                }
+            );
+
+
+            alert(response.data.message);
+
+            navigate("/avaliacoes");
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            if (error.response) {
+
+                alert(
+                    error.response.data.message ||
+                    "Erro ao cadastrar avaliação!"
+                );
+
+            } else {
+
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
+
+            }
+
+        } finally {
+
+            setSalvando(false);
+
+        }
+
+    }
+
+
     return (
 
         <Layout>
+
 
             <button
                 onClick={() => navigate("/avaliacoes")}
@@ -30,6 +183,7 @@ export default function CadastrarAvaliacao() {
 
             </button>
 
+
             <div>
 
                 <h1 className="text-4xl font-bold">
@@ -38,209 +192,277 @@ export default function CadastrarAvaliacao() {
 
                 </h1>
 
+
                 <p className="text-gray-500 mt-2 mb-8">
 
                     Cadastre uma nova avaliação física.
 
                 </p>
 
-                <div className="bg-white rounded-2xl shadow-md p-8 space-y-6">
+
+                <form
+                    onSubmit={handleSalvarAvaliacao}
+                    className="bg-white rounded-2xl shadow-md p-8 space-y-6"
+                >
+
+
+                    {/* ALUNO */}
+
                     <div>
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Aluno
-    </label>
+                        <label className="block text-gray-700 font-medium mb-2">
 
-    <div className="relative">
+                            Aluno
 
-        <User
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
+                        </label>
 
-        <select
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        >
 
-            <option>Fernando Moreno</option>
-            <option>João Silva</option>
-            <option>Maria Souza</option>
+                        <div className="relative">
 
-        </select>
+                            <User
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
 
-    </div>
 
-</div>
+                            <select
+                                value={usuarioId}
+                                onChange={(e) =>
+                                    setUsuarioId(e.target.value)
+                                }
+                                disabled={carregando}
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            >
 
-<div>
+                                <option value="">
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Data da Avaliação
-    </label>
+                                    {carregando
+                                        ? "Carregando alunos..."
+                                        : "Selecione um aluno"}
 
-    <div className="relative">
+                                </option>
 
-        <Calendar
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
 
-        <input
-            type="date"
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        />
+                                {alunos.map((aluno) => (
 
-    </div>
+                                    <option
+                                        key={aluno.id}
+                                        value={aluno.id}
+                                    >
 
-</div>
+                                        {aluno.nome}
 
-<div className="grid grid-cols-2 gap-6">
+                                    </option>
 
-    <div>
+                                ))}
 
-        <label className="block text-gray-700 font-medium mb-2">
-            Peso
-        </label>
+                            </select>
 
-        <div className="relative">
+                        </div>
 
-            <Weight
-                size={18}
-                className="absolute left-4 top-4 text-gray-400"
-            />
+                    </div>
 
-            <input
-                type="text"
-                placeholder="80 kg"
-                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
 
-        </div>
 
-    </div>
+                    {/* DATA */}
 
-    <div>
+                    <div>
 
-        <label className="block text-gray-700 font-medium mb-2">
-            Altura
-        </label>
+                        <label className="block text-gray-700 font-medium mb-2">
 
-        <div className="relative">
+                            Data da Avaliação
 
-            <Ruler
-                size={18}
-                className="absolute left-4 top-4 text-gray-400"
-            />
+                        </label>
 
-            <input
-                type="text"
-                placeholder="1.75 m"
-                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
 
-        </div>
+                        <div className="relative">
 
-    </div>
+                            <Calendar
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
 
-</div>
 
-<div className="grid grid-cols-2 gap-6">
+                            <input
+                                type="date"
+                                value={dataAvaliacao}
+                                onChange={(e) =>
+                                    setDataAvaliacao(e.target.value)
+                                }
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            />
 
-    <div>
+                        </div>
 
-        <label className="block text-gray-700 font-medium mb-2">
-            Percentual de Gordura
-        </label>
+                    </div>
 
-        <div className="relative">
 
-            <Activity
-                size={18}
-                className="absolute left-4 top-4 text-gray-400"
-            />
 
-            <input
-                type="text"
-                placeholder="18%"
-                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
+                    {/* PESO E ALTURA */}
 
-        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-    </div>
 
-    <div>
+                        <div>
 
-        <label className="block text-gray-700 font-medium mb-2">
-            IMC
-        </label>
+                            <label className="block text-gray-700 font-medium mb-2">
 
-        <div className="relative">
+                                Peso (kg)
 
-            <Activity
-                size={18}
-                className="absolute left-4 top-4 text-gray-400"
-            />
+                            </label>
 
-            <input
-                type="text"
-                placeholder="24.3"
-                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-            />
 
-        </div>
+                            <div className="relative">
 
-    </div>
+                                <Weight
+                                    size={18}
+                                    className="absolute left-4 top-4 text-gray-400"
+                                />
 
-</div>
 
-<div>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="1"
+                                    value={peso}
+                                    onChange={(e) =>
+                                        setPeso(e.target.value)
+                                    }
+                                    placeholder="Ex: 80.50"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
 
-    <label className="block text-gray-700 font-medium mb-2">
-        Observações
-    </label>
+                            </div>
 
-    <div className="relative">
+                        </div>
 
-        <FileText
-            size={18}
-            className="absolute left-4 top-4 text-gray-400"
-        />
 
-        <textarea
-            rows="4"
-            placeholder="Digite observações da avaliação..."
-            className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
-        />
+                        <div>
 
-    </div>
+                            <label className="block text-gray-700 font-medium mb-2">
 
-</div>
+                                Altura (m)
 
-<div className="flex justify-end gap-4 pt-8 border-t">
+                            </label>
 
-    <button
-        onClick={() => navigate("/avaliacoes")}
-        className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
-    >
 
-        Cancelar
+                            <div className="relative">
 
-    </button>
+                                <Ruler
+                                    size={18}
+                                    className="absolute left-4 top-4 text-gray-400"
+                                />
 
-    <button
-        className="bg-purple-700 hover:bg-purple-800 text-white px-8 py-3 rounded-xl font-semibold transition"
-    >
 
-        Salvar Avaliação
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    min="0.50"
+                                    value={altura}
+                                    onChange={(e) =>
+                                        setAltura(e.target.value)
+                                    }
+                                    placeholder="Ex: 1.75"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
 
-    </button>
+                            </div>
 
-</div>
+                        </div>
 
-                </div>
+                    </div>
+
+
+
+                    {/* OBSERVAÇÕES */}
+
+                    <div>
+
+                        <label className="block text-gray-700 font-medium mb-2">
+
+                            Observações
+
+                        </label>
+
+
+                        <div className="relative">
+
+                            <FileText
+                                size={18}
+                                className="absolute left-4 top-4 text-gray-400"
+                            />
+
+
+                            <textarea
+                                rows="4"
+                                value={observacoes}
+                                onChange={(e) =>
+                                    setObservacoes(e.target.value)
+                                }
+                                placeholder="Digite observações da avaliação..."
+                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                            />
+
+                        </div>
+
+                    </div>
+
+
+
+                    {/* INFORMAÇÃO DO IMC */}
+
+                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+
+                        <p className="text-sm text-purple-800">
+
+                            O IMC será calculado automaticamente
+                            com base no peso e na altura.
+
+                        </p>
+
+                    </div>
+
+
+
+                    {/* BOTÕES */}
+
+                    <div className="flex justify-end gap-4 pt-8 border-t">
+
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                navigate("/avaliacoes")
+                            }
+                            className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
+                        >
+
+                            Cancelar
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            disabled={salvando || carregando}
+                            className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white px-8 py-3 rounded-xl font-semibold transition"
+                        >
+
+                            {salvando
+                                ? "Salvando..."
+                                : "Salvar Avaliação"}
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
 
             </div>
+
 
         </Layout>
 
