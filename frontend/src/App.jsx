@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import Treinos from "./pages/Treinos/Treinos";
 import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
 import EditarTreino from "./pages/EditarTreino/EditarTreino";
+import IniciarTreino from "./pages/IniciarTreino/IniciarTreino";
 
 import Exercicios from "./pages/Exercicios/Exercicios";
 import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
@@ -117,6 +118,15 @@ export default function App() {
                     element={
                         <ProtectedRoute>
                             <EditarTreino />
+                        </ProtectedRoute>
+                    }
+                />
+
+                <Route
+                    path="/iniciar-treino"
+                    element={
+                        <ProtectedRoute>
+                            <IniciarTreino />
                         </ProtectedRoute>
                     }
                 />

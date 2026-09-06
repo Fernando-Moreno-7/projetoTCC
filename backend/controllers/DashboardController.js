@@ -17,7 +17,9 @@ export default class DashboardController {
 
         try {
 
-            const usuario = await Usuarios.findByPk(usuario_id);
+            const usuario =
+                await Usuarios.findByPk(usuario_id);
+
 
             if (!usuario) {
 
@@ -28,50 +30,52 @@ export default class DashboardController {
             }
 
 
-            // DATA DE HOJE SEM HORÁRIO
-
             const hoje = new Date();
 
-            const ano = hoje.getFullYear();
+            const ano =
+                hoje.getFullYear();
 
-            const mes = String(
-                hoje.getMonth() + 1
-            ).padStart(2, "0");
+            const mes =
+                String(
+                    hoje.getMonth() + 1
+                ).padStart(2, "0");
 
-            const dia = String(
-                hoje.getDate()
-            ).padStart(2, "0");
+            const dia =
+                String(
+                    hoje.getDate()
+                ).padStart(2, "0");
 
-            const dataHoje = `${ano}-${mes}-${dia}`;
+
+            const dataHoje =
+                `${ano}-${mes}-${dia}`;
 
 
-            // BUSCA TREINO AGENDADO PARA HOJE
+            const agenda =
+                await Agenda_treinos.findOne({
 
-            const agenda = await Agenda_treinos.findOne({
+                    where: {
 
-                where: {
+                        usuario_id,
 
-                    usuario_id,
+                        [Op.and]: [
 
-                    [Op.and]: [
+                            where(
+                                fn(
+                                    "DATE",
+                                    col("data")
+                                ),
+                                dataHoje
+                            )
 
-                        where(
-                            fn(
-                                "DATE",
-                                col("data")
-                            ),
-                            dataHoje
-                        )
+                        ]
 
+                    },
+
+                    order: [
+                        ["data", "ASC"]
                     ]
 
-                },
-
-                order: [
-                    ["data", "ASC"]
-                ]
-
-            });
+                });
 
 
             let treino = null;
@@ -87,29 +91,36 @@ export default class DashboardController {
 
             if (agenda) {
 
-                treino = await Treinos.findByPk(
-                    agenda.treino_id
-                );
+                treino =
+                    await Treinos.findByPk(
+                        agenda.treino_id
+                    );
 
 
                 const treinoExercicios =
                     await Treino_exercicios.findAll({
 
                         where: {
+
                             treino_id:
                                 agenda.treino_id
+
                         },
 
                         include: [
 
                             {
+
                                 model: Exercicios,
 
                                 attributes: [
+
                                     "id",
                                     "nome",
                                     "grupo_muscular"
+
                                 ]
+
                             }
 
                         ]
@@ -162,12 +173,7 @@ export default class DashboardController {
                             },
 
                             order: [
-
-                                [
-                                    "data_inicial",
-                                    "ASC"
-                                ]
-
+                                ["data_inicial", "ASC"]
                             ]
 
                         });
@@ -218,8 +224,6 @@ export default class DashboardController {
             }
 
 
-            // QUANTIDADE TOTAL DE TREINOS
-
             const quantidadeTreinos =
                 await Agenda_treinos.count({
 
@@ -229,8 +233,6 @@ export default class DashboardController {
 
                 });
 
-
-            // TREINOS CONCLUÍDOS
 
             const quantidadeTreinosConcluidos =
                 await Agenda_treinos.count({
@@ -276,6 +278,12 @@ export default class DashboardController {
                     ? {
 
                         ...treino.toJSON(),
+
+                        agenda_id:
+                            agenda.id,
+
+                        status:
+                            agenda.status,
 
                         exercicios
 
