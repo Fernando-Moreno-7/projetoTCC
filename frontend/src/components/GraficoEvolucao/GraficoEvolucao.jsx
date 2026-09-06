@@ -7,22 +7,58 @@ import {
     Tooltip,
     ResponsiveContainer
 } from "recharts";
-const dados = [
 
-    { mes: "Jan", carga: 60 },
 
-    { mes: "Fev", carga: 65 },
+export default function GraficoEvolucao({
+    dados = []
+}) {
 
-    { mes: "Mar", carga: 70 },
+    function formatarData(data) {
 
-    { mes: "Abr", carga: 75 },
+        if (!data) {
+            return "";
+        }
 
-    { mes: "Mai", carga: 82 },
+        const dataFormatada = new Date(data);
 
-    { mes: "Jun", carga: 90 }
+        return dataFormatada.toLocaleDateString(
+            "pt-BR",
+            {
+                day: "2-digit",
+                month: "2-digit"
+            }
+        );
 
-];
-export default function GraficoEvolucao() {
+    }
+
+
+    const dadosFormatados = dados.map((item) => ({
+
+        ...item,
+
+        dataFormatada: formatarData(item.data)
+
+    }));
+
+
+    if (dadosFormatados.length === 0) {
+
+        return (
+
+            <div className="h-75 flex items-center justify-center">
+
+                <p className="text-gray-500">
+
+                    Nenhum histórico de carga disponível.
+
+                </p>
+
+            </div>
+
+        );
+
+    }
+
 
     return (
 
@@ -32,16 +68,25 @@ export default function GraficoEvolucao() {
         >
 
             <LineChart
-                data={dados}
+                data={dadosFormatados}
             >
 
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid
+                    strokeDasharray="3 3"
+                />
 
-                <XAxis dataKey="mes" />
+                <XAxis
+                    dataKey="dataFormatada"
+                />
 
                 <YAxis />
 
-                <Tooltip />
+                <Tooltip
+                    formatter={(valor) => [
+                        `${valor} kg`,
+                        "Carga"
+                    ]}
+                />
 
                 <Line
                     type="monotone"

@@ -1,41 +1,106 @@
 import Usuarios from "../models/Usuarios.js";
 import bcrypt from "bcrypt";
-import createUserToken from "../helpers/create-user-token.js";
+import jwt from "jsonwebtoken";
+
+import Logger from "../db/logger.js";
 
 
-export default class AuthController{
-  // FUNÇÕES DO ALUNO E PERSONAL
+export default class AuthController {
+
     static async login(req, res) {
-    const email = req.body.email;
-    const password = req.body.password;
 
-    // validations
-    if (!email) {
-      res.status(422).json({ message: "O e-mail é obrigatório!" });
-      return;
+        const { email, password } = req.body;
+
+
+        if (!email) {
+
+            return res.status(422).json({
+                message: "O e-mail é obrigatório!"
+            });
+
+        }
+
+
+        if (!password) {
+
+            return res.status(422).json({
+                message: "A senha é obrigatória!"
+            });
+
+        }
+
+
+        try {
+
+            const user = await Usuarios.findOne({
+                where: {
+                    email
+                }
+            });
+
+
+            if (!user) {
+
+                return res.status(404).json({
+                    message: "Usuário não encontrado!"
+                });
+
+            }
+
+
+            const senhaValida = await bcrypt.compare(
+                password,
+                user.senha
+            );
+
+
+            if (!senhaValida) {
+
+                return res.status(422).json({
+                    message: "Senha inválida!"
+                });
+
+            }
+
+
+            const token = jwt.sign(
+                {
+                    id_number: user.id,
+                    name: user.nome,
+                    id: user.email,
+                    tipo: user.tipo_usuario
+                },
+                process.env.JWT_SECRET,
+                {
+                    expiresIn: "1d"
+                }
+            );
+
+
+            return res.status(200).json({
+
+                message: "Login realizado com sucesso!",
+
+                token,
+
+                userId: user.id
+
+            });
+
+
+        } catch (error) {
+
+            Logger.error(
+                `Erro ao realizar login: ${error}`
+            );
+
+
+            return res.status(500).json({
+                message: "Erro ao realizar login!"
+            });
+
+        }
+
     }
 
-    if (!password) {
-      res.status(422).json({ message: "A senha é obrigatória!" });
-      return;
-    }
-
-    // check if user exists
-    const user = await Usuarios.findOne({ where: { email: email } });
-
-    if (!user) {
-      return res
-        .status(422)
-        .json({ message: "Não há usuário cadastrado com este e-mail!" });
-    }
-
-    // check if password match
-    const checkPassword = await bcrypt.compare(password, user.senha);
-
-    if (!checkPassword) {
-      return res.status(422).json({ message: "Senha inválida" });
-    }
-
-    await createUserToken(user, req, res);
-  }
 }
