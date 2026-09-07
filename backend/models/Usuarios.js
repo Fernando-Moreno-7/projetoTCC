@@ -60,6 +60,12 @@ const Usuarios = db.define(
             type: DataTypes.STRING(45),
             allowNull: true,
         },
+
+        tipo_usuario: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: "aluno",
+        },
     },
     {
         tableName: "usuarios",

@@ -10,6 +10,7 @@ import {
     Dumbbell
 } from "lucide-react";
 
+
 export default function Login() {
 
     const navigate = useNavigate();
@@ -19,14 +20,13 @@ export default function Login() {
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [carregando, setCarregando] = useState(false);
 
+
     async function handleLogin(e) {
 
         e.preventDefault();
 
         if (!email || !senha) {
-
             alert("Preencha o e-mail e a senha!");
-
             return;
         }
 
@@ -50,6 +50,11 @@ export default function Login() {
             localStorage.setItem(
                 "userId",
                 response.data.userId
+            );
+
+            localStorage.setItem(
+                "tipoUsuario",
+                response.data.tipoUsuario
             );
 
             alert(response.data.message);
@@ -80,17 +85,19 @@ export default function Login() {
             setCarregando(false);
 
         }
+
     }
+
 
     return (
 
-        <div className="min-h-screen bg-gradient-to-br from-purple-700 via-purple-800 to-indigo-900 flex items-center justify-center p-6">
+        <div className="flex min-h-screen items-center justify-center bg-linear-to-br from-purple-700 via-purple-800 to-indigo-900 p-6">
 
-            <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl p-10">
+            <div className="w-full max-w-md rounded-3xl bg-white p-10 shadow-2xl">
 
-                <div className="flex flex-col items-center mb-10">
+                <div className="mb-10 flex flex-col items-center">
 
-                    <div className="bg-purple-700 w-24 h-24 rounded-full flex items-center justify-center shadow-xl">
+                    <div className="flex size-24 items-center justify-center rounded-full bg-purple-700 shadow-xl">
 
                         <Dumbbell
                             size={42}
@@ -99,19 +106,16 @@ export default function Login() {
 
                     </div>
 
-                    <h1 className="text-4xl font-bold text-purple-700 mt-6">
-
+                    <h1 className="mt-6 text-4xl font-bold text-purple-700">
                         EvolutionFit
-
                     </h1>
 
-                    <p className="text-gray-500 mt-2">
-
+                    <p className="mt-2 text-gray-500">
                         Sistema de Gerenciamento de Academia
-
                     </p>
 
                 </div>
+
 
                 <form
                     onSubmit={handleLogin}
@@ -120,58 +124,65 @@ export default function Login() {
 
                     <div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
-
+                        <label className="mb-2 block font-medium text-gray-700">
                             E-mail
-
                         </label>
 
                         <div className="relative">
 
                             <Mail
                                 size={18}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
                             />
 
                             <input
                                 type="email"
                                 value={email}
-                                onChange={(e) => setEmail(e.target.value)}
+                                onChange={(e) =>
+                                    setEmail(e.target.value)
+                                }
                                 placeholder="Digite seu e-mail"
-                                className="w-full rounded-xl border border-gray-300 py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                             />
 
                         </div>
 
                     </div>
 
+
                     <div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
-
+                        <label className="mb-2 block font-medium text-gray-700">
                             Senha
-
                         </label>
 
                         <div className="relative">
 
                             <Lock
                                 size={18}
-                                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
                             />
 
                             <input
-                                type={mostrarSenha ? "text" : "password"}
+                                type={
+                                    mostrarSenha
+                                        ? "text"
+                                        : "password"
+                                }
                                 value={senha}
-                                onChange={(e) => setSenha(e.target.value)}
+                                onChange={(e) =>
+                                    setSenha(e.target.value)
+                                }
                                 placeholder="Digite sua senha"
-                                className="w-full rounded-xl border border-gray-300 py-3 pl-11 pr-12 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                className="w-full rounded-xl border border-gray-300 py-3 pr-12 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                             />
 
                             <button
                                 type="button"
-                                onClick={() => setMostrarSenha(!mostrarSenha)}
-                                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500"
+                                onClick={() =>
+                                    setMostrarSenha(!mostrarSenha)
+                                }
+                                className="absolute top-1/2 right-4 -translate-y-1/2 cursor-pointer text-gray-500"
                             >
 
                                 {mostrarSenha
@@ -185,10 +196,11 @@ export default function Login() {
 
                     </div>
 
+
                     <button
                         type="submit"
                         disabled={carregando}
-                        className="w-full bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white font-semibold py-3 rounded-xl transition"
+                        className="w-full cursor-pointer rounded-xl bg-purple-700 py-3 font-semibold text-white transition hover:bg-purple-800 disabled:bg-purple-400"
                     >
 
                         {carregando
@@ -198,22 +210,21 @@ export default function Login() {
 
                     </button>
 
+
                     <div className="text-center">
 
-                        <p className="text-gray-500 text-sm">
-
+                        <p className="text-sm text-gray-500">
                             Ainda não possui uma conta?
-
                         </p>
 
                         <button
                             type="button"
-                            onClick={() => navigate("/cadastrar-usuario")}
-                            className="text-purple-700 hover:text-purple-900 font-semibold mt-1 transition"
+                            onClick={() =>
+                                navigate("/cadastrar-usuario")
+                            }
+                            className="mt-1 cursor-pointer font-semibold text-purple-700 transition hover:text-purple-900"
                         >
-
                             Criar uma conta
-
                         </button>
 
                     </div>
