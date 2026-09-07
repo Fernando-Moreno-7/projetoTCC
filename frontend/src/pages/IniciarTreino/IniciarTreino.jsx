@@ -7,7 +7,11 @@ import Layout from "../../components/Layout/Layout";
 import {
     ArrowLeft,
     Dumbbell,
-    CheckCircle
+    CheckCircle,
+    Timer,
+    Play,
+    Pause,
+    RotateCcw
 } from "lucide-react";
 
 
@@ -20,6 +24,11 @@ export default function IniciarTreino() {
     const [cargas, setCargas] = useState({});
     const [carregando, setCarregando] = useState(true);
     const [finalizando, setFinalizando] = useState(false);
+
+    // CRONÔMETRO
+    const [tempo, setTempo] = useState(60);
+    const [tempoInicial, setTempoInicial] = useState(60);
+    const [cronometroAtivo, setCronometroAtivo] = useState(false);
 
 
     useEffect(() => {
@@ -135,6 +144,38 @@ export default function IniciarTreino() {
     }, [navigate]);
 
 
+    // CONTAGEM REGRESSIVA
+    useEffect(() => {
+
+        if (!cronometroAtivo) {
+            return;
+        }
+
+
+        if (tempo <= 0) {
+
+            setCronometroAtivo(false);
+
+            return;
+        }
+
+
+        const intervalo = setInterval(() => {
+
+            setTempo(
+                (tempoAtual) =>
+                    tempoAtual - 1
+            );
+
+        }, 1000);
+
+
+        return () =>
+            clearInterval(intervalo);
+
+    }, [cronometroAtivo, tempo]);
+
+
     function alterarCarga(
         treinoExercicioId,
         valor
@@ -146,6 +187,62 @@ export default function IniciarTreino() {
                 [treinoExercicioId]: valor
             })
         );
+
+    }
+
+
+    function selecionarTempo(segundos) {
+
+        setTempo(segundos);
+        setTempoInicial(segundos);
+        setCronometroAtivo(false);
+
+    }
+
+
+    function iniciarPausarCronometro() {
+
+        if (tempo <= 0) {
+
+            setTempo(tempoInicial);
+            setCronometroAtivo(true);
+
+            return;
+        }
+
+
+        setCronometroAtivo(
+            (ativoAtual) =>
+                !ativoAtual
+        );
+
+    }
+
+
+    function reiniciarCronometro() {
+
+        setCronometroAtivo(false);
+        setTempo(tempoInicial);
+
+    }
+
+
+    function formatarTempo(segundos) {
+
+        const minutos =
+            Math.floor(segundos / 60);
+
+        const segundosRestantes =
+            segundos % 60;
+
+
+        return `${String(minutos).padStart(
+            2,
+            "0"
+        )}:${String(segundosRestantes).padStart(
+            2,
+            "0"
+        )}`;
 
     }
 
@@ -345,6 +442,146 @@ export default function IniciarTreino() {
 
                 </p>
 
+
+                {/* CRONÔMETRO DE DESCANSO */}
+
+                <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
+
+                    <div className="mb-5 flex items-center gap-3">
+
+                        <div className="rounded-xl bg-purple-100 p-3 text-purple-700">
+
+                            <Timer size={26} />
+
+                        </div>
+
+
+                        <div>
+
+                            <h2 className="text-xl font-bold">
+                                Cronômetro de Descanso
+                            </h2>
+
+                            <p className="text-sm text-gray-500">
+                                Escolha o tempo de descanso entre as séries.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="flex flex-col items-center">
+
+                        <p
+                            className={`mb-5 text-6xl font-bold ${
+                                tempo === 0
+                                    ? "text-green-600"
+                                    : "text-purple-700"
+                            }`}
+                        >
+                            {formatarTempo(tempo)}
+                        </p>
+
+
+                        {tempo === 0 && (
+
+                            <p className="mb-4 font-semibold text-green-600">
+                                Descanso finalizado!
+                            </p>
+
+                        )}
+
+
+                        <div className="mb-5 flex flex-wrap justify-center gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    selecionarTempo(30)
+                                }
+                                className="cursor-pointer rounded-xl border border-purple-300 px-5 py-2 font-semibold text-purple-700 transition hover:bg-purple-50"
+                            >
+                                30s
+                            </button>
+
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    selecionarTempo(60)
+                                }
+                                className="cursor-pointer rounded-xl border border-purple-300 px-5 py-2 font-semibold text-purple-700 transition hover:bg-purple-50"
+                            >
+                                60s
+                            </button>
+
+
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    selecionarTempo(90)
+                                }
+                                className="cursor-pointer rounded-xl border border-purple-300 px-5 py-2 font-semibold text-purple-700 transition hover:bg-purple-50"
+                            >
+                                90s
+                            </button>
+
+                        </div>
+
+
+                        <div className="flex flex-wrap justify-center gap-3">
+
+                            <button
+                                type="button"
+                                onClick={
+                                    iniciarPausarCronometro
+                                }
+                                className="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-700 px-6 py-3 font-semibold text-white transition hover:bg-purple-800"
+                            >
+
+                                {cronometroAtivo ? (
+                                    <>
+                                        <Pause size={20} />
+                                        Pausar
+                                    </>
+                                ) : (
+                                    <>
+                                        <Play size={20} />
+
+                                        {tempo === 0
+                                            ? "Iniciar novamente"
+                                            : tempo === tempoInicial
+                                                ? "Iniciar"
+                                                : "Continuar"}
+                                    </>
+                                )}
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                onClick={
+                                    reiniciarCronometro
+                                }
+                                className="flex cursor-pointer items-center gap-2 rounded-xl bg-gray-200 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-300"
+                            >
+
+                                <RotateCcw size={20} />
+
+                                Reiniciar
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                {/* EXERCÍCIOS */}
 
                 <div className="space-y-5">
 
