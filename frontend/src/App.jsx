@@ -1,33 +1,43 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Login from "./pages/Login/Login";
+import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
+// Login e cadastro
+import Login from "./pages/Login/Login";
+import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
+
+// Dashboard
 import Dashboard from "./pages/Dashboard/Dashboard";
 
-import Treinos from "./pages/Treinos/Treinos";
-import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
-import EditarTreino from "./pages/EditarTreino/EditarTreino";
-import IniciarTreino from "./pages/IniciarTreino/IniciarTreino";
-
-import Exercicios from "./pages/Exercicios/Exercicios";
-import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
-import EditarExercicio from "./pages/EditarExercicio/EditarExercicio";
-
+// Alunos
 import Alunos from "./pages/Alunos/Alunos";
 import CadastrarAluno from "./pages/CadastrarAluno/CadastrarAluno";
 import EditarAluno from "./pages/EditarAluno/EditarAluno";
 
+// Treinos
+import Treinos from "./pages/Treinos/Treinos";
+import CadastrarTreino from "./pages/CadastrarTreino/CadastrarTreino";
+import EditarTreino from "./pages/EditarTreino/EditarTreino";
+import IniciarTreino from "./pages/IniciarTreino/IniciarTreino";
+import MeuTreino from "./pages/MeuTreino/MeuTreino";
+
+// Minha Evolução
+import MinhaEvolucao from "./pages/MinhaEvolucao/MinhaEvolucao";
+
+// Exercícios
+import Exercicios from "./pages/Exercicios/Exercicios";
+import CadastrarExercicio from "./pages/CadastrarExercicio/CadastrarExercicio";
+import EditarExercicio from "./pages/EditarExercicio/EditarExercicio";
+
+// Agenda
 import Agenda from "./pages/Agenda/Agenda";
 import CadastrarAgenda from "./pages/CadastrarAgenda/CadastrarAgenda";
 import EditarAgenda from "./pages/EditarAgenda/EditarAgenda";
 
+// Avaliações
 import Avaliacoes from "./pages/Avaliacoes/Avaliacoes";
 import CadastrarAvaliacao from "./pages/CadastrarAvaliacao/CadastrarAvaliacao";
 import EditarAvaliacao from "./pages/EditarAvaliacao/EditarAvaliacao";
-
-import CadastrarUsuario from "./pages/CadastrarUsuario/CadastrarUsuario";
-
-import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
 
 export default function App() {
@@ -122,11 +132,38 @@ export default function App() {
                     }
                 />
 
+
+                {/* MEU TREINO */}
+
+                <Route
+                    path="/meu-treino"
+                    element={
+                        <ProtectedRoute>
+                            <MeuTreino />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* INICIAR TREINO */}
+
                 <Route
                     path="/iniciar-treino"
                     element={
                         <ProtectedRoute>
                             <IniciarTreino />
+                        </ProtectedRoute>
+                    }
+                />
+
+
+                {/* MINHA EVOLUÇÃO */}
+
+                <Route
+                    path="/minha-evolucao"
+                    element={
+                        <ProtectedRoute>
+                            <MinhaEvolucao />
                         </ProtectedRoute>
                     }
                 />

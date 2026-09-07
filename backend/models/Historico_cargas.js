@@ -1,6 +1,9 @@
 import { DataTypes } from "sequelize";
+
 import db from "../db/db.js";
+
 import Treino_exercicios from "./Treino_exercicios.js";
+
 
 const Historico_cargas = db.define(
     "historico_cargas",
@@ -30,6 +33,11 @@ const Historico_cargas = db.define(
                 key: "id",
             },
         },
+
+        usuario_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
     },
     {
         tableName: "historico_cargas",
@@ -37,12 +45,21 @@ const Historico_cargas = db.define(
     }
 );
 
-Historico_cargas.belongsTo(Treino_exercicios, {
-    foreignKey: "treino_exercicios_id",
-});
 
-Treino_exercicios.hasMany(Historico_cargas, {
-    foreignKey: "treino_exercicios_id",
-});
+Historico_cargas.belongsTo(
+    Treino_exercicios,
+    {
+        foreignKey: "treino_exercicios_id",
+    }
+);
+
+
+Treino_exercicios.hasMany(
+    Historico_cargas,
+    {
+        foreignKey: "treino_exercicios_id",
+    }
+);
+
 
 export default Historico_cargas;

@@ -7,7 +7,9 @@ import {
     ClipboardCheck,
     Users,
     LogOut,
-    Activity
+    Activity,
+    Play,
+    TrendingUp
 } from "lucide-react";
 
 
@@ -32,9 +34,9 @@ export default function Sidebar() {
 
     return (
 
-        <aside className="w-64 h-screen bg-purple-800 text-white flex flex-col">
+        <aside className="flex h-screen w-64 flex-col bg-purple-800 text-white">
 
-            <div className="p-6 border-b border-purple-700">
+            <div className="border-b border-purple-700 p-6">
 
                 <h1 className="text-3xl font-bold">
                     EvolutionFit
@@ -48,23 +50,23 @@ export default function Sidebar() {
                 <ul className="space-y-4">
 
 
-                    {/* TODOS OS USUÁRIOS */}
+                    {/* TODOS */}
 
                     <li
                         onClick={() =>
                             navigate("/dashboard")
                         }
-                        className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                        className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                     >
 
                         <LayoutDashboard size={20} />
 
-                        Dashboard
+                        Painel
 
                     </li>
 
 
-                    {/* APENAS PERSONAL */}
+                    {/* PERSONAL */}
 
                     {tipoUsuario === "personal" && (
 
@@ -73,7 +75,7 @@ export default function Sidebar() {
                                 onClick={() =>
                                     navigate("/alunos")
                                 }
-                                className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                             >
 
                                 <Users size={20} />
@@ -87,7 +89,7 @@ export default function Sidebar() {
                                 onClick={() =>
                                     navigate("/treinos")
                                 }
-                                className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                             >
 
                                 <Dumbbell size={20} />
@@ -101,7 +103,7 @@ export default function Sidebar() {
                                 onClick={() =>
                                     navigate("/exercicios")
                                 }
-                                className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                             >
 
                                 <Activity size={20} />
@@ -115,7 +117,7 @@ export default function Sidebar() {
                                 onClick={() =>
                                     navigate("/agenda")
                                 }
-                                className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                             >
 
                                 <CalendarDays size={20} />
@@ -129,7 +131,7 @@ export default function Sidebar() {
                                 onClick={() =>
                                     navigate("/avaliacoes")
                                 }
-                                className="flex items-center gap-3 cursor-pointer hover:text-purple-300 transition"
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
                             >
 
                                 <ClipboardCheck size={20} />
@@ -141,17 +143,67 @@ export default function Sidebar() {
 
                     )}
 
+
+                    {/* ALUNO */}
+
+                    {tipoUsuario === "aluno" && (
+
+                        <>
+                            <li
+                                onClick={() =>
+                                    navigate("/meu-treino")
+                                }
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
+                            >
+
+                                <Dumbbell size={20} />
+
+                                Meu Treino
+
+                            </li>
+
+
+                            <li
+                                onClick={() =>
+                                    navigate("/iniciar-treino")
+                                }
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
+                            >
+
+                                <Play size={20} />
+
+                                Iniciar Treino
+
+                            </li>
+
+
+                            <li
+                                onClick={() =>
+                                    navigate("/minha-evolucao")
+                                }
+                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
+                            >
+
+                                <TrendingUp size={20} />
+
+                                Minha Evolução
+
+                            </li>
+                        </>
+
+                    )}
+
                 </ul>
 
             </nav>
 
 
-            <div className="p-5 border-t border-purple-700">
+            <div className="border-t border-purple-700 p-5">
 
                 <button
                     type="button"
                     onClick={sair}
-                    className="flex items-center gap-3 hover:text-red-300 transition cursor-pointer"
+                    className="flex cursor-pointer items-center gap-3 transition hover:text-red-300"
                 >
 
                     <LogOut size={20} />

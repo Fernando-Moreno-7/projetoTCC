@@ -31,6 +31,7 @@ export default function IniciarTreino() {
                 const usuarioId =
                     localStorage.getItem("userId");
 
+
                 if (!usuarioId) {
 
                     alert(
@@ -42,11 +43,14 @@ export default function IniciarTreino() {
                     return;
                 }
 
+
                 const response = await axios.get(
                     `http://localhost:5000/agenda/usuario/${usuarioId}`
                 );
 
+
                 const dados = response.data;
+
 
                 if (!dados.agenda || !dados.treino) {
 
@@ -59,7 +63,9 @@ export default function IniciarTreino() {
                     return;
                 }
 
+
                 setAgendaId(dados.agenda.id);
+
 
                 setTreino({
                     ...dados.treino,
@@ -70,6 +76,7 @@ export default function IniciarTreino() {
 
                 const cargasIniciais = {};
 
+
                 (dados.exercicios || []).forEach(
                     (item) => {
 
@@ -77,12 +84,15 @@ export default function IniciarTreino() {
 
                             cargasIniciais[item.id] =
                                 item.ultima_carga;
+
                         }
 
                     }
                 );
 
+
                 setCargas(cargasIniciais);
+
 
             } catch (error) {
 
@@ -90,6 +100,7 @@ export default function IniciarTreino() {
                     "Erro ao carregar treino:",
                     error
                 );
+
 
                 if (error.response) {
 
@@ -103,15 +114,21 @@ export default function IniciarTreino() {
                     alert(
                         "Não foi possível conectar ao servidor."
                     );
+
                 }
 
+
                 navigate("/dashboard");
+
 
             } finally {
 
                 setCarregando(false);
+
             }
+
         }
+
 
         carregarTreino();
 
@@ -129,16 +146,33 @@ export default function IniciarTreino() {
                 [treinoExercicioId]: valor
             })
         );
+
     }
 
 
     async function finalizarTreino() {
 
-        console.log("Finalizar Treino clicado");
-
         if (!treino) {
             return;
         }
+
+
+        const usuarioId =
+            localStorage.getItem("userId");
+
+
+        if (!usuarioId) {
+
+            alert(
+                "Usuário não identificado. Faça login novamente."
+            );
+
+            navigate("/");
+
+            return;
+
+        }
+
 
         const exerciciosComCarga =
             treino.exercicios.filter(
@@ -155,6 +189,7 @@ export default function IniciarTreino() {
             );
 
             return;
+
         }
 
 
@@ -184,9 +219,13 @@ export default function IniciarTreino() {
                             ),
 
                         treino_exercicios_id:
-                            item.id
+                            item.id,
+
+                        usuario_id:
+                            Number(usuarioId)
                     }
                 );
+
             }
 
 
@@ -226,18 +265,23 @@ export default function IniciarTreino() {
                 alert(
                     "Não foi possível conectar ao servidor."
                 );
+
             }
+
 
         } finally {
 
             setFinalizando(false);
+
         }
+
     }
 
 
     if (carregando) {
 
         return (
+
             <Layout>
 
                 <p className="text-gray-500">
@@ -245,13 +289,16 @@ export default function IniciarTreino() {
                 </p>
 
             </Layout>
+
         );
+
     }
 
 
     if (!treino) {
 
         return (
+
             <Layout>
 
                 <p className="text-gray-500">
@@ -259,7 +306,9 @@ export default function IniciarTreino() {
                 </p>
 
             </Layout>
+
         );
+
     }
 
 
@@ -272,7 +321,7 @@ export default function IniciarTreino() {
                 onClick={() =>
                     navigate("/dashboard")
                 }
-                className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-6 transition cursor-pointer"
+                className="mb-6 flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900"
             >
 
                 <ArrowLeft size={20} />
@@ -289,7 +338,7 @@ export default function IniciarTreino() {
                 </h1>
 
 
-                <p className="text-gray-500 mt-2 mb-8">
+                <p className="mt-2 mb-8 text-gray-500">
 
                     {treino.descricao ||
                         "Registre as cargas utilizadas durante o treino."}
@@ -302,7 +351,7 @@ export default function IniciarTreino() {
 
                     {treino.exercicios.length === 0 && (
 
-                        <div className="bg-white rounded-2xl shadow-md p-8">
+                        <div className="rounded-2xl bg-white p-8 shadow-md">
 
                             <p className="text-gray-500">
                                 Nenhum exercício cadastrado neste treino.
@@ -318,15 +367,15 @@ export default function IniciarTreino() {
 
                             <div
                                 key={item.id}
-                                className="bg-white rounded-2xl shadow-md p-6"
+                                className="rounded-2xl bg-white p-6 shadow-md"
                             >
 
-                                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                                <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
 
 
                                     <div className="flex items-center gap-4">
 
-                                        <div className="bg-purple-100 text-purple-700 p-3 rounded-xl">
+                                        <div className="rounded-xl bg-purple-100 p-3 text-purple-700">
 
                                             <Dumbbell
                                                 size={24}
@@ -358,7 +407,7 @@ export default function IniciarTreino() {
                                             )}
 
 
-                                            <p className="text-gray-600 mt-1">
+                                            <p className="mt-1 text-gray-600">
 
                                                 {item.series} séries ×{" "}
                                                 {item.repeticoes} repetições
@@ -368,7 +417,7 @@ export default function IniciarTreino() {
 
                                             {item.ultima_carga && (
 
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="mt-1 text-sm text-gray-500">
 
                                                     Última carga:{" "}
                                                     {item.ultima_carga} kg
@@ -384,7 +433,7 @@ export default function IniciarTreino() {
 
                                     <div className="w-full md:w-48">
 
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <label className="mb-2 block text-sm font-medium text-gray-700">
 
                                             Carga utilizada (kg)
 
@@ -406,7 +455,7 @@ export default function IniciarTreino() {
                                                 )
                                             }
                                             placeholder="Ex: 50"
-                                            className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                            className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                                         />
 
                                     </div>
@@ -423,13 +472,13 @@ export default function IniciarTreino() {
 
                 {treino.exercicios.length > 0 && (
 
-                    <div className="flex justify-end mt-8">
+                    <div className="mt-8 flex justify-end">
 
                         <button
                             type="button"
                             onClick={finalizarTreino}
                             disabled={finalizando}
-                            className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition cursor-pointer"
+                            className="flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-8 py-3 font-semibold text-white transition hover:bg-green-700 disabled:bg-green-400"
                         >
 
                             <CheckCircle
@@ -451,4 +500,5 @@ export default function IniciarTreino() {
         </Layout>
 
     );
+
 }
