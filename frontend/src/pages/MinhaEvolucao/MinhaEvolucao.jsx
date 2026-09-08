@@ -15,19 +15,22 @@ import {
 
 import {
     TrendingUp,
-    Dumbbell
+    Dumbbell,
+    Weight,
+    Activity
 } from "lucide-react";
 
 
 export default function MinhaEvolucao() {
 
     const [historico, setHistorico] = useState([]);
+    const [avaliacoes, setAvaliacoes] = useState([]);
     const [carregando, setCarregando] = useState(true);
 
 
     useEffect(() => {
 
-        async function carregarHistorico() {
+        async function carregarEvolucao() {
 
             try {
 
@@ -46,14 +49,26 @@ export default function MinhaEvolucao() {
                 }
 
 
-                const response = await axios.get(
-                    `http://localhost:5000/historico-cargas/usuario/${usuarioId}`
-                );
+                const [
+                    historicoResponse,
+                    avaliacoesResponse
+                ] = await Promise.all([
+
+                    axios.get(
+                        `http://localhost:5000/historico-cargas/usuario/${usuarioId}`
+                    ),
+
+                    axios.get(
+                        `http://localhost:5000/avaliacao/usuario/${usuarioId}`
+                    )
+
+                ]);
 
 
-                const dadosFormatados =
-                    response.data.map(
+                const historicoFormatado =
+                    historicoResponse.data.map(
                         (item) => ({
+
                             id: item.id,
 
                             peso:
@@ -68,11 +83,41 @@ export default function MinhaEvolucao() {
 
                             treinoExercicioId:
                                 item.treino_exercicios_id
+
                         })
                     );
 
 
-                setHistorico(dadosFormatados);
+                const avaliacoesFormatadas =
+                    avaliacoesResponse.data.map(
+                        (item) => ({
+
+                            id: item.id,
+
+                            peso:
+                                Number(item.peso),
+
+                            imc:
+                                Number(item.imc),
+
+                            data:
+                                new Date(
+                                    `${item.data_avaliacao}T00:00:00`
+                                ).toLocaleDateString(
+                                    "pt-BR"
+                                )
+
+                        })
+                    );
+
+
+                setHistorico(
+                    historicoFormatado
+                );
+
+                setAvaliacoes(
+                    avaliacoesFormatadas
+                );
 
 
             } catch (error) {
@@ -98,6 +143,7 @@ export default function MinhaEvolucao() {
 
                 }
 
+
             } finally {
 
                 setCarregando(false);
@@ -107,7 +153,7 @@ export default function MinhaEvolucao() {
         }
 
 
-        carregarHistorico();
+        carregarEvolucao();
 
     }, []);
 
@@ -147,6 +193,14 @@ export default function MinhaEvolucao() {
             : 0;
 
 
+    const ultimaAvaliacao =
+        avaliacoes.length > 0
+            ? avaliacoes[
+                avaliacoes.length - 1
+            ]
+            : null;
+
+
     return (
 
         <Layout>
@@ -158,12 +212,16 @@ export default function MinhaEvolucao() {
                 </h1>
 
                 <p className="mb-8 text-gray-500">
-                    Acompanhe sua evolução de cargas nos treinos.
+                    Acompanhe sua evolução nos treinos e avaliações físicas.
                 </p>
 
 
-                <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/* CARDS */}
 
+                <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+
+
+                    {/* MAIOR CARGA */}
 
                     <div className="rounded-2xl bg-white p-6 shadow-md">
 
@@ -175,7 +233,7 @@ export default function MinhaEvolucao() {
 
                             </div>
 
-                            <h2 className="text-lg font-semibold">
+                            <h2 className="font-semibold">
                                 Maior Carga
                             </h2>
 
@@ -194,6 +252,8 @@ export default function MinhaEvolucao() {
                     </div>
 
 
+                    {/* ÚLTIMA CARGA */}
+
                     <div className="rounded-2xl bg-white p-6 shadow-md">
 
                         <div className="mb-4 flex items-center gap-3">
@@ -204,7 +264,7 @@ export default function MinhaEvolucao() {
 
                             </div>
 
-                            <h2 className="text-lg font-semibold">
+                            <h2 className="font-semibold">
                                 Última Carga
                             </h2>
 
@@ -222,14 +282,82 @@ export default function MinhaEvolucao() {
 
                     </div>
 
+
+                    {/* PESO ATUAL */}
+
+                    <div className="rounded-2xl bg-white p-6 shadow-md">
+
+                        <div className="mb-4 flex items-center gap-3">
+
+                            <div className="rounded-xl bg-blue-100 p-3 text-blue-700">
+
+                                <Weight size={24} />
+
+                            </div>
+
+                            <h2 className="font-semibold">
+                                Peso Atual
+                            </h2>
+
+                        </div>
+
+
+                        <p className="text-3xl font-bold">
+
+                            {ultimaAvaliacao
+                                ? `${ultimaAvaliacao.peso} kg`
+                                : "Sem avaliação"
+                            }
+
+                        </p>
+
+                    </div>
+
+
+                    {/* IMC ATUAL */}
+
+                    <div className="rounded-2xl bg-white p-6 shadow-md">
+
+                        <div className="mb-4 flex items-center gap-3">
+
+                            <div className="rounded-xl bg-orange-100 p-3 text-orange-700">
+
+                                <Activity size={24} />
+
+                            </div>
+
+                            <h2 className="font-semibold">
+                                IMC Atual
+                            </h2>
+
+                        </div>
+
+
+                        <p className="text-3xl font-bold">
+
+                            {ultimaAvaliacao
+                                ? ultimaAvaliacao.imc.toFixed(2)
+                                : "Sem avaliação"
+                            }
+
+                        </p>
+
+                    </div>
+
                 </div>
 
 
-                <div className="rounded-2xl bg-white p-6 shadow-md">
+                {/* GRÁFICO DE CARGAS */}
 
-                    <h2 className="mb-6 text-2xl font-bold">
+                <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
+
+                    <h2 className="mb-2 text-2xl font-bold">
                         Evolução das Cargas
                     </h2>
+
+                    <p className="mb-6 text-sm text-gray-500">
+                        Histórico das cargas registradas durante os treinos.
+                    </p>
 
 
                     {historico.length === 0 ? (
@@ -268,6 +396,7 @@ export default function MinhaEvolucao() {
                                     <Line
                                         type="monotone"
                                         dataKey="peso"
+                                        name="Carga"
                                         stroke="#7e22ce"
                                         strokeWidth={3}
                                     />
@@ -283,10 +412,143 @@ export default function MinhaEvolucao() {
                 </div>
 
 
-                <div className="mt-8 rounded-2xl bg-white p-6 shadow-md">
+                {/* GRÁFICO DE PESO */}
+
+                <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
+
+                    <h2 className="mb-2 text-2xl font-bold">
+                        Evolução do Peso
+                    </h2>
+
+                    <p className="mb-6 text-sm text-gray-500">
+                        Alterações do peso registradas nas avaliações físicas.
+                    </p>
+
+
+                    {avaliacoes.length === 0 ? (
+
+                        <p className="text-gray-500">
+                            Você ainda não possui avaliações físicas.
+                        </p>
+
+                    ) : (
+
+                        <div className="h-80">
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height="100%"
+                            >
+
+                                <LineChart
+                                    data={avaliacoes}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="data"
+                                    />
+
+                                    <YAxis
+                                        unit=" kg"
+                                        domain={["auto", "auto"]}
+                                    />
+
+                                    <Tooltip />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="peso"
+                                        name="Peso"
+                                        stroke="#2563eb"
+                                        strokeWidth={3}
+                                    />
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        </div>
+
+                    )}
+
+                </div>
+
+
+                {/* GRÁFICO DE IMC */}
+
+                <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
+
+                    <h2 className="mb-2 text-2xl font-bold">
+                        Evolução do IMC
+                    </h2>
+
+                    <p className="mb-6 text-sm text-gray-500">
+                        Histórico do IMC calculado nas avaliações físicas.
+                    </p>
+
+
+                    {avaliacoes.length === 0 ? (
+
+                        <p className="text-gray-500">
+                            Você ainda não possui avaliações físicas.
+                        </p>
+
+                    ) : (
+
+                        <div className="h-80">
+
+                            <ResponsiveContainer
+                                width="100%"
+                                height="100%"
+                            >
+
+                                <LineChart
+                                    data={avaliacoes}
+                                >
+
+                                    <CartesianGrid
+                                        strokeDasharray="3 3"
+                                    />
+
+                                    <XAxis
+                                        dataKey="data"
+                                    />
+
+                                    <YAxis
+                                        domain={["auto", "auto"]}
+                                    />
+
+                                    <Tooltip />
+
+                                    <Line
+                                        type="monotone"
+                                        dataKey="imc"
+                                        name="IMC"
+                                        stroke="#ea580c"
+                                        strokeWidth={3}
+                                    />
+
+                                </LineChart>
+
+                            </ResponsiveContainer>
+
+                        </div>
+
+                    )}
+
+                </div>
+
+
+                {/* HISTÓRICO DE CARGAS */}
+
+                <div className="rounded-2xl bg-white p-6 shadow-md">
 
                     <h2 className="mb-5 text-2xl font-bold">
-                        Histórico
+                        Histórico de Cargas
                     </h2>
 
 
