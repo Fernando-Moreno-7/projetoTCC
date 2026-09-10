@@ -90,7 +90,6 @@ export default function Alunos() {
                 );
 
             }
-
         }
     }
 
@@ -170,10 +169,18 @@ export default function Alunos() {
                                 key={aluno.id}
                                 nome={aluno.nome}
                                 email={aluno.email}
-                                telefone="Não informado"
-                                status="Ativo"
+                                telefone={
+                                    aluno.telefone ||
+                                    "Não informado"
+                                }
+                                status={
+                                    aluno.status ||
+                                    "Ativo"
+                                }
                                 onEditar={() =>
-                                    navigate(`/editar-aluno/${aluno.id}`)
+                                    navigate(
+                                        `/editar-aluno/${aluno.id}`
+                                    )
                                 }
                                 onExcluir={() =>
                                     excluirAluno(aluno.id)
@@ -191,5 +198,4 @@ export default function Alunos() {
         </Layout>
 
     );
-
 }

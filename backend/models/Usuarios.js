@@ -66,6 +66,17 @@ const Usuarios = db.define(
             allowNull: false,
             defaultValue: "aluno",
         },
+
+        telefone: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+
+        status: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: "Ativo",
+        },
     },
     {
         tableName: "usuarios",

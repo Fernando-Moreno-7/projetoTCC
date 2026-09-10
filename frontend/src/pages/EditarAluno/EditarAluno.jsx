@@ -11,7 +11,9 @@ import {
     Calendar,
     Ruler,
     Weight,
-    Target
+    Target,
+    Phone,
+    Activity
 } from "lucide-react";
 
 export default function EditarAluno() {
@@ -26,17 +28,15 @@ export default function EditarAluno() {
     const [altura, setAltura] = useState("");
     const [peso, setPeso] = useState("");
     const [objetivo, setObjetivo] = useState("");
+    const [telefone, setTelefone] = useState("");
+    const [status, setStatus] = useState("Ativo");
 
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
 
-
     useEffect(() => {
-
         buscarAluno();
-
     }, []);
-
 
     async function buscarAluno() {
 
@@ -53,6 +53,8 @@ export default function EditarAluno() {
             setAltura(aluno.altura || "");
             setPeso(aluno.peso || "");
             setObjetivo(aluno.objetivo || "");
+            setTelefone(aluno.telefone || "");
+            setStatus(aluno.status || "Ativo");
 
         } catch (error) {
 
@@ -69,11 +71,9 @@ export default function EditarAluno() {
         }
     }
 
-
     async function handleEditarAluno(e) {
 
         e.preventDefault();
-
 
         if (!nome) {
 
@@ -81,7 +81,6 @@ export default function EditarAluno() {
 
             return;
         }
-
 
         // =====================================
         // VALIDAR SENHA SOMENTE SE FOR ALTERADA
@@ -98,26 +97,21 @@ export default function EditarAluno() {
                 return;
             }
 
-
             if (senha !== confirmarSenha) {
 
                 alert("As senhas não coincidem!");
 
                 return;
             }
-
         }
-
 
         try {
 
             setSalvando(true);
 
-
             const response = await axios.post(
                 "http://localhost:5000/user/update",
                 {
-
                     idUsuario: Number(id),
 
                     nome,
@@ -142,21 +136,22 @@ export default function EditarAluno() {
                             : null,
 
                     objetivo:
-                        objetivo || null
+                        objetivo || null,
 
+                    telefone:
+                        telefone || null,
+
+                    status
                 }
             );
-
 
             alert(response.data.message);
 
             navigate("/alunos");
 
-
         } catch (error) {
 
             console.error(error);
-
 
             if (error.response) {
 
@@ -180,7 +175,6 @@ export default function EditarAluno() {
         }
     }
 
-
     if (carregando) {
 
         return (
@@ -194,9 +188,7 @@ export default function EditarAluno() {
             </Layout>
 
         );
-
     }
-
 
     return (
 
@@ -213,18 +205,15 @@ export default function EditarAluno() {
                 </span>
             </button>
 
-
             <div>
 
                 <h1 className="text-4xl font-bold">
                     Editar Aluno
                 </h1>
 
-
                 <p className="text-gray-500 mt-2 mb-8">
                     Atualize os dados do aluno.
                 </p>
-
 
                 <form
                     onSubmit={handleEditarAluno}
@@ -237,14 +226,12 @@ export default function EditarAluno() {
                             Nome Completo
                         </label>
 
-
                         <div className="relative">
 
                             <User
                                 size={18}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                             />
-
 
                             <input
                                 type="text"
@@ -260,7 +247,6 @@ export default function EditarAluno() {
 
                     </div>
 
-
                     <div className="grid grid-cols-2 gap-6">
 
                         <div>
@@ -269,14 +255,12 @@ export default function EditarAluno() {
                                 Nova Senha
                             </label>
 
-
                             <div className="relative">
 
                                 <Lock
                                     size={18}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
-
 
                                 <input
                                     type="password"
@@ -292,13 +276,11 @@ export default function EditarAluno() {
 
                         </div>
 
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Confirmar Senha
                             </label>
-
 
                             <div className="relative">
 
@@ -306,7 +288,6 @@ export default function EditarAluno() {
                                     size={18}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
-
 
                                 <input
                                     type="password"
@@ -326,11 +307,73 @@ export default function EditarAluno() {
 
                     </div>
 
-
                     <p className="text-sm text-gray-500">
                         Deixe os campos de senha em branco caso não queira alterar a senha do aluno.
                     </p>
 
+                    <div className="grid grid-cols-2 gap-6">
+
+                        <div>
+
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Telefone
+                            </label>
+
+                            <div className="relative">
+
+                                <Phone
+                                    size={18}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+
+                                <input
+                                    type="text"
+                                    value={telefone}
+                                    onChange={(e) =>
+                                        setTelefone(e.target.value)
+                                    }
+                                    placeholder="Ex.: (16) 99999-9999"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Status
+                            </label>
+
+                            <div className="relative">
+
+                                <Activity
+                                    size={18}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+
+                                <select
+                                    value={status}
+                                    onChange={(e) =>
+                                        setStatus(e.target.value)
+                                    }
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                >
+                                    <option value="Ativo">
+                                        Ativo
+                                    </option>
+
+                                    <option value="Inativo">
+                                        Inativo
+                                    </option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
 
                     <div className="grid grid-cols-3 gap-6">
 
@@ -340,14 +383,12 @@ export default function EditarAluno() {
                                 Idade
                             </label>
 
-
                             <div className="relative">
 
                                 <Calendar
                                     size={18}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
-
 
                                 <input
                                     type="number"
@@ -363,13 +404,11 @@ export default function EditarAluno() {
 
                         </div>
 
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Altura (cm)
                             </label>
-
 
                             <div className="relative">
 
@@ -377,7 +416,6 @@ export default function EditarAluno() {
                                     size={18}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
-
 
                                 <input
                                     type="number"
@@ -393,13 +431,11 @@ export default function EditarAluno() {
 
                         </div>
 
-
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Peso (kg)
                             </label>
-
 
                             <div className="relative">
 
@@ -407,7 +443,6 @@ export default function EditarAluno() {
                                     size={18}
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
-
 
                                 <input
                                     type="number"
@@ -426,13 +461,11 @@ export default function EditarAluno() {
 
                     </div>
 
-
                     <div>
 
                         <label className="block text-gray-700 font-medium mb-2">
                             Objetivo
                         </label>
-
 
                         <div className="relative">
 
@@ -440,7 +473,6 @@ export default function EditarAluno() {
                                 size={18}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                             />
-
 
                             <select
                                 value={objetivo}
@@ -476,7 +508,6 @@ export default function EditarAluno() {
 
                     </div>
 
-
                     <div className="flex justify-end gap-4 pt-8 border-t">
 
                         <button
@@ -488,7 +519,6 @@ export default function EditarAluno() {
                         >
                             Cancelar
                         </button>
-
 
                         <button
                             type="submit"

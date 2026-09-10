@@ -12,7 +12,9 @@ import {
     Calendar,
     Ruler,
     Weight,
-    Target
+    Target,
+    Phone,
+    Activity
 } from "lucide-react";
 
 export default function CadastrarAluno() {
@@ -27,6 +29,8 @@ export default function CadastrarAluno() {
     const [altura, setAltura] = useState("");
     const [peso, setPeso] = useState("");
     const [objetivo, setObjetivo] = useState("");
+    const [telefone, setTelefone] = useState("");
+    const [status, setStatus] = useState("Ativo");
     const [carregando, setCarregando] = useState(false);
 
     async function handleCadastrarAluno(e) {
@@ -57,7 +61,9 @@ export default function CadastrarAluno() {
                     idade: idade ? Number(idade) : null,
                     altura: altura ? Number(altura) : null,
                     peso: peso ? Number(peso) : null,
-                    objetivo: objetivo || null
+                    objetivo: objetivo || null,
+                    telefone: telefone || null,
+                    status
                 }
             );
 
@@ -78,7 +84,9 @@ export default function CadastrarAluno() {
 
             } else {
 
-                alert("Não foi possível conectar ao servidor.");
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
 
             }
 
@@ -99,7 +107,9 @@ export default function CadastrarAluno() {
             >
                 <ArrowLeft size={20} />
 
-                <span>Voltar para Alunos</span>
+                <span>
+                    Voltar para Alunos
+                </span>
             </button>
 
             <div>
@@ -214,6 +224,66 @@ export default function CadastrarAluno() {
                                     placeholder="Digite a senha novamente"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+
+                        <div>
+
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Telefone
+                            </label>
+
+                            <div className="relative">
+
+                                <Phone
+                                    size={18}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+
+                                <input
+                                    type="text"
+                                    value={telefone}
+                                    onChange={(e) => setTelefone(e.target.value)}
+                                    placeholder="Ex.: (16) 99999-9999"
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                />
+
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <label className="block text-gray-700 font-medium mb-2">
+                                Status
+                            </label>
+
+                            <div className="relative">
+
+                                <Activity
+                                    size={18}
+                                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                                />
+
+                                <select
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                >
+                                    <option value="Ativo">
+                                        Ativo
+                                    </option>
+
+                                    <option value="Inativo">
+                                        Inativo
+                                    </option>
+                                </select>
 
                             </div>
 

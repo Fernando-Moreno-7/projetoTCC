@@ -8,6 +8,7 @@ export default class UserController {
     // =========================================
     // CADASTRAR USUÁRIO
     // =========================================
+
     static async register(req, res) {
 
         const {
@@ -19,9 +20,10 @@ export default class UserController {
             altura,
             genero,
             idade,
-            objetivo
+            objetivo,
+            telefone,
+            status
         } = req.body;
-
 
         if (!nome) {
             return res.status(422).json({
@@ -29,13 +31,11 @@ export default class UserController {
             });
         }
 
-
         if (!email) {
             return res.status(422).json({
                 message: "O e-mail é obrigatório!"
             });
         }
-
 
         if (!senha) {
             return res.status(422).json({
@@ -43,20 +43,17 @@ export default class UserController {
             });
         }
 
-
         if (!confSenha) {
             return res.status(422).json({
                 message: "A confirmação da senha é obrigatória!"
             });
         }
 
-
         if (senha !== confSenha) {
             return res.status(422).json({
                 message: "As senhas não conferem!"
             });
         }
-
 
         try {
 
@@ -66,13 +63,11 @@ export default class UserController {
                 }
             });
 
-
             if (usuarioExists) {
                 return res.status(422).json({
                     message: "Este e-mail já foi cadastrado!"
                 });
             }
-
 
             const salt = await bcrypt.genSalt(12);
 
@@ -81,9 +76,7 @@ export default class UserController {
                 salt
             );
 
-
             let imc = null;
-
 
             if (peso && altura) {
 
@@ -99,44 +92,31 @@ export default class UserController {
                 );
             }
 
-
             await Usuarios.create({
-
                 nome,
-
                 email,
-
                 senha: passwordHash,
-
                 peso,
-
                 altura,
-
                 genero,
-
                 idade,
-
                 objetivo,
-
+                telefone: telefone || null,
+                status: status || "Ativo",
                 imc
-
             });
-
 
             return res.status(200).json({
                 message: "Usuário cadastrado com sucesso!"
             });
 
-
         } catch (error) {
 
             Logger.error(error);
 
-
             return res.status(500).json({
                 message: "Erro ao criar usuário!"
             });
-
         }
     }
 
@@ -144,6 +124,7 @@ export default class UserController {
     // =========================================
     // ATUALIZAR USUÁRIO
     // =========================================
+
     static async updateUser(req, res) {
 
         const {
@@ -155,9 +136,10 @@ export default class UserController {
             altura,
             genero,
             idade,
-            objetivo
+            objetivo,
+            telefone,
+            status
         } = req.body;
-
 
         if (!idUsuario) {
             return res.status(422).json({
@@ -165,13 +147,11 @@ export default class UserController {
             });
         }
 
-
         if (!nome) {
             return res.status(422).json({
                 message: "O nome é obrigatório!"
             });
         }
-
 
         try {
 
@@ -179,34 +159,26 @@ export default class UserController {
                 idUsuario
             );
 
-
             if (!usuario) {
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
             }
 
-
             // =====================================
             // DADOS QUE SERÃO ATUALIZADOS
             // =====================================
 
             const dadosAtualizados = {
-
                 nome,
-
                 peso,
-
                 altura,
-
                 genero,
-
                 idade,
-
-                objetivo
-
+                objetivo,
+                telefone: telefone || null,
+                status: status || "Ativo"
             };
-
 
             // =====================================
             // ATUALIZAR SENHA SOMENTE SE INFORMADA
@@ -215,28 +187,21 @@ export default class UserController {
             if (senha || confSenha) {
 
                 if (!senha || !confSenha) {
-
                     return res.status(422).json({
                         message:
                             "Preencha a nova senha e a confirmação!"
                     });
-
                 }
 
-
                 if (senha !== confSenha) {
-
                     return res.status(422).json({
                         message:
                             "As senhas não conferem!"
                     });
-
                 }
-
 
                 const salt =
                     await bcrypt.genSalt(12);
-
 
                 const passwordHash =
                     await bcrypt.hash(
@@ -244,18 +209,15 @@ export default class UserController {
                         salt
                     );
 
-
                 dadosAtualizados.senha =
                     passwordHash;
             }
-
 
             // =====================================
             // CALCULAR IMC
             // =====================================
 
             let imc = null;
-
 
             if (peso && altura) {
 
@@ -266,43 +228,33 @@ export default class UserController {
                         (altura / 100)
                     );
 
-
                 imc = Number(
                     imc.toFixed(2)
                 );
             }
 
-
             dadosAtualizados.imc = imc;
 
-
             await Usuarios.update(
-
                 dadosAtualizados,
-
                 {
                     where: {
                         id: idUsuario
                     }
                 }
-
             );
-
 
             return res.status(200).json({
                 message: "Usuário atualizado com sucesso!"
             });
 
-
         } catch (error) {
 
             Logger.error(error);
 
-
             return res.status(500).json({
                 message: "Erro ao atualizar usuário!"
             });
-
         }
     }
 
@@ -310,87 +262,65 @@ export default class UserController {
     // =========================================
     // EXCLUIR USUÁRIO
     // =========================================
+
     static async deleteUser(req, res) {
 
         const idUsuario =
             req.body.idUsuario;
 
-
         if (!idUsuario) {
-
             return res.status(422).json({
                 message: "Selecione um usuário!"
             });
-
         }
-
 
         try {
 
             const usuario =
                 await Usuarios.findOne({
-
                     where: {
                         id: idUsuario
                     }
-
                 });
 
-
             if (!usuario) {
-
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
-
             }
 
-
             await Agenda_treinos.destroy({
-
                 where: {
                     usuario_id: idUsuario
                 }
-
             });
 
-
             await Usuarios.destroy({
-
                 where: {
                     id: idUsuario
                 }
-
             });
-
 
             return res.status(200).json({
                 message: "Usuário excluído com sucesso!"
             });
 
-
         } catch (error) {
 
             Logger.error(error);
 
-
             return res.status(500).json({
-
-                message:
-                    "Erro ao excluir usuário!",
-
-                error:
-                    error.message
-
+                message: "Erro ao excluir usuário!",
+                error: error.message
             });
-
         }
     }
 
 
     // =========================================
-    // LISTAR USUÁRIOS
+    // LISTAR ALUNOS
     // =========================================
+
     static async getAllUsers(req, res) {
 
         try {
@@ -398,27 +328,30 @@ export default class UserController {
             const usuarios =
                 await Usuarios.findAll({
 
+                    where: {
+                        tipo_usuario: "aluno"
+                    },
+
                     attributes: {
                         exclude: ["senha"]
-                    }
+                    },
 
+                    order: [
+                        ["nome", "ASC"]
+                    ]
                 });
-
 
             return res.status(200).json(
                 usuarios
             );
 
-
         } catch (error) {
 
             Logger.error(error);
 
-
             return res.status(500).json({
-                message: "Erro ao buscar usuários!"
+                message: "Erro ao buscar alunos!"
             });
-
         }
     }
 
@@ -426,52 +359,41 @@ export default class UserController {
     // =========================================
     // BUSCAR USUÁRIO PELO ID
     // =========================================
+
     static async getUserById(req, res) {
 
         const idUsuario =
             req.params.id;
 
-
         try {
 
             const usuario =
                 await Usuarios.findByPk(
-
                     idUsuario,
-
                     {
                         attributes: {
                             exclude: ["senha"]
                         }
                     }
-
                 );
 
-
             if (!usuario) {
-
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
-
             }
-
 
             return res.status(200).json(
                 usuario
             );
 
-
         } catch (error) {
 
             Logger.error(error);
 
-
             return res.status(500).json({
                 message: "Erro ao buscar usuário!"
             });
-
         }
     }
-
 }
