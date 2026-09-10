@@ -4,9 +4,11 @@ import Logger from "../db/logger.js";
 
 export default class ExercicioController {
 
-    static async createExercicio(req, res) {
+    // =========================================
+    // CADASTRAR EXERCÍCIO
+    // =========================================
 
-        // FUNÇÕES DO PERSONAL
+    static async createExercicio(req, res) {
 
         const {
             nome,
@@ -42,13 +44,15 @@ export default class ExercicioController {
                 descricao
             });
 
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "Exercício cadastrado com sucesso!"
             });
 
         } catch (error) {
 
-            Logger.error(`Erro ao criar exercício: ${error}`);
+            Logger.error(
+                `Erro ao criar exercício: ${error}`
+            );
 
             return res.status(500).json({
                 message: "Erro ao criar exercício!"
@@ -56,20 +60,27 @@ export default class ExercicioController {
         }
     }
 
+    // =========================================
+    // LISTAR EXERCÍCIOS
+    // =========================================
 
     static async getAllExercicios(req, res) {
 
-        // FUNÇÕES DO PERSONAL
-
         try {
 
-            const exercicios = await Exercicios.findAll();
+            const exercicios = await Exercicios.findAll({
+                order: [
+                    ["nome", "ASC"]
+                ]
+            });
 
             return res.status(200).json(exercicios);
 
         } catch (error) {
 
-            Logger.error(`Erro ao buscar exercícios: ${error}`);
+            Logger.error(
+                `Erro ao buscar exercícios: ${error}`
+            );
 
             return res.status(500).json({
                 message: "Erro ao buscar exercícios!"
@@ -77,16 +88,18 @@ export default class ExercicioController {
         }
     }
 
+    // =========================================
+    // BUSCAR EXERCÍCIO PELO ID
+    // =========================================
 
     static async getExercicioById(req, res) {
-
-        // FUNÇÕES DO PERSONAL
 
         const idExercicio = req.params.id;
 
         try {
 
-            const exercicio = await Exercicios.findByPk(idExercicio);
+            const exercicio =
+                await Exercicios.findByPk(idExercicio);
 
             if (!exercicio) {
                 return res.status(404).json({
@@ -98,7 +111,9 @@ export default class ExercicioController {
 
         } catch (error) {
 
-            Logger.error(`Erro ao buscar exercício: ${error}`);
+            Logger.error(
+                `Erro ao buscar exercício: ${error}`
+            );
 
             return res.status(500).json({
                 message: "Erro ao buscar exercício!"
@@ -106,10 +121,11 @@ export default class ExercicioController {
         }
     }
 
+    // =========================================
+    // ATUALIZAR EXERCÍCIO
+    // =========================================
 
     static async updateExercicio(req, res) {
-
-        // FUNÇÕES DO PERSONAL
 
         const {
             idExercicio,
@@ -145,7 +161,8 @@ export default class ExercicioController {
 
         try {
 
-            const exercicio = await Exercicios.findByPk(idExercicio);
+            const exercicio =
+                await Exercicios.findByPk(idExercicio);
 
             if (!exercicio) {
                 return res.status(404).json({
@@ -157,7 +174,10 @@ export default class ExercicioController {
                 {
                     nome,
                     grupo_muscular,
-                    imagem: imagem ?? exercicio.imagem ?? "",
+                    imagem:
+                        imagem ??
+                        exercicio.imagem ??
+                        "",
                     descricao
                 },
                 {
@@ -173,7 +193,9 @@ export default class ExercicioController {
 
         } catch (error) {
 
-            Logger.error(`Erro ao atualizar exercício: ${error}`);
+            Logger.error(
+                `Erro ao atualizar exercício: ${error}`
+            );
 
             return res.status(500).json({
                 message: "Erro ao atualizar exercício!"
@@ -181,12 +203,14 @@ export default class ExercicioController {
         }
     }
 
+    // =========================================
+    // EXCLUIR EXERCÍCIO
+    // =========================================
 
     static async deleteExercicio(req, res) {
 
-        // FUNÇÕES DO PERSONAL
-
-        const idExercicio = req.body.idExercicio;
+        const idExercicio =
+            req.body.idExercicio;
 
         if (!idExercicio) {
             return res.status(422).json({
@@ -196,7 +220,8 @@ export default class ExercicioController {
 
         try {
 
-            const exercicio = await Exercicios.findByPk(idExercicio);
+            const exercicio =
+                await Exercicios.findByPk(idExercicio);
 
             if (!exercicio) {
                 return res.status(404).json({
@@ -204,12 +229,12 @@ export default class ExercicioController {
                 });
             }
 
-            // Verifica se o exercício está sendo utilizado em algum treino
-            const exercicioEmTreino = await Treino_exercicios.findOne({
-                where: {
-                    exercicio_id: idExercicio
-                }
-            });
+            const exercicioEmTreino =
+                await Treino_exercicios.findOne({
+                    where: {
+                        exercicio_id: idExercicio
+                    }
+                });
 
             if (exercicioEmTreino) {
                 return res.status(409).json({
@@ -230,7 +255,9 @@ export default class ExercicioController {
 
         } catch (error) {
 
-            Logger.error(`Erro ao excluir exercício: ${error}`);
+            Logger.error(
+                `Erro ao excluir exercício: ${error}`
+            );
 
             return res.status(500).json({
                 message: "Erro ao excluir exercício!"

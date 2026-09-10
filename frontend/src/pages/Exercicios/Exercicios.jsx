@@ -18,18 +18,12 @@ export default function Exercicios() {
     const [pesquisa, setPesquisa] = useState("");
     const [carregando, setCarregando] = useState(true);
 
-
     useEffect(() => {
-
         buscarExercicios();
-
     }, []);
 
-
     async function buscarExercicios() {
-
         try {
-
             setCarregando(true);
 
             const response = await axios.get(
@@ -39,29 +33,21 @@ export default function Exercicios() {
             setExercicios(response.data);
 
         } catch (error) {
-
             console.error(error);
 
             if (error.response) {
-
                 alert(
                     error.response.data.message ||
                     "Erro ao buscar exercícios!"
                 );
-
             } else {
-
                 alert("Não foi possível conectar ao servidor.");
-
             }
 
         } finally {
-
             setCarregando(false);
-
         }
     }
-
 
     async function handleExcluirExercicio(id) {
 
@@ -93,30 +79,25 @@ export default function Exercicios() {
             );
 
         } catch (error) {
-
             console.error(error);
 
             if (error.response) {
-
                 alert(
                     error.response.data.message ||
                     "Erro ao excluir exercício!"
                 );
-
             } else {
-
                 alert("Não foi possível conectar ao servidor.");
-
             }
         }
     }
 
+    const textoPesquisa = pesquisa.trim().toLowerCase();
 
     const exerciciosFiltrados = exercicios.filter((exercicio) => {
 
-        const textoPesquisa = pesquisa.toLowerCase();
-
-        const nome = exercicio.nome?.toLowerCase() || "";
+        const nome =
+            exercicio.nome?.toLowerCase() || "";
 
         const grupoMuscular =
             exercicio.grupo_muscular?.toLowerCase() || "";
@@ -125,18 +106,15 @@ export default function Exercicios() {
             nome.includes(textoPesquisa) ||
             grupoMuscular.includes(textoPesquisa)
         );
-
     });
 
-
     return (
-
         <Layout>
 
+            {/* Cabeçalho */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
                 <div>
-
                     <h1 className="text-4xl font-bold">
                         Exercícios
                     </h1>
@@ -144,7 +122,6 @@ export default function Exercicios() {
                     <p className="text-gray-500 mt-2">
                         Gerencie os exercícios utilizados nos treinos.
                     </p>
-
                 </div>
 
                 <button
@@ -157,7 +134,7 @@ export default function Exercicios() {
 
             </div>
 
-
+            {/* Pesquisa */}
             <div className="bg-white rounded-2xl shadow-md p-5 mb-8">
 
                 <div className="relative">
@@ -179,25 +156,21 @@ export default function Exercicios() {
 
             </div>
 
-
+            {/* Conteúdo */}
             {carregando ? (
 
                 <div className="bg-white rounded-2xl shadow-md p-8 text-center">
-
                     <p className="text-gray-500">
                         Carregando exercícios...
                     </p>
-
                 </div>
 
             ) : exerciciosFiltrados.length === 0 ? (
 
                 <div className="bg-white rounded-2xl shadow-md p-8 text-center">
-
                     <p className="text-gray-500">
                         Nenhum exercício encontrado.
                     </p>
-
                 </div>
 
             ) : (
@@ -211,11 +184,13 @@ export default function Exercicios() {
                             nome={exercicio.nome}
                             grupoMuscular={exercicio.grupo_muscular}
                             descricao={exercicio.descricao}
+
                             onEditar={() =>
                                 navigate(
                                     `/editar-exercicio/${exercicio.id}`
                                 )
                             }
+
                             onExcluir={() =>
                                 handleExcluirExercicio(exercicio.id)
                             }

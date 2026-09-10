@@ -20,34 +20,35 @@ export default function CadastrarExercicio() {
     const [salvando, setSalvando] = useState(false);
 
     async function handleCadastrarExercicio(e) {
-
         e.preventDefault();
 
-        if (!nome) {
+        // Validação do nome
+        if (!nome.trim()) {
             alert("Digite o nome do exercício!");
             return;
         }
 
+        // Validação do grupo muscular
         if (!grupoMuscular) {
             alert("Informe o grupo muscular!");
             return;
         }
 
-        if (!descricao) {
+        // Validação da descrição
+        if (!descricao.trim()) {
             alert("Digite a descrição do exercício!");
             return;
         }
 
         try {
-
             setSalvando(true);
 
             const response = await axios.post(
                 "http://localhost:5000/exercicio/create",
                 {
-                    nome,
+                    nome: nome.trim(),
                     grupo_muscular: grupoMuscular,
-                    descricao
+                    descricao: descricao.trim()
                 }
             );
 
@@ -56,33 +57,26 @@ export default function CadastrarExercicio() {
             navigate("/exercicios");
 
         } catch (error) {
-
             console.error(error);
 
             if (error.response) {
-
                 alert(
                     error.response.data.message ||
                     "Erro ao cadastrar exercício!"
                 );
-
             } else {
-
                 alert("Não foi possível conectar ao servidor.");
-
             }
 
         } finally {
-
             setSalvando(false);
-
         }
     }
 
     return (
-
         <Layout>
 
+            {/* Botão voltar */}
             <button
                 onClick={() => navigate("/exercicios")}
                 className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-6 transition"
@@ -93,8 +87,8 @@ export default function CadastrarExercicio() {
 
             <div>
 
+                {/* Cabeçalho */}
                 <div className="mb-8">
-
                     <h1 className="text-4xl font-bold">
                         Cadastrar Exercício
                     </h1>
@@ -102,22 +96,21 @@ export default function CadastrarExercicio() {
                     <p className="text-gray-500 mt-2">
                         Cadastre um novo exercício para utilizar nos treinos.
                     </p>
-
                 </div>
 
+                {/* Formulário */}
                 <form
                     onSubmit={handleCadastrarExercicio}
                     className="bg-white rounded-2xl shadow-md p-8 space-y-6"
                 >
 
+                    {/* Nome */}
                     <div>
-
                         <label className="block text-gray-700 font-medium mb-2">
                             Nome do Exercício
                         </label>
 
                         <div className="relative">
-
                             <Activity
                                 size={18}
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
@@ -130,13 +123,11 @@ export default function CadastrarExercicio() {
                                 placeholder="Ex: Supino Reto"
                                 className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                             />
-
                         </div>
-
                     </div>
 
+                    {/* Grupo muscular */}
                     <div>
-
                         <label className="block text-gray-700 font-medium mb-2">
                             Grupo Muscular
                         </label>
@@ -146,33 +137,55 @@ export default function CadastrarExercicio() {
                             onChange={(e) => setGrupoMuscular(e.target.value)}
                             className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-600"
                         >
-
                             <option value="">
                                 Selecione o grupo muscular
                             </option>
 
-                            <option value="Peito">Peito</option>
-                            <option value="Costas">Costas</option>
-                            <option value="Ombros">Ombros</option>
-                            <option value="Biceps">Bíceps</option>
-                            <option value="Triceps">Tríceps</option>
-                            <option value="Pernas">Pernas</option>
-                            <option value="Gluteos">Glúteos</option>
-                            <option value="Abdomen">Abdômen</option>
-                            <option value="Panturrilha">Panturrilha</option>
+                            <option value="Peito">
+                                Peito
+                            </option>
 
+                            <option value="Costas">
+                                Costas
+                            </option>
+
+                            <option value="Ombros">
+                                Ombros
+                            </option>
+
+                            <option value="Biceps">
+                                Bíceps
+                            </option>
+
+                            <option value="Triceps">
+                                Tríceps
+                            </option>
+
+                            <option value="Pernas">
+                                Pernas
+                            </option>
+
+                            <option value="Gluteos">
+                                Glúteos
+                            </option>
+
+                            <option value="Abdomen">
+                                Abdômen
+                            </option>
+
+                            <option value="Panturrilha">
+                                Panturrilha
+                            </option>
                         </select>
-
                     </div>
 
+                    {/* Descrição */}
                     <div>
-
                         <label className="block text-gray-700 font-medium mb-2">
                             Descrição
                         </label>
 
                         <div className="relative">
-
                             <FileText
                                 size={18}
                                 className="absolute left-4 top-5 text-gray-400"
@@ -185,11 +198,10 @@ export default function CadastrarExercicio() {
                                 placeholder="Descreva como o exercício deve ser realizado..."
                                 className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                             />
-
                         </div>
-
                     </div>
 
+                    {/* Botões */}
                     <div className="flex justify-end gap-4 pt-6 border-t">
 
                         <button

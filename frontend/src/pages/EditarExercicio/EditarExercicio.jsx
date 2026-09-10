@@ -54,9 +54,7 @@ export default function EditarExercicio() {
                 navigate("/exercicios");
 
             } finally {
-
                 setCarregando(false);
-
             }
         }
 
@@ -64,12 +62,11 @@ export default function EditarExercicio() {
 
     }, [id, navigate]);
 
-
     async function handleEditarExercicio(e) {
 
         e.preventDefault();
 
-        if (!nome) {
+        if (!nome.trim()) {
             alert("Digite o nome do exercício!");
             return;
         }
@@ -79,7 +76,7 @@ export default function EditarExercicio() {
             return;
         }
 
-        if (!descricao) {
+        if (!descricao.trim()) {
             alert("Digite a descrição do exercício!");
             return;
         }
@@ -92,9 +89,9 @@ export default function EditarExercicio() {
                 "http://localhost:5000/exercicio/update",
                 {
                     idExercicio: id,
-                    nome,
+                    nome: nome.trim(),
                     grupo_muscular: grupoMuscular,
-                    descricao
+                    descricao: descricao.trim()
                 }
             );
 
@@ -107,28 +104,20 @@ export default function EditarExercicio() {
             console.error(error);
 
             if (error.response) {
-
                 alert(
                     error.response.data.message ||
                     "Erro ao atualizar exercício!"
                 );
-
             } else {
-
                 alert("Não foi possível conectar ao servidor.");
-
             }
 
         } finally {
-
             setSalvando(false);
-
         }
     }
 
-
     if (carregando) {
-
         return (
             <Layout>
                 <p className="text-gray-500">
@@ -136,12 +125,9 @@ export default function EditarExercicio() {
                 </p>
             </Layout>
         );
-
     }
 
-
     return (
-
         <Layout>
 
             <button
@@ -196,7 +182,6 @@ export default function EditarExercicio() {
 
                     </div>
 
-
                     <div>
 
                         <label className="block text-gray-700 font-medium mb-2">
@@ -215,14 +200,38 @@ export default function EditarExercicio() {
                                 Selecione o grupo muscular
                             </option>
 
-                            <option value="Peito">Peito</option>
-                            <option value="Costas">Costas</option>
-                            <option value="Ombros">Ombros</option>
-                            <option value="Biceps">Bíceps</option>
-                            <option value="Triceps">Tríceps</option>
-                            <option value="Pernas">Pernas</option>
-                            <option value="Gluteos">Glúteos</option>
-                            <option value="Abdomen">Abdômen</option>
+                            <option value="Peito">
+                                Peito
+                            </option>
+
+                            <option value="Costas">
+                                Costas
+                            </option>
+
+                            <option value="Ombros">
+                                Ombros
+                            </option>
+
+                            <option value="Biceps">
+                                Bíceps
+                            </option>
+
+                            <option value="Triceps">
+                                Tríceps
+                            </option>
+
+                            <option value="Pernas">
+                                Pernas
+                            </option>
+
+                            <option value="Gluteos">
+                                Glúteos
+                            </option>
+
+                            <option value="Abdomen">
+                                Abdômen
+                            </option>
+
                             <option value="Panturrilha">
                                 Panturrilha
                             </option>
@@ -230,7 +239,6 @@ export default function EditarExercicio() {
                         </select>
 
                     </div>
-
 
                     <div>
 
@@ -258,7 +266,6 @@ export default function EditarExercicio() {
                         </div>
 
                     </div>
-
 
                     <div className="flex justify-end gap-4 pt-6 border-t">
 
