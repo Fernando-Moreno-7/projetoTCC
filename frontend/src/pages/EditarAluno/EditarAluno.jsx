@@ -30,11 +30,13 @@ export default function EditarAluno() {
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
 
+
     useEffect(() => {
 
         buscarAluno();
 
     }, []);
+
 
     async function buscarAluno() {
 
@@ -67,49 +69,94 @@ export default function EditarAluno() {
         }
     }
 
+
     async function handleEditarAluno(e) {
 
         e.preventDefault();
 
-        if (!nome || !senha || !confirmarSenha) {
 
-            alert("Preencha os campos obrigatórios!");
+        if (!nome) {
 
-            return;
-        }
-
-        if (senha !== confirmarSenha) {
-
-            alert("As senhas não coincidem!");
+            alert("Preencha o nome do aluno!");
 
             return;
         }
+
+
+        // =====================================
+        // VALIDAR SENHA SOMENTE SE FOR ALTERADA
+        // =====================================
+
+        if (senha || confirmarSenha) {
+
+            if (!senha || !confirmarSenha) {
+
+                alert(
+                    "Preencha a nova senha e a confirmação!"
+                );
+
+                return;
+            }
+
+
+            if (senha !== confirmarSenha) {
+
+                alert("As senhas não coincidem!");
+
+                return;
+            }
+
+        }
+
 
         try {
 
             setSalvando(true);
 
+
             const response = await axios.post(
                 "http://localhost:5000/user/update",
                 {
+
                     idUsuario: Number(id),
+
                     nome,
+
                     senha,
+
                     confSenha: confirmarSenha,
-                    idade: idade ? Number(idade) : null,
-                    altura: altura ? Number(altura) : null,
-                    peso: peso ? Number(peso) : null,
-                    objetivo: objetivo || null
+
+                    idade:
+                        idade
+                            ? Number(idade)
+                            : null,
+
+                    altura:
+                        altura
+                            ? Number(altura)
+                            : null,
+
+                    peso:
+                        peso
+                            ? Number(peso)
+                            : null,
+
+                    objetivo:
+                        objetivo || null
+
                 }
             );
+
 
             alert(response.data.message);
 
             navigate("/alunos");
 
+
         } catch (error) {
 
             console.error(error);
+
 
             if (error.response) {
 
@@ -120,7 +167,9 @@ export default function EditarAluno() {
 
             } else {
 
-                alert("Não foi possível conectar ao servidor.");
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
 
             }
 
@@ -130,6 +179,7 @@ export default function EditarAluno() {
 
         }
     }
+
 
     if (carregando) {
 
@@ -147,6 +197,7 @@ export default function EditarAluno() {
 
     }
 
+
     return (
 
         <Layout>
@@ -157,8 +208,11 @@ export default function EditarAluno() {
             >
                 <ArrowLeft size={20} />
 
-                <span>Voltar para Alunos</span>
+                <span>
+                    Voltar para Alunos
+                </span>
             </button>
+
 
             <div>
 
@@ -166,9 +220,11 @@ export default function EditarAluno() {
                     Editar Aluno
                 </h1>
 
+
                 <p className="text-gray-500 mt-2 mb-8">
                     Atualize os dados do aluno.
                 </p>
+
 
                 <form
                     onSubmit={handleEditarAluno}
@@ -181,6 +237,7 @@ export default function EditarAluno() {
                             Nome Completo
                         </label>
 
+
                         <div className="relative">
 
                             <User
@@ -188,10 +245,13 @@ export default function EditarAluno() {
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                             />
 
+
                             <input
                                 type="text"
                                 value={nome}
-                                onChange={(e) => setNome(e.target.value)}
+                                onChange={(e) =>
+                                    setNome(e.target.value)
+                                }
                                 placeholder="Digite o nome do aluno"
                                 className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                             />
@@ -199,6 +259,7 @@ export default function EditarAluno() {
                         </div>
 
                     </div>
+
 
                     <div className="grid grid-cols-2 gap-6">
 
@@ -208,6 +269,7 @@ export default function EditarAluno() {
                                 Nova Senha
                             </label>
 
+
                             <div className="relative">
 
                                 <Lock
@@ -215,11 +277,14 @@ export default function EditarAluno() {
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
+
                                 <input
                                     type="password"
                                     value={senha}
-                                    onChange={(e) => setSenha(e.target.value)}
-                                    placeholder="Digite uma nova senha"
+                                    onChange={(e) =>
+                                        setSenha(e.target.value)
+                                    }
+                                    placeholder="Deixe em branco para manter"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
 
@@ -227,11 +292,13 @@ export default function EditarAluno() {
 
                         </div>
 
+
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Confirmar Senha
                             </label>
+
 
                             <div className="relative">
 
@@ -240,13 +307,16 @@ export default function EditarAluno() {
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
+
                                 <input
                                     type="password"
                                     value={confirmarSenha}
                                     onChange={(e) =>
-                                        setConfirmarSenha(e.target.value)
+                                        setConfirmarSenha(
+                                            e.target.value
+                                        )
                                     }
-                                    placeholder="Digite a senha novamente"
+                                    placeholder="Confirme somente se alterar"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
 
@@ -256,6 +326,12 @@ export default function EditarAluno() {
 
                     </div>
 
+
+                    <p className="text-sm text-gray-500">
+                        Deixe os campos de senha em branco caso não queira alterar a senha do aluno.
+                    </p>
+
+
                     <div className="grid grid-cols-3 gap-6">
 
                         <div>
@@ -264,6 +340,7 @@ export default function EditarAluno() {
                                 Idade
                             </label>
 
+
                             <div className="relative">
 
                                 <Calendar
@@ -271,10 +348,13 @@ export default function EditarAluno() {
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
+
                                 <input
                                     type="number"
                                     value={idade}
-                                    onChange={(e) => setIdade(e.target.value)}
+                                    onChange={(e) =>
+                                        setIdade(e.target.value)
+                                    }
                                     placeholder="Ex.: 23"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
@@ -283,11 +363,13 @@ export default function EditarAluno() {
 
                         </div>
 
+
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Altura (cm)
                             </label>
+
 
                             <div className="relative">
 
@@ -296,10 +378,13 @@ export default function EditarAluno() {
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
+
                                 <input
                                     type="number"
                                     value={altura}
-                                    onChange={(e) => setAltura(e.target.value)}
+                                    onChange={(e) =>
+                                        setAltura(e.target.value)
+                                    }
                                     placeholder="Ex.: 175"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
@@ -308,11 +393,13 @@ export default function EditarAluno() {
 
                         </div>
 
+
                         <div>
 
                             <label className="block text-gray-700 font-medium mb-2">
                                 Peso (kg)
                             </label>
+
 
                             <div className="relative">
 
@@ -321,11 +408,14 @@ export default function EditarAluno() {
                                     className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                                 />
 
+
                                 <input
                                     type="number"
                                     step="0.1"
                                     value={peso}
-                                    onChange={(e) => setPeso(e.target.value)}
+                                    onChange={(e) =>
+                                        setPeso(e.target.value)
+                                    }
                                     placeholder="Ex.: 80"
                                     className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                                 />
@@ -336,11 +426,13 @@ export default function EditarAluno() {
 
                     </div>
 
+
                     <div>
 
                         <label className="block text-gray-700 font-medium mb-2">
                             Objetivo
                         </label>
+
 
                         <div className="relative">
 
@@ -349,11 +441,15 @@ export default function EditarAluno() {
                                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
                             />
 
+
                             <select
                                 value={objetivo}
-                                onChange={(e) => setObjetivo(e.target.value)}
+                                onChange={(e) =>
+                                    setObjetivo(e.target.value)
+                                }
                                 className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
                             >
+
                                 <option value="">
                                     Selecione o objetivo
                                 </option>
@@ -373,30 +469,36 @@ export default function EditarAluno() {
                                 <option value="Definição">
                                     Definição
                                 </option>
+
                             </select>
 
                         </div>
 
                     </div>
 
+
                     <div className="flex justify-end gap-4 pt-8 border-t">
 
                         <button
                             type="button"
-                            onClick={() => navigate("/alunos")}
+                            onClick={() =>
+                                navigate("/alunos")
+                            }
                             className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
                         >
                             Cancelar
                         </button>
+
 
                         <button
                             type="submit"
                             disabled={salvando}
                             className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white px-8 py-3 rounded-xl font-semibold transition"
                         >
-                            {salvando
-                                ? "Salvando..."
-                                : "Salvar Alterações"
+                            {
+                                salvando
+                                    ? "Salvando..."
+                                    : "Salvar Alterações"
                             }
                         </button>
 
