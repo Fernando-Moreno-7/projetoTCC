@@ -80,7 +80,6 @@ export default function Agenda() {
             return;
         }
 
-
         try {
 
             const response = await axios.post(
@@ -90,9 +89,7 @@ export default function Agenda() {
                 }
             );
 
-
             alert(response.data.message);
-
 
             setAgendamentos(
                 (agendamentosAtuais) =>
@@ -114,11 +111,9 @@ export default function Agenda() {
                     )
             );
 
-
         } catch (error) {
 
             console.error(error);
-
 
             if (error.response) {
 
@@ -150,7 +145,6 @@ export default function Agenda() {
             return;
         }
 
-
         try {
 
             const response = await axios.delete(
@@ -162,9 +156,7 @@ export default function Agenda() {
                 }
             );
 
-
             alert(response.data.message);
-
 
             setAgendamentos(
                 (agendamentosAtuais) =>
@@ -174,11 +166,9 @@ export default function Agenda() {
                     )
             );
 
-
         } catch (error) {
 
             console.error(error);
-
 
             if (error.response) {
 
@@ -249,7 +239,7 @@ export default function Agenda() {
         (agendamento) => {
 
             const textoPesquisa =
-                pesquisa.toLowerCase();
+                pesquisa.trim().toLowerCase();
 
             const nomeAluno =
                 agendamento.usuario?.nome
@@ -269,17 +259,11 @@ export default function Agenda() {
                     agendamento.data
                 ).toLowerCase();
 
-
             return (
-
                 nomeAluno.includes(textoPesquisa) ||
-
                 nomeTreino.includes(textoPesquisa) ||
-
                 status.includes(textoPesquisa) ||
-
                 data.includes(textoPesquisa)
-
             );
 
         }
@@ -292,9 +276,7 @@ export default function Agenda() {
 
             <div>
 
-
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-
 
                     <div>
 
@@ -308,7 +290,6 @@ export default function Agenda() {
 
                     </div>
 
-
                     <button
                         onClick={() =>
                             navigate("/cadastrar-agenda")
@@ -321,7 +302,6 @@ export default function Agenda() {
                         Novo Agendamento
 
                     </button>
-
 
                 </div>
 
@@ -418,7 +398,6 @@ export default function Agenda() {
 
                                     <div className="flex flex-wrap items-center gap-3">
 
-
                                         <span
                                             className={`
                                                 px-4
@@ -492,9 +471,7 @@ export default function Agenda() {
 
                                         </button>
 
-
                                     </div>
-
 
                                 </div>
 
@@ -504,7 +481,6 @@ export default function Agenda() {
                     </div>
 
                 )}
-
 
             </div>
 
