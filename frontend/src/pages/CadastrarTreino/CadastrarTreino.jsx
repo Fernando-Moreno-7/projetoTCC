@@ -33,9 +33,7 @@ export default function CadastrarTreino() {
     const [carregandoExercicios, setCarregandoExercicios] = useState(true);
 
     useEffect(() => {
-
         buscarExercicios();
-
     }, []);
 
     async function buscarExercicios() {
@@ -57,7 +55,6 @@ export default function CadastrarTreino() {
         } finally {
 
             setCarregandoExercicios(false);
-
         }
     }
 
@@ -90,7 +87,10 @@ export default function CadastrarTreino() {
 
         const novaLista = [...exerciciosSelecionados];
 
-        novaLista[index][campo] = valor;
+        novaLista[index] = {
+            ...novaLista[index],
+            [campo]: valor
+        };
 
         setExerciciosSelecionados(novaLista);
     }
@@ -99,7 +99,7 @@ export default function CadastrarTreino() {
 
         e.preventDefault();
 
-        if (!nome) {
+        if (!nome.trim()) {
 
             alert("Digite o nome do treino!");
 
@@ -110,13 +110,31 @@ export default function CadastrarTreino() {
             (exercicio) =>
                 !exercicio.exercicio_id ||
                 !exercicio.series ||
-                !exercicio.repeticoes
+                !exercicio.repeticoes ||
+                Number(exercicio.series) <= 0 ||
+                Number(exercicio.repeticoes) <= 0
         );
 
         if (exerciciosInvalidos) {
 
             alert(
-                "Selecione o exercício e informe séries e repetições."
+                "Selecione o exercício e informe séries e repetições maiores que zero."
+            );
+
+            return;
+        }
+
+        const idsExercicios = exerciciosSelecionados.map(
+            (exercicio) => Number(exercicio.exercicio_id)
+        );
+
+        const possuiExercicioDuplicado =
+            new Set(idsExercicios).size !== idsExercicios.length;
+
+        if (possuiExercicioDuplicado) {
+
+            alert(
+                "Não é possível adicionar o mesmo exercício mais de uma vez no treino."
             );
 
             return;
@@ -129,8 +147,8 @@ export default function CadastrarTreino() {
             const responseTreino = await axios.post(
                 "http://localhost:5000/treino/create",
                 {
-                    nome,
-                    descricao
+                    nome: nome.trim(),
+                    descricao: descricao.trim()
                 }
             );
 
@@ -151,15 +169,9 @@ export default function CadastrarTreino() {
                     "http://localhost:5000/treino-exercicio/add",
                     {
                         treino_id: treinoId,
-                        exercicio_id: Number(
-                            exercicio.exercicio_id
-                        ),
-                        series: Number(
-                            exercicio.series
-                        ),
-                        repeticoes: Number(
-                            exercicio.repeticoes
-                        )
+                        exercicio_id: Number(exercicio.exercicio_id),
+                        series: Number(exercicio.series),
+                        repeticoes: Number(exercicio.repeticoes)
                     }
                 );
             }
@@ -191,7 +203,6 @@ export default function CadastrarTreino() {
         } finally {
 
             setCarregando(false);
-
         }
     }
 

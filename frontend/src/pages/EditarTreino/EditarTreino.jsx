@@ -23,13 +23,13 @@ export default function EditarTreino() {
     const [exerciciosDisponiveis, setExerciciosDisponiveis] = useState([]);
     const [exerciciosTreino, setExerciciosTreino] = useState([]);
 
+    const [exerciciosRemovidos, setExerciciosRemovidos] = useState([]);
+
     const [carregando, setCarregando] = useState(true);
     const [salvando, setSalvando] = useState(false);
 
     useEffect(() => {
-
         carregarDados();
-
     }, [id]);
 
     async function carregarDados() {
@@ -77,7 +77,6 @@ export default function EditarTreino() {
         } finally {
 
             setCarregando(false);
-
         }
     }
 
@@ -99,56 +98,32 @@ export default function EditarTreino() {
 
         const novaLista = [...exerciciosTreino];
 
-        novaLista[index][campo] = valor;
+        novaLista[index] = {
+            ...novaLista[index],
+            [campo]: valor
+        };
 
         setExerciciosTreino(novaLista);
     }
 
-    async function removerExercicio(index) {
+    function removerExercicio(index) {
 
         const exercicio = exerciciosTreino[index];
 
+        const confirmar = window.confirm(
+            "Deseja realmente remover este exercício do treino?"
+        );
+
+        if (!confirmar) {
+            return;
+        }
+
         if (!exercicio.novo && exercicio.id) {
 
-            const confirmar = window.confirm(
-                "Deseja realmente remover este exercício do treino?"
-            );
-
-            if (!confirmar) {
-                return;
-            }
-
-            try {
-
-                await axios.delete(
-                    "http://localhost:5000/treino-exercicio/delete",
-                    {
-                        data: {
-                            id: exercicio.id
-                        }
-                    }
-                );
-
-            } catch (error) {
-
-                console.error(error);
-
-                if (error.response) {
-
-                    alert(
-                        error.response.data.message ||
-                        "Erro ao remover exercício!"
-                    );
-
-                } else {
-
-                    alert(
-                        "Não foi possível conectar ao servidor."
-                    );
-                }
-
-                return;
-            }
+            setExerciciosRemovidos((listaAtual) => [
+                ...listaAtual,
+                exercicio.id
+            ]);
         }
 
         const novaLista = exerciciosTreino.filter(
@@ -162,9 +137,16 @@ export default function EditarTreino() {
 
         e.preventDefault();
 
-        if (!nome) {
+        if (!nome.trim()) {
 
             alert("Digite o nome do treino!");
+
+            return;
+        }
+
+        if (exerciciosTreino.length === 0) {
+
+            alert("Adicione pelo menos um exercício ao treino!");
 
             return;
         }
@@ -173,13 +155,31 @@ export default function EditarTreino() {
             (exercicio) =>
                 !exercicio.exercicio_id ||
                 !exercicio.series ||
-                !exercicio.repeticoes
+                !exercicio.repeticoes ||
+                Number(exercicio.series) <= 0 ||
+                Number(exercicio.repeticoes) <= 0
         );
 
         if (exercicioInvalido) {
 
             alert(
-                "Selecione todos os exercícios e informe séries e repetições."
+                "Selecione todos os exercícios e informe séries e repetições maiores que zero."
+            );
+
+            return;
+        }
+
+        const idsExercicios = exerciciosTreino.map(
+            (exercicio) => Number(exercicio.exercicio_id)
+        );
+
+        const possuiExercicioDuplicado =
+            new Set(idsExercicios).size !== idsExercicios.length;
+
+        if (possuiExercicioDuplicado) {
+
+            alert(
+                "Não é possível adicionar o mesmo exercício mais de uma vez no treino."
             );
 
             return;
@@ -193,10 +193,22 @@ export default function EditarTreino() {
                 "http://localhost:5000/treino/update",
                 {
                     idTreino: Number(id),
-                    nome,
-                    descricao
+                    nome: nome.trim(),
+                    descricao: descricao.trim()
                 }
             );
+
+            for (const idExercicioRemovido of exerciciosRemovidos) {
+
+                await axios.delete(
+                    "http://localhost:5000/treino-exercicio/delete",
+                    {
+                        data: {
+                            id: idExercicioRemovido
+                        }
+                    }
+                );
+            }
 
             for (const exercicio of exerciciosTreino) {
 
@@ -262,7 +274,6 @@ export default function EditarTreino() {
         } finally {
 
             setSalvando(false);
-
         }
     }
 
@@ -536,7 +547,8 @@ export default function EditarTreino() {
                             onClick={() =>
                                 navigate("/treinos")
                             }
-                            className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
+                            disabled={salvando}
+                            className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition disabled:opacity-50"
                         >
                             Cancelar
                         </button>

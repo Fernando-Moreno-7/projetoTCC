@@ -4,16 +4,15 @@ import Historico_cargas from "../models/Historico_cargas.js";
 import Agenda_treinos from "../models/Agenda_treinos.js";
 import Exercicios from "../models/Exercicios.js";
 import Logger from "../db/logger.js";
+import { Op } from "sequelize";
 
 export default class TreinoController {
 
     static async createTreino(req, res) {
 
-        // FUNÇÕES DO PERSONAL
-
         const { nome, descricao } = req.body;
 
-        if (!nome) {
+        if (!nome || !nome.trim()) {
             return res.status(422).json({
                 message: "O nome do treino é obrigatório!"
             });
@@ -22,11 +21,11 @@ export default class TreinoController {
         try {
 
             const treino = await Treinos.create({
-                nome,
-                descricao
+                nome: nome.trim(),
+                descricao: descricao?.trim() || ""
             });
 
-            return res.status(200).json({
+            return res.status(201).json({
                 message: "Treino cadastrado com sucesso!",
                 treinoId: treino.id
             });
@@ -38,13 +37,10 @@ export default class TreinoController {
             return res.status(500).json({
                 message: "Erro ao criar treino!"
             });
-
         }
     }
 
     static async getAllTreinos(req, res) {
-
-        // FUNÇÕES DO PERSONAL
 
         try {
 
@@ -69,6 +65,9 @@ export default class TreinoController {
                             }
                         ]
                     }
+                ],
+                order: [
+                    ["nome", "ASC"]
                 ]
             });
 
@@ -81,13 +80,10 @@ export default class TreinoController {
             return res.status(500).json({
                 message: "Erro ao buscar treinos!"
             });
-
         }
     }
 
     static async getTreinoById(req, res) {
-
-        // FUNÇÕES DO PERSONAL
 
         const idTreino = req.params.id;
 
@@ -110,17 +106,16 @@ export default class TreinoController {
             return res.status(500).json({
                 message: "Erro ao buscar treino!"
             });
-
         }
     }
 
     static async updateTreino(req, res) {
 
-        // FUNÇÕES DO PERSONAL
-
-        const idTreino = req.body.idTreino;
-        const nome = req.body.nome;
-        const descricao = req.body.descricao;
+        const {
+            idTreino,
+            nome,
+            descricao
+        } = req.body;
 
         if (!idTreino) {
             return res.status(422).json({
@@ -128,7 +123,7 @@ export default class TreinoController {
             });
         }
 
-        if (!nome) {
+        if (!nome || !nome.trim()) {
             return res.status(422).json({
                 message: "O nome do treino é obrigatório!"
             });
@@ -146,8 +141,8 @@ export default class TreinoController {
 
             await Treinos.update(
                 {
-                    nome,
-                    descricao
+                    nome: nome.trim(),
+                    descricao: descricao?.trim() || ""
                 },
                 {
                     where: {
@@ -167,13 +162,10 @@ export default class TreinoController {
             return res.status(500).json({
                 message: "Erro ao atualizar treino!"
             });
-
         }
     }
 
     static async deleteTreino(req, res) {
-
-        // FUNÇÕES DO PERSONAL
 
         const idTreino = req.body.idTreino;
 
@@ -208,10 +200,11 @@ export default class TreinoController {
 
                 await Historico_cargas.destroy({
                     where: {
-                        treino_exercicios_id: idsTreinoExercicios
+                        treino_exercicios_id: {
+                            [Op.in]: idsTreinoExercicios
+                        }
                     }
                 });
-
             }
 
             await Treino_exercicios.destroy({
@@ -244,7 +237,6 @@ export default class TreinoController {
                 message: "Erro ao excluir treino!",
                 error: error.message
             });
-
         }
     }
 }

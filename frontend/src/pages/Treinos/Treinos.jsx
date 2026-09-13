@@ -43,7 +43,6 @@ export default function Treinos() {
         } finally {
 
             setCarregando(false);
-
         }
     }
 
@@ -92,10 +91,12 @@ export default function Treinos() {
         }
     }
 
+    const termoPesquisa = pesquisa.trim().toLowerCase();
+
     const treinosFiltrados = treinos.filter((treino) =>
         treino.nome
             .toLowerCase()
-            .includes(pesquisa.toLowerCase())
+            .includes(termoPesquisa)
     );
 
     return (
@@ -170,17 +171,14 @@ export default function Treinos() {
                                 key={treino.id}
                                 nome={treino.nome}
                                 descricao={treino.descricao}
-
                                 exercicios={
                                     treino.treino_exercicios || []
                                 }
-
                                 onEditar={() =>
                                     navigate(
                                         `/editar-treino/${treino.id}`
                                     )
                                 }
-
                                 onExcluir={() =>
                                     excluirTreino(treino.id)
                                 }

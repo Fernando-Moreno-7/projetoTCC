@@ -1,30 +1,30 @@
-import {DataTypes, MEDIUMINT} from "sequelize"
-import db from "../db/db.js"
+import { DataTypes } from "sequelize";
+import db from "../db/db.js";
 
-const Treinos = db.define (
+const Treinos = db.define(
     "treinos",
     {
         id: {
-            type: DataTypes.INTEGER, 
-            allowNull:false,
-            primaryKey:true,
-            autoIncrement:true,
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            primaryKey: true,
+            autoIncrement: true,
         },
-        nome: {
-            type: DataTypes.STRING(50),
-            allowNull:false,
 
+        nome: {
+            type: DataTypes.STRING(100),
+            allowNull: false,
         },
+
         descricao: {
-            type: DataTypes.TEXT('long'),
-            allowNull:true,
+            type: DataTypes.TEXT,
+            allowNull: true,
         },
-        
     },
     {
         tableName: "treinos",
         timestamps: false,
     }
-
 );
+
 export default Treinos;

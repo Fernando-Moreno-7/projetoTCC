@@ -1,13 +1,16 @@
 import Treino_exercicios from "../models/Treino_exercicios.js";
+import Historico_cargas from "../models/Historico_cargas.js";
 import Exercicios from "../models/Exercicios.js";
 import Treinos from "../models/Treinos.js";
 import Logger from "../db/logger.js";
 
 export default class TreinoExercicioController {
 
-    static async add(req, res) {
+    // =========================================
+    // ADICIONAR EXERCÍCIO AO TREINO
+    // =========================================
 
-        // FUNÇÕES DO PERSONAL
+    static async add(req, res) {
 
         const {
             treino_id,
@@ -16,9 +19,20 @@ export default class TreinoExercicioController {
             repeticoes
         } = req.body;
 
-        if (!treino_id || !exercicio_id || !series || !repeticoes) {
+        if (
+            !treino_id ||
+            !exercicio_id ||
+            !series ||
+            !repeticoes
+        ) {
             return res.status(422).json({
                 message: "Preencha todos os campos!"
+            });
+        }
+
+        if (Number(series) <= 0 || Number(repeticoes) <= 0) {
+            return res.status(422).json({
+                message: "Séries e repetições devem ser maiores que zero!"
             });
         }
 
@@ -26,17 +40,34 @@ export default class TreinoExercicioController {
 
             const treino = await Treinos.findByPk(treino_id);
 
-            const exercicio = await Exercicios.findByPk(exercicio_id);
-
             if (!treino) {
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
             }
 
+            const exercicio = await Exercicios.findByPk(exercicio_id);
+
             if (!exercicio) {
                 return res.status(404).json({
                     message: "Exercício não encontrado!"
+                });
+            }
+
+            // Evita adicionar o mesmo exercício duas vezes
+            // no mesmo treino
+            const exercicioJaAdicionado =
+                await Treino_exercicios.findOne({
+                    where: {
+                        treino_id,
+                        exercicio_id
+                    }
+                });
+
+            if (exercicioJaAdicionado) {
+                return res.status(409).json({
+                    message:
+                        "Este exercício já foi adicionado ao treino!"
                 });
             }
 
@@ -47,8 +78,9 @@ export default class TreinoExercicioController {
                 repeticoes
             });
 
-            return res.status(200).json({
-                message: "Exercício adicionado ao treino com sucesso!"
+            return res.status(201).json({
+                message:
+                    "Exercício adicionado ao treino com sucesso!"
             });
 
         } catch (error) {
@@ -58,14 +90,17 @@ export default class TreinoExercicioController {
             );
 
             return res.status(500).json({
-                message: "Erro ao adicionar exercício ao treino!"
+                message:
+                    "Erro ao adicionar exercício ao treino!"
             });
         }
     }
 
-    static async list(req, res) {
+    // =========================================
+    // LISTAR EXERCÍCIOS DO TREINO
+    // =========================================
 
-        // FUNÇÕES DO PERSONAL
+    static async list(req, res) {
 
         const treino_id = req.query.treino_id;
 
@@ -77,21 +112,27 @@ export default class TreinoExercicioController {
                 where.treino_id = treino_id;
             }
 
-            const treinoExercicios = await Treino_exercicios.findAll({
-                where,
-                include: [
-                    {
-                        model: Exercicios,
-                        attributes: [
-                            "id",
-                            "nome",
-                            "grupo_muscular",
-                            "imagem",
-                            "descricao"
-                        ]
-                    }
-                ]
-            });
+            const treinoExercicios =
+                await Treino_exercicios.findAll({
+                    where,
+
+                    include: [
+                        {
+                            model: Exercicios,
+                            attributes: [
+                                "id",
+                                "nome",
+                                "grupo_muscular",
+                                "imagem",
+                                "descricao"
+                            ]
+                        }
+                    ],
+
+                    order: [
+                        ["id", "ASC"]
+                    ]
+                });
 
             return res.status(200).json(
                 treinoExercicios
@@ -104,14 +145,17 @@ export default class TreinoExercicioController {
             );
 
             return res.status(500).json({
-                message: "Erro ao listar exercícios do treino!"
+                message:
+                    "Erro ao listar exercícios do treino!"
             });
         }
     }
 
-    static async update(req, res) {
+    // =========================================
+    // ATUALIZAR SÉRIES E REPETIÇÕES
+    // =========================================
 
-        // FUNÇÕES DO PERSONAL
+    static async update(req, res) {
 
         const {
             id,
@@ -127,7 +171,15 @@ export default class TreinoExercicioController {
 
         if (!series || !repeticoes) {
             return res.status(422).json({
-                message: "Informe séries e repetições!"
+                message:
+                    "Informe séries e repetições!"
+            });
+        }
+
+        if (Number(series) <= 0 || Number(repeticoes) <= 0) {
+            return res.status(422).json({
+                message:
+                    "Séries e repetições devem ser maiores que zero!"
             });
         }
 
@@ -138,7 +190,8 @@ export default class TreinoExercicioController {
 
             if (!treinoExercicio) {
                 return res.status(404).json({
-                    message: "Registro não encontrado!"
+                    message:
+                        "Registro não encontrado!"
                 });
             }
 
@@ -155,7 +208,8 @@ export default class TreinoExercicioController {
             );
 
             return res.status(200).json({
-                message: "Registro atualizado com sucesso!"
+                message:
+                    "Registro atualizado com sucesso!"
             });
 
         } catch (error) {
@@ -165,14 +219,17 @@ export default class TreinoExercicioController {
             );
 
             return res.status(500).json({
-                message: "Erro ao atualizar registro!"
+                message:
+                    "Erro ao atualizar registro!"
             });
         }
     }
 
-    static async delete(req, res) {
+    // =========================================
+    // REMOVER EXERCÍCIO DO TREINO
+    // =========================================
 
-        // FUNÇÕES DO PERSONAL
+    static async delete(req, res) {
 
         const { id } = req.body;
 
@@ -189,9 +246,18 @@ export default class TreinoExercicioController {
 
             if (!treinoExercicio) {
                 return res.status(404).json({
-                    message: "Registro não encontrado!"
+                    message:
+                        "Registro não encontrado!"
                 });
             }
+
+            // Remove os históricos de carga associados
+            // antes de remover a relação treino/exercício
+            await Historico_cargas.destroy({
+                where: {
+                    treino_exercicios_id: id
+                }
+            });
 
             await Treino_exercicios.destroy({
                 where: {
@@ -200,7 +266,8 @@ export default class TreinoExercicioController {
             });
 
             return res.status(200).json({
-                message: "Registro excluído com sucesso!"
+                message:
+                    "Exercício removido do treino com sucesso!"
             });
 
         } catch (error) {
@@ -210,7 +277,8 @@ export default class TreinoExercicioController {
             );
 
             return res.status(500).json({
-                message: "Erro ao excluir registro!"
+                message:
+                    "Erro ao remover exercício do treino!"
             });
         }
     }
