@@ -10,7 +10,6 @@ import {
     CheckCircle,
     Timer,
     Play,
-    Pause,
     RotateCcw
 } from "lucide-react";
 
@@ -31,6 +30,10 @@ export default function IniciarTreino() {
     const [cronometroAtivo, setCronometroAtivo] = useState(false);
 
 
+    // =========================================
+    // CARREGAR TREINO
+    // =========================================
+
     useEffect(() => {
 
         async function carregarTreino() {
@@ -50,6 +53,7 @@ export default function IniciarTreino() {
                     navigate("/");
 
                     return;
+
                 }
 
 
@@ -67,29 +71,53 @@ export default function IniciarTreino() {
                         "Nenhum treino disponível para iniciar."
                     );
 
-                    navigate("/dashboard");
+                    navigate("/meu-treino");
 
                     return;
+
                 }
 
 
-                setAgendaId(dados.agenda.id);
+                if (dados.agenda.status === "concluido") {
+
+                    alert(
+                        "Este treino já foi concluído!"
+                    );
+
+                    navigate("/meu-treino");
+
+                    return;
+
+                }
+
+
+                const exercicios =
+                    Array.isArray(dados.exercicios)
+                        ? dados.exercicios
+                        : [];
+
+
+                setAgendaId(
+                    dados.agenda.id
+                );
 
 
                 setTreino({
                     ...dados.treino,
-                    exercicios:
-                        dados.exercicios || []
+                    exercicios
                 });
 
 
                 const cargasIniciais = {};
 
 
-                (dados.exercicios || []).forEach(
+                exercicios.forEach(
                     (item) => {
 
-                        if (item.ultima_carga) {
+                        if (
+                            item.ultima_carga !== null &&
+                            item.ultima_carga !== undefined
+                        ) {
 
                             cargasIniciais[item.id] =
                                 item.ultima_carga;
@@ -127,7 +155,7 @@ export default function IniciarTreino() {
                 }
 
 
-                navigate("/dashboard");
+                navigate("/meu-treino");
 
 
             } finally {
@@ -144,7 +172,10 @@ export default function IniciarTreino() {
     }, [navigate]);
 
 
-    // CONTAGEM REGRESSIVA
+    // =========================================
+    // CRONÔMETRO
+    // =========================================
+
     useEffect(() => {
 
         if (!cronometroAtivo) {
@@ -152,43 +183,32 @@ export default function IniciarTreino() {
         }
 
 
-        if (tempo <= 0) {
-
-            setCronometroAtivo(false);
-
-            return;
-        }
-
-
         const intervalo = setInterval(() => {
 
-            setTempo(
-                (tempoAtual) =>
-                    tempoAtual - 1
-            );
+            setTempo((tempoAtual) => {
+
+                if (tempoAtual <= 1) {
+
+                    setCronometroAtivo(false);
+
+                    return 0;
+
+                }
+
+                return tempoAtual - 1;
+
+            });
 
         }, 1000);
 
 
-        return () =>
+        return () => {
+
             clearInterval(intervalo);
 
-    }, [cronometroAtivo, tempo]);
+        };
 
-
-    function alterarCarga(
-        treinoExercicioId,
-        valor
-    ) {
-
-        setCargas(
-            (cargasAtuais) => ({
-                ...cargasAtuais,
-                [treinoExercicioId]: valor
-            })
-        );
-
-    }
+    }, [cronometroAtivo]);
 
 
     function selecionarTempo(segundos) {
@@ -208,6 +228,7 @@ export default function IniciarTreino() {
             setCronometroAtivo(true);
 
             return;
+
         }
 
 
@@ -247,6 +268,29 @@ export default function IniciarTreino() {
     }
 
 
+    // =========================================
+    // ALTERAR CARGA
+    // =========================================
+
+    function alterarCarga(
+        treinoExercicioId,
+        valor
+    ) {
+
+        setCargas(
+            (cargasAtuais) => ({
+                ...cargasAtuais,
+                [treinoExercicioId]: valor
+            })
+        );
+
+    }
+
+
+    // =========================================
+    // FINALIZAR TREINO
+    // =========================================
+
     async function finalizarTreino() {
 
         if (!treino) {
@@ -271,8 +315,14 @@ export default function IniciarTreino() {
         }
 
 
+        const exercicios =
+            Array.isArray(treino.exercicios)
+                ? treino.exercicios
+                : [];
+
+
         const exerciciosComCarga =
-            treino.exercicios.filter(
+            exercicios.filter(
                 (item) =>
                     cargas[item.id] &&
                     Number(cargas[item.id]) > 0
@@ -375,6 +425,10 @@ export default function IniciarTreino() {
     }
 
 
+    // =========================================
+    // CARREGANDO
+    // =========================================
+
     if (carregando) {
 
         return (
@@ -391,6 +445,10 @@ export default function IniciarTreino() {
 
     }
 
+
+    // =========================================
+    // SEM TREINO
+    // =========================================
 
     if (!treino) {
 
@@ -409,6 +467,16 @@ export default function IniciarTreino() {
     }
 
 
+    const exercicios =
+        Array.isArray(treino.exercicios)
+            ? treino.exercicios
+            : [];
+
+
+    // =========================================
+    // TELA
+    // =========================================
+
     return (
 
         <Layout>
@@ -416,14 +484,14 @@ export default function IniciarTreino() {
             <button
                 type="button"
                 onClick={() =>
-                    navigate("/dashboard")
+                    navigate("/meu-treino")
                 }
                 className="mb-6 flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900"
             >
 
                 <ArrowLeft size={20} />
 
-                Voltar para o Dashboard
+                Voltar para Meu Treino
 
             </button>
 
@@ -443,7 +511,7 @@ export default function IniciarTreino() {
                 </p>
 
 
-                {/* CRONÔMETRO DE DESCANSO */}
+                {/* CRONÔMETRO */}
 
                 <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
 
@@ -540,22 +608,17 @@ export default function IniciarTreino() {
                                 className="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-700 px-6 py-3 font-semibold text-white transition hover:bg-purple-800"
                             >
 
-                                {cronometroAtivo ? (
-                                    <>
-                                        <Pause size={20} />
-                                        Pausar
-                                    </>
-                                ) : (
-                                    <>
-                                        <Play size={20} />
+                                <Play size={20} />
 
-                                        {tempo === 0
+                                <span>
+                                    {cronometroAtivo
+                                        ? "Pausar"
+                                        : tempo === 0
                                             ? "Iniciar novamente"
                                             : tempo === tempoInicial
                                                 ? "Iniciar"
                                                 : "Continuar"}
-                                    </>
-                                )}
+                                </span>
 
                             </button>
 
@@ -586,7 +649,7 @@ export default function IniciarTreino() {
                 <div className="space-y-5">
 
 
-                    {treino.exercicios.length === 0 && (
+                    {exercicios.length === 0 && (
 
                         <div className="rounded-2xl bg-white p-8 shadow-md">
 
@@ -599,7 +662,7 @@ export default function IniciarTreino() {
                     )}
 
 
-                    {treino.exercicios.map(
+                    {exercicios.map(
                         (item) => (
 
                             <div
@@ -608,7 +671,6 @@ export default function IniciarTreino() {
                             >
 
                                 <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-
 
                                     <div className="flex items-center gap-4">
 
@@ -634,11 +696,7 @@ export default function IniciarTreino() {
                                             {item.grupo_muscular && (
 
                                                 <p className="text-gray-500">
-
-                                                    {
-                                                        item.grupo_muscular
-                                                    }
-
+                                                    {item.grupo_muscular}
                                                 </p>
 
                                             )}
@@ -652,7 +710,8 @@ export default function IniciarTreino() {
                                             </p>
 
 
-                                            {item.ultima_carga && (
+                                            {item.ultima_carga !== null &&
+                                                item.ultima_carga !== undefined && (
 
                                                 <p className="mt-1 text-sm text-gray-500">
 
@@ -671,9 +730,7 @@ export default function IniciarTreino() {
                                     <div className="w-full md:w-48">
 
                                         <label className="mb-2 block text-sm font-medium text-gray-700">
-
                                             Carga utilizada (kg)
-
                                         </label>
 
 
@@ -682,8 +739,7 @@ export default function IniciarTreino() {
                                             min="1"
                                             step="1"
                                             value={
-                                                cargas[item.id] ||
-                                                ""
+                                                cargas[item.id] ?? ""
                                             }
                                             onChange={(e) =>
                                                 alterarCarga(
@@ -707,7 +763,7 @@ export default function IniciarTreino() {
                 </div>
 
 
-                {treino.exercicios.length > 0 && (
+                {exercicios.length > 0 && (
 
                     <div className="mt-8 flex justify-end">
 
@@ -718,9 +774,7 @@ export default function IniciarTreino() {
                             className="flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-8 py-3 font-semibold text-white transition hover:bg-green-700 disabled:bg-green-400"
                         >
 
-                            <CheckCircle
-                                size={20}
-                            />
+                            <CheckCircle size={20} />
 
                             {finalizando
                                 ? "Finalizando..."

@@ -30,7 +30,6 @@ export default function MeuTreino() {
                 const usuarioId =
                     localStorage.getItem("userId");
 
-
                 if (!usuarioId) {
 
                     alert(
@@ -43,11 +42,9 @@ export default function MeuTreino() {
 
                 }
 
-
                 const response = await axios.get(
                     `http://localhost:5000/agenda/usuario/${usuarioId}`
                 );
-
 
                 setAgenda(response.data.agenda);
                 setTreino(response.data.treino);
@@ -55,11 +52,9 @@ export default function MeuTreino() {
                     response.data.exercicios || []
                 );
 
-
             } catch (error) {
 
                 console.error(error);
-
 
                 if (error.response?.status === 404) {
 
@@ -84,7 +79,6 @@ export default function MeuTreino() {
 
         }
 
-
         carregarTreino();
 
     }, [navigate]);
@@ -96,13 +90,38 @@ export default function MeuTreino() {
             return "Não informada";
         }
 
-
         return new Date(data).toLocaleDateString(
             "pt-BR",
             {
                 timeZone: "UTC"
             }
         );
+
+    }
+
+
+    function formatarStatus(status) {
+
+        if (status === "pendente") {
+            return "Pendente";
+        }
+
+        if (status === "concluido") {
+            return "Concluído";
+        }
+
+        return status;
+
+    }
+
+
+    function classeStatus(status) {
+
+        if (status === "concluido") {
+            return "bg-green-100 text-green-700";
+        }
+
+        return "bg-yellow-100 text-yellow-700";
 
     }
 
@@ -153,7 +172,7 @@ export default function MeuTreino() {
                         </h2>
 
                         <p className="mt-2 text-gray-500">
-                            Você ainda não possui um treino agendado.
+                            Você não possui um treino agendado para hoje.
                         </p>
 
                     </div>
@@ -181,7 +200,6 @@ export default function MeuTreino() {
 
                                     </div>
 
-
                                     {treino.descricao && (
 
                                         <p className="text-gray-500">
@@ -195,9 +213,22 @@ export default function MeuTreino() {
 
                                 {agenda?.status && (
 
-                                    <span className="rounded-full bg-purple-100 px-3 py-1 text-sm font-semibold text-purple-700">
+                                    <span
+                                        className={`
+                                            rounded-full
+                                            px-3
+                                            py-1
+                                            text-sm
+                                            font-semibold
+                                            ${classeStatus(
+                                                agenda.status
+                                            )}
+                                        `}
+                                    >
 
-                                        {agenda.status}
+                                        {formatarStatus(
+                                            agenda.status
+                                        )}
 
                                     </span>
 
@@ -260,7 +291,6 @@ export default function MeuTreino() {
                                                             {item.nome}
                                                         </h3>
 
-
                                                         {item.grupo_muscular && (
 
                                                             <p className="mt-1 text-gray-500">
@@ -288,7 +318,8 @@ export default function MeuTreino() {
                                                 </div>
 
 
-                                                {item.ultima_carga && (
+                                                {item.ultima_carga !== null &&
+                                                    item.ultima_carga !== undefined && (
 
                                                     <div className="mt-4">
 
@@ -324,8 +355,7 @@ export default function MeuTreino() {
 
 
                             {exercicios.length > 0 &&
-                                agenda?.status !==
-                                "concluido" && (
+                                agenda?.status !== "concluido" && (
 
                                 <button
                                     type="button"
