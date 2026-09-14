@@ -65,14 +65,34 @@ export default function MinhaEvolucao() {
                 ]);
 
 
-                const historicoFormatado =
-                    historicoResponse.data.map(
-                        (item) => ({
+                const historicoRecebido =
+                    Array.isArray(historicoResponse.data)
+                        ? historicoResponse.data
+                        : [];
 
-                            id: item.id,
+
+                const avaliacoesRecebidas =
+                    Array.isArray(avaliacoesResponse.data)
+                        ? avaliacoesResponse.data
+                        : [];
+
+
+                // =========================================
+                // HISTÓRICO DE CARGAS
+                // =========================================
+
+                const historicoFormatado =
+                    historicoRecebido
+                        .map((item) => ({
+
+                            id:
+                                item.id,
 
                             peso:
                                 Number(item.peso),
+
+                            dataOriginal:
+                                item.data_inicial,
 
                             data:
                                 new Date(
@@ -84,21 +104,33 @@ export default function MinhaEvolucao() {
                             treinoExercicioId:
                                 item.treino_exercicios_id
 
-                        })
-                    );
+                        }))
+                        .sort(
+                            (a, b) =>
+                                new Date(a.dataOriginal) -
+                                new Date(b.dataOriginal)
+                        );
 
+
+                // =========================================
+                // AVALIAÇÕES
+                // =========================================
 
                 const avaliacoesFormatadas =
-                    avaliacoesResponse.data.map(
-                        (item) => ({
+                    avaliacoesRecebidas
+                        .map((item) => ({
 
-                            id: item.id,
+                            id:
+                                item.id,
 
                             peso:
                                 Number(item.peso),
 
                             imc:
                                 Number(item.imc),
+
+                            dataOriginal:
+                                item.data_avaliacao,
 
                             data:
                                 new Date(
@@ -107,13 +139,22 @@ export default function MinhaEvolucao() {
                                     "pt-BR"
                                 )
 
-                        })
-                    );
+                        }))
+                        .sort(
+                            (a, b) =>
+                                new Date(
+                                    `${a.dataOriginal}T00:00:00`
+                                ) -
+                                new Date(
+                                    `${b.dataOriginal}T00:00:00`
+                                )
+                        );
 
 
                 setHistorico(
                     historicoFormatado
                 );
+
 
                 setAvaliacoes(
                     avaliacoesFormatadas
@@ -158,6 +199,10 @@ export default function MinhaEvolucao() {
     }, []);
 
 
+    // =========================================
+    // CARREGANDO
+    // =========================================
+
     if (carregando) {
 
         return (
@@ -174,6 +219,10 @@ export default function MinhaEvolucao() {
 
     }
 
+
+    // =========================================
+    // INFORMAÇÕES DOS CARDS
+    // =========================================
 
     const maiorCarga =
         historico.length > 0
@@ -207,12 +256,20 @@ export default function MinhaEvolucao() {
 
             <div>
 
+
+                {/* CABEÇALHO */}
+
                 <h1 className="mb-2 text-4xl font-bold">
+
                     Minha Evolução
+
                 </h1>
 
+
                 <p className="mb-8 text-gray-500">
+
                     Acompanhe sua evolução nos treinos e avaliações físicas.
+
                 </p>
 
 
@@ -233,8 +290,11 @@ export default function MinhaEvolucao() {
 
                             </div>
 
+
                             <h2 className="font-semibold">
+
                                 Maior Carga
+
                             </h2>
 
                         </div>
@@ -244,8 +304,7 @@ export default function MinhaEvolucao() {
 
                             {maiorCarga > 0
                                 ? `${maiorCarga} kg`
-                                : "Sem registro"
-                            }
+                                : "Sem registro"}
 
                         </p>
 
@@ -264,8 +323,11 @@ export default function MinhaEvolucao() {
 
                             </div>
 
+
                             <h2 className="font-semibold">
+
                                 Última Carga
+
                             </h2>
 
                         </div>
@@ -275,8 +337,7 @@ export default function MinhaEvolucao() {
 
                             {ultimaCarga > 0
                                 ? `${ultimaCarga} kg`
-                                : "Sem registro"
-                            }
+                                : "Sem registro"}
 
                         </p>
 
@@ -295,8 +356,11 @@ export default function MinhaEvolucao() {
 
                             </div>
 
+
                             <h2 className="font-semibold">
+
                                 Peso Atual
+
                             </h2>
 
                         </div>
@@ -306,8 +370,7 @@ export default function MinhaEvolucao() {
 
                             {ultimaAvaliacao
                                 ? `${ultimaAvaliacao.peso} kg`
-                                : "Sem avaliação"
-                            }
+                                : "Sem avaliação"}
 
                         </p>
 
@@ -326,8 +389,11 @@ export default function MinhaEvolucao() {
 
                             </div>
 
+
                             <h2 className="font-semibold">
+
                                 IMC Atual
+
                             </h2>
 
                         </div>
@@ -337,12 +403,12 @@ export default function MinhaEvolucao() {
 
                             {ultimaAvaliacao
                                 ? ultimaAvaliacao.imc.toFixed(2)
-                                : "Sem avaliação"
-                            }
+                                : "Sem avaliação"}
 
                         </p>
 
                     </div>
+
 
                 </div>
 
@@ -352,18 +418,25 @@ export default function MinhaEvolucao() {
                 <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
 
                     <h2 className="mb-2 text-2xl font-bold">
+
                         Evolução das Cargas
+
                     </h2>
 
+
                     <p className="mb-6 text-sm text-gray-500">
+
                         Histórico das cargas registradas durante os treinos.
+
                     </p>
 
 
                     {historico.length === 0 ? (
 
                         <p className="text-gray-500">
+
                             Você ainda não possui cargas registradas.
+
                         </p>
 
                     ) : (
@@ -417,18 +490,25 @@ export default function MinhaEvolucao() {
                 <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
 
                     <h2 className="mb-2 text-2xl font-bold">
+
                         Evolução do Peso
+
                     </h2>
 
+
                     <p className="mb-6 text-sm text-gray-500">
+
                         Alterações do peso registradas nas avaliações físicas.
+
                     </p>
 
 
                     {avaliacoes.length === 0 ? (
 
                         <p className="text-gray-500">
+
                             Você ainda não possui avaliações físicas.
+
                         </p>
 
                     ) : (
@@ -454,7 +534,10 @@ export default function MinhaEvolucao() {
 
                                     <YAxis
                                         unit=" kg"
-                                        domain={["auto", "auto"]}
+                                        domain={[
+                                            "auto",
+                                            "auto"
+                                        ]}
                                     />
 
                                     <Tooltip />
@@ -483,18 +566,25 @@ export default function MinhaEvolucao() {
                 <div className="mb-8 rounded-2xl bg-white p-6 shadow-md">
 
                     <h2 className="mb-2 text-2xl font-bold">
+
                         Evolução do IMC
+
                     </h2>
 
+
                     <p className="mb-6 text-sm text-gray-500">
+
                         Histórico do IMC calculado nas avaliações físicas.
+
                     </p>
 
 
                     {avaliacoes.length === 0 ? (
 
                         <p className="text-gray-500">
+
                             Você ainda não possui avaliações físicas.
+
                         </p>
 
                     ) : (
@@ -519,7 +609,10 @@ export default function MinhaEvolucao() {
                                     />
 
                                     <YAxis
-                                        domain={["auto", "auto"]}
+                                        domain={[
+                                            "auto",
+                                            "auto"
+                                        ]}
                                     />
 
                                     <Tooltip />
@@ -548,14 +641,18 @@ export default function MinhaEvolucao() {
                 <div className="rounded-2xl bg-white p-6 shadow-md">
 
                     <h2 className="mb-5 text-2xl font-bold">
+
                         Histórico de Cargas
+
                     </h2>
 
 
                     {historico.length === 0 ? (
 
                         <p className="text-gray-500">
+
                             Nenhum histórico disponível.
+
                         </p>
 
                     ) : (
@@ -565,39 +662,51 @@ export default function MinhaEvolucao() {
                             {historico
                                 .slice()
                                 .reverse()
-                                .map((item) => (
+                                .map(
+                                    (item) => (
 
-                                    <div
-                                        key={item.id}
-                                        className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
-                                    >
+                                        <div
+                                            key={
+                                                item.id
+                                            }
+                                            className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
+                                        >
 
-                                        <div>
+                                            <div>
 
-                                            <p className="font-semibold">
-                                                Carga registrada
-                                            </p>
+                                                <p className="font-semibold">
 
-                                            <p className="text-sm text-gray-500">
-                                                {item.data}
-                                            </p>
+                                                    Carga registrada
+
+                                                </p>
+
+
+                                                <p className="text-sm text-gray-500">
+
+                                                    {item.data}
+
+                                                </p>
+
+                                            </div>
+
+
+                                            <span className="text-lg font-bold text-purple-700">
+
+                                                {item.peso} kg
+
+                                            </span>
 
                                         </div>
 
-
-                                        <span className="text-lg font-bold text-purple-700">
-                                            {item.peso} kg
-                                        </span>
-
-                                    </div>
-
-                                ))}
+                                    )
+                                )}
 
                         </div>
 
                     )}
 
                 </div>
+
 
             </div>
 

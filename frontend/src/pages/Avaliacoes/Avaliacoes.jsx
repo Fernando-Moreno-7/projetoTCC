@@ -36,11 +36,18 @@ export default function Avaliacoes() {
                 "http://localhost:5000/avaliacao/list"
             );
 
-            setAvaliacoes(response.data);
+
+            setAvaliacoes(
+                Array.isArray(response.data)
+                    ? response.data
+                    : []
+            );
+
 
         } catch (error) {
 
             console.error(error);
+
 
             if (error.response) {
 
@@ -51,9 +58,12 @@ export default function Avaliacoes() {
 
             } else {
 
-                alert("Não foi possível conectar ao servidor.");
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
 
             }
+
 
         } finally {
 
@@ -69,6 +79,7 @@ export default function Avaliacoes() {
         const confirmar = window.confirm(
             "Tem certeza que deseja excluir esta avaliação?"
         );
+
 
         if (!confirmar) {
             return;
@@ -86,18 +97,25 @@ export default function Avaliacoes() {
                 }
             );
 
-            alert(response.data.message);
 
-
-            setAvaliacoes((avaliacoesAtuais) =>
-                avaliacoesAtuais.filter(
-                    (avaliacao) => avaliacao.id !== id
-                )
+            alert(
+                response.data.message
             );
+
+
+            setAvaliacoes(
+                (avaliacoesAtuais) =>
+                    avaliacoesAtuais.filter(
+                        (avaliacao) =>
+                            avaliacao.id !== id
+                    )
+            );
+
 
         } catch (error) {
 
             console.error(error);
+
 
             if (error.response) {
 
@@ -108,7 +126,9 @@ export default function Avaliacoes() {
 
             } else {
 
-                alert("Não foi possível conectar ao servidor.");
+                alert(
+                    "Não foi possível conectar ao servidor."
+                );
 
             }
 
@@ -120,26 +140,47 @@ export default function Avaliacoes() {
     function formatarData(data) {
 
         if (!data) {
-            return "";
+            return "Data não informada";
         }
 
-        const partes = data.split("-");
+
+        const dataSomente =
+            data.split("T")[0];
+
+
+        const partes =
+            dataSomente.split("-");
+
+
+        if (partes.length !== 3) {
+            return data;
+        }
+
 
         return `${partes[2]}/${partes[1]}/${partes[0]}`;
 
     }
 
 
-    const avaliacoesFiltradas = avaliacoes.filter((avaliacao) => {
+    const textoPesquisa =
+        pesquisa.trim().toLowerCase();
 
-        const nomeAluno =
-            avaliacao.usuario?.nome?.toLowerCase() || "";
 
-        const textoPesquisa = pesquisa.toLowerCase();
+    const avaliacoesFiltradas =
+        avaliacoes.filter(
+            (avaliacao) => {
 
-        return nomeAluno.includes(textoPesquisa);
+                const nomeAluno =
+                    avaliacao.usuario?.nome
+                        ?.toLowerCase() || "";
 
-    });
+
+                return nomeAluno.includes(
+                    textoPesquisa
+                );
+
+            }
+        );
 
 
     return (
@@ -151,7 +192,7 @@ export default function Avaliacoes() {
 
                 {/* CABEÇALHO */}
 
-                <div className="flex justify-between items-center mb-8">
+                <div className="mb-8 flex items-center justify-between">
 
                     <div>
 
@@ -159,7 +200,7 @@ export default function Avaliacoes() {
                             Avaliações
                         </h1>
 
-                        <p className="text-gray-500 mt-2">
+                        <p className="mt-2 text-gray-500">
                             Gerencie as avaliações físicas dos alunos.
                         </p>
 
@@ -167,10 +208,13 @@ export default function Avaliacoes() {
 
 
                     <button
+                        type="button"
                         onClick={() =>
-                            navigate("/cadastrar-avaliacao")
+                            navigate(
+                                "/cadastrar-avaliacao"
+                            )
                         }
-                        className="bg-purple-700 hover:bg-purple-800 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition"
+                        className="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-700 px-6 py-3 text-white transition hover:bg-purple-800"
                     >
 
                         <Plus size={20} />
@@ -188,17 +232,20 @@ export default function Avaliacoes() {
 
                     <Search
                         size={18}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"
+                        className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
                     />
+
 
                     <input
                         type="text"
                         value={pesquisa}
                         onChange={(e) =>
-                            setPesquisa(e.target.value)
+                            setPesquisa(
+                                e.target.value
+                            )
                         }
                         placeholder="Pesquisar aluno..."
-                        className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                        className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                     />
 
                 </div>
@@ -220,7 +267,7 @@ export default function Avaliacoes() {
                 {!carregando &&
                     avaliacoesFiltradas.length === 0 && (
 
-                        <div className="bg-white rounded-2xl shadow-md p-8 text-center">
+                        <div className="rounded-2xl bg-white p-8 text-center shadow-md">
 
                             <p className="text-gray-500">
                                 Nenhuma avaliação encontrada.
@@ -237,126 +284,129 @@ export default function Avaliacoes() {
 
                     <div className="space-y-5">
 
-                        {avaliacoesFiltradas.map((avaliacao) => (
+                        {avaliacoesFiltradas.map(
+                            (avaliacao) => (
 
-                            <div
-                                key={avaliacao.id}
-                                className="bg-white rounded-2xl shadow-md p-6 flex flex-col md:flex-row md:justify-between md:items-center gap-6"
-                            >
-
-
-                                {/* DADOS DA AVALIAÇÃO */}
-
-                                <div>
-
-                                    <h2 className="text-xl font-bold">
-
-                                        {avaliacao.usuario?.nome ||
-                                            "Aluno não encontrado"}
-
-                                    </h2>
+                                <div
+                                    key={
+                                        avaliacao.id
+                                    }
+                                    className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-md md:flex-row md:items-center md:justify-between"
+                                >
 
 
-                                    <p className="text-gray-500 mt-2">
+                                    {/* DADOS */}
 
-                                        Peso: {avaliacao.peso} kg
+                                    <div>
 
-                                    </p>
+                                        <h2 className="text-xl font-bold">
 
+                                            {avaliacao.usuario?.nome ||
+                                                "Aluno não encontrado"}
 
-                                    <p className="text-gray-500">
-
-                                        Altura: {avaliacao.altura} m
-
-                                    </p>
+                                        </h2>
 
 
-                                    <p className="text-gray-500">
+                                        <p className="mt-2 text-gray-500">
 
-                                        IMC: {avaliacao.imc}
-
-                                    </p>
-
-
-                                    {avaliacao.observacoes && (
-
-                                        <p className="text-gray-500 mt-2">
-
-                                            Observações:{" "}
-                                            {avaliacao.observacoes}
+                                            Peso:{" "}
+                                            {avaliacao.peso} kg
 
                                         </p>
 
-                                    )}
 
-                                </div>
+                                        <p className="text-gray-500">
+
+                                            Altura:{" "}
+                                            {avaliacao.altura} m
+
+                                        </p>
 
 
-                                {/* DATA E BOTÕES */}
+                                        <p className="text-gray-500">
 
-                                <div className="flex flex-col md:items-end gap-4">
+                                            IMC:{" "}
+                                            {avaliacao.imc}
 
-                                    <span className="bg-blue-100 text-blue-700 px-4 py-2 rounded-full font-semibold">
+                                        </p>
 
-                                        {formatarData(
-                                            avaliacao.data_avaliacao
+
+                                        {avaliacao.observacoes && (
+
+                                            <p className="mt-2 text-gray-500">
+
+                                                Observações:{" "}
+                                                {
+                                                    avaliacao.observacoes
+                                                }
+
+                                            </p>
+
                                         )}
 
-                                    </span>
+                                    </div>
 
 
-                                    <div className="flex gap-4">
+                                    {/* DATA E BOTÕES */}
+
+                                    <div className="flex flex-col gap-4 md:items-end">
+
+                                        <span className="rounded-full bg-blue-100 px-4 py-2 font-semibold text-blue-700">
+
+                                            {formatarData(
+                                                avaliacao.data_avaliacao
+                                            )}
+
+                                        </span>
 
 
-                                        {/* EDITAR */}
+                                        <div className="flex gap-4">
 
-                                        <button
-                                            onClick={() =>
-                                                navigate(
-                                                    `/editar-avaliacao/${avaliacao.id}`
-                                                )
-                                            }
-                                            className="flex items-center gap-2 text-purple-700 hover:text-purple-900 transition"
-                                        >
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    navigate(
+                                                        `/editar-avaliacao/${avaliacao.id}`
+                                                    )
+                                                }
+                                                className="flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900"
+                                            >
 
-                                            <Pencil size={18} />
+                                                <Pencil size={18} />
 
-                                            Editar
+                                                Editar
 
-                                        </button>
+                                            </button>
 
 
-                                        {/* EXCLUIR */}
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    excluirAvaliacao(
+                                                        avaliacao.id
+                                                    )
+                                                }
+                                                className="flex cursor-pointer items-center gap-2 text-red-600 transition hover:text-red-800"
+                                            >
 
-                                        <button
-                                            onClick={() =>
-                                                excluirAvaliacao(
-                                                    avaliacao.id
-                                                )
-                                            }
-                                            className="flex items-center gap-2 text-red-600 hover:text-red-800 transition"
-                                        >
+                                                <Trash2 size={18} />
 
-                                            <Trash2 size={18} />
+                                                Excluir
 
-                                            Excluir
+                                            </button>
 
-                                        </button>
-
+                                        </div>
 
                                     </div>
 
                                 </div>
 
-
-                            </div>
-
-                        ))}
+                            )
+                        )}
 
                     </div>
 
                 )}
-
 
             </div>
 

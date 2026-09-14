@@ -59,7 +59,10 @@ export default class AvaliacaoController {
 
         try {
 
-            const usuario = await Usuarios.findByPk(usuario_id);
+            const usuario =
+                await Usuarios.findByPk(
+                    usuario_id
+                );
 
 
             if (!usuario) {
@@ -71,9 +74,20 @@ export default class AvaliacaoController {
             }
 
 
-            const pesoNumero = Number(peso);
+            if (usuario.tipo_usuario !== "aluno") {
 
-            const alturaNumero = Number(altura);
+                return res.status(422).json({
+                    message: "A avaliação deve pertencer a um aluno!"
+                });
+
+            }
+
+
+            const pesoNumero =
+                Number(peso);
+
+            const alturaNumero =
+                Number(altura);
 
 
             if (
@@ -105,26 +119,37 @@ export default class AvaliacaoController {
                 (alturaNumero * alturaNumero);
 
 
-            await Avaliacoes.create({
+            const avaliacao =
+                await Avaliacoes.create({
 
-                usuario_id,
+                    usuario_id,
 
-                peso: pesoNumero,
+                    peso:
+                        pesoNumero,
 
-                altura: alturaNumero,
+                    altura:
+                        alturaNumero,
 
-                imc: imc.toFixed(2),
+                    imc:
+                        Number(
+                            imc.toFixed(2)
+                        ),
 
-                data_avaliacao,
+                    data_avaliacao,
 
-                observacoes:
-                    observacoes || ""
+                    observacoes:
+                        observacoes?.trim() || ""
 
-            });
+                });
 
 
-            return res.status(200).json({
-                message: "Avaliação cadastrada com sucesso!"
+            return res.status(201).json({
+
+                message:
+                    "Avaliação cadastrada com sucesso!",
+
+                avaliacao
+
             });
 
 
@@ -133,6 +158,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao cadastrar avaliação: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao cadastrar avaliação!"
@@ -169,13 +195,16 @@ export default class AvaliacaoController {
                     ],
 
                     order: [
-                        ["data_avaliacao", "DESC"]
+                        ["data_avaliacao", "DESC"],
+                        ["id", "DESC"]
                     ]
 
                 });
 
 
-            return res.status(200).json(avaliacoes);
+            return res.status(200).json(
+                avaliacoes
+            );
 
 
         } catch (error) {
@@ -183,6 +212,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao listar avaliações: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao listar avaliações!"
@@ -199,7 +229,17 @@ export default class AvaliacaoController {
 
     static async getById(req, res) {
 
-        const id = req.params.id;
+        const id =
+            req.params.id;
+
+
+        if (!id) {
+
+            return res.status(422).json({
+                message: "Informe o ID da avaliação!"
+            });
+
+        }
 
 
         try {
@@ -234,7 +274,9 @@ export default class AvaliacaoController {
             }
 
 
-            return res.status(200).json(avaliacao);
+            return res.status(200).json(
+                avaliacao
+            );
 
 
         } catch (error) {
@@ -242,6 +284,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao buscar avaliação: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao buscar avaliação!"
@@ -262,6 +305,15 @@ export default class AvaliacaoController {
             req.params.usuario_id;
 
 
+        if (!usuario_id) {
+
+            return res.status(422).json({
+                message: "Informe o aluno!"
+            });
+
+        }
+
+
         try {
 
             const usuario =
@@ -279,6 +331,15 @@ export default class AvaliacaoController {
             }
 
 
+            if (usuario.tipo_usuario !== "aluno") {
+
+                return res.status(422).json({
+                    message: "O usuário informado não é um aluno!"
+                });
+
+            }
+
+
             const avaliacoes =
                 await Avaliacoes.findAll({
 
@@ -287,13 +348,16 @@ export default class AvaliacaoController {
                     },
 
                     order: [
-                        ["data_avaliacao", "DESC"]
+                        ["data_avaliacao", "DESC"],
+                        ["id", "DESC"]
                     ]
 
                 });
 
 
-            return res.status(200).json(avaliacoes);
+            return res.status(200).json(
+                avaliacoes
+            );
 
 
         } catch (error) {
@@ -301,6 +365,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao buscar avaliações do aluno: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao buscar avaliações do aluno!"
@@ -375,7 +440,9 @@ export default class AvaliacaoController {
         try {
 
             const avaliacao =
-                await Avaliacoes.findByPk(id);
+                await Avaliacoes.findByPk(
+                    id
+                );
 
 
             if (!avaliacao) {
@@ -402,9 +469,20 @@ export default class AvaliacaoController {
             }
 
 
-            const pesoNumero = Number(peso);
+            if (usuario.tipo_usuario !== "aluno") {
 
-            const alturaNumero = Number(altura);
+                return res.status(422).json({
+                    message: "A avaliação deve pertencer a um aluno!"
+                });
+
+            }
+
+
+            const pesoNumero =
+                Number(peso);
+
+            const alturaNumero =
+                Number(altura);
 
 
             if (
@@ -436,33 +514,27 @@ export default class AvaliacaoController {
                 (alturaNumero * alturaNumero);
 
 
-            await Avaliacoes.update(
+            await avaliacao.update({
 
-                {
-                    usuario_id,
+                usuario_id,
 
-                    peso:
-                        pesoNumero,
+                peso:
+                    pesoNumero,
 
-                    altura:
-                        alturaNumero,
+                altura:
+                    alturaNumero,
 
-                    imc:
-                        imc.toFixed(2),
+                imc:
+                    Number(
+                        imc.toFixed(2)
+                    ),
 
-                    data_avaliacao,
+                data_avaliacao,
 
-                    observacoes:
-                        observacoes || ""
-                },
+                observacoes:
+                    observacoes?.trim() || ""
 
-                {
-                    where: {
-                        id
-                    }
-                }
-
-            );
+            });
 
 
             return res.status(200).json({
@@ -475,6 +547,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao atualizar avaliação: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao atualizar avaliação!"
@@ -508,7 +581,9 @@ export default class AvaliacaoController {
         try {
 
             const avaliacao =
-                await Avaliacoes.findByPk(id);
+                await Avaliacoes.findByPk(
+                    id
+                );
 
 
             if (!avaliacao) {
@@ -520,13 +595,7 @@ export default class AvaliacaoController {
             }
 
 
-            await Avaliacoes.destroy({
-
-                where: {
-                    id
-                }
-
-            });
+            await avaliacao.destroy();
 
 
             return res.status(200).json({
@@ -539,6 +608,7 @@ export default class AvaliacaoController {
             Logger.error(
                 `Erro ao excluir avaliação: ${error}`
             );
+
 
             return res.status(500).json({
                 message: "Erro ao excluir avaliação!"

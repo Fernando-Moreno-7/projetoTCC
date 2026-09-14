@@ -18,10 +18,13 @@ export default function CadastrarAvaliacao() {
 
     const navigate = useNavigate();
 
+    const hoje =
+        new Date().toISOString().split("T")[0];
+
     const [alunos, setAlunos] = useState([]);
 
     const [usuarioId, setUsuarioId] = useState("");
-    const [dataAvaliacao, setDataAvaliacao] = useState("");
+    const [dataAvaliacao, setDataAvaliacao] = useState(hoje);
     const [peso, setPeso] = useState("");
     const [altura, setAltura] = useState("");
     const [observacoes, setObservacoes] = useState("");
@@ -40,11 +43,27 @@ export default function CadastrarAvaliacao() {
                     "http://localhost:5000/user/list"
                 );
 
-                setAlunos(response.data);
+
+                const usuarios =
+                    Array.isArray(response.data)
+                        ? response.data
+                        : [];
+
+
+                const apenasAlunos =
+                    usuarios.filter(
+                        (usuario) =>
+                            usuario.tipo_usuario === "aluno"
+                    );
+
+
+                setAlunos(apenasAlunos);
+
 
             } catch (error) {
 
                 console.error(error);
+
 
                 if (error.response) {
 
@@ -60,6 +79,7 @@ export default function CadastrarAvaliacao() {
                     );
 
                 }
+
 
             } finally {
 
@@ -82,7 +102,9 @@ export default function CadastrarAvaliacao() {
 
         if (!usuarioId) {
 
-            alert("Selecione um aluno!");
+            alert(
+                "Selecione um aluno!"
+            );
 
             return;
 
@@ -91,7 +113,9 @@ export default function CadastrarAvaliacao() {
 
         if (!dataAvaliacao) {
 
-            alert("Informe a data da avaliação!");
+            alert(
+                "Informe a data da avaliação!"
+            );
 
             return;
 
@@ -100,7 +124,9 @@ export default function CadastrarAvaliacao() {
 
         if (!peso) {
 
-            alert("Informe o peso!");
+            alert(
+                "Informe o peso!"
+            );
 
             return;
 
@@ -109,7 +135,44 @@ export default function CadastrarAvaliacao() {
 
         if (!altura) {
 
-            alert("Informe a altura!");
+            alert(
+                "Informe a altura!"
+            );
+
+            return;
+
+        }
+
+
+        const pesoNumero =
+            Number(peso);
+
+        const alturaNumero =
+            Number(altura);
+
+
+        if (
+            Number.isNaN(pesoNumero) ||
+            pesoNumero <= 0
+        ) {
+
+            alert(
+                "Informe um peso válido!"
+            );
+
+            return;
+
+        }
+
+
+        if (
+            Number.isNaN(alturaNumero) ||
+            alturaNumero <= 0
+        ) {
+
+            alert(
+                "Informe uma altura válida!"
+            );
 
             return;
 
@@ -124,18 +187,32 @@ export default function CadastrarAvaliacao() {
             const response = await axios.post(
                 "http://localhost:5000/avaliacao/create",
                 {
-                    usuario_id: usuarioId,
-                    peso,
-                    altura,
-                    data_avaliacao: dataAvaliacao,
-                    observacoes
+                    usuario_id:
+                        Number(usuarioId),
+
+                    peso:
+                        pesoNumero,
+
+                    altura:
+                        alturaNumero,
+
+                    data_avaliacao:
+                        dataAvaliacao,
+
+                    observacoes:
+                        observacoes.trim()
                 }
             );
 
 
-            alert(response.data.message);
+            alert(
+                response.data.message
+            );
 
-            navigate("/avaliacoes");
+
+            navigate(
+                "/avaliacoes"
+            );
 
 
         } catch (error) {
@@ -158,6 +235,7 @@ export default function CadastrarAvaliacao() {
 
             }
 
+
         } finally {
 
             setSalvando(false);
@@ -167,14 +245,39 @@ export default function CadastrarAvaliacao() {
     }
 
 
+    const pesoNumero =
+        Number(peso);
+
+    const alturaNumero =
+        Number(altura);
+
+
+    const imcPrevisto =
+        peso &&
+        altura &&
+        pesoNumero > 0 &&
+        alturaNumero > 0
+            ? (
+                pesoNumero /
+                (alturaNumero * alturaNumero)
+            ).toFixed(2)
+            : null;
+
+
     return (
 
         <Layout>
 
 
             <button
-                onClick={() => navigate("/avaliacoes")}
-                className="flex items-center gap-2 text-purple-700 hover:text-purple-900 mb-6 transition"
+                type="button"
+                onClick={() =>
+                    navigate(
+                        "/avaliacoes"
+                    )
+                }
+                disabled={salvando}
+                className="mb-6 flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900 disabled:cursor-not-allowed disabled:opacity-50"
             >
 
                 <ArrowLeft size={20} />
@@ -193,7 +296,7 @@ export default function CadastrarAvaliacao() {
                 </h1>
 
 
-                <p className="text-gray-500 mt-2 mb-8">
+                <p className="mt-2 mb-8 text-gray-500">
 
                     Cadastre uma nova avaliação física.
 
@@ -201,8 +304,10 @@ export default function CadastrarAvaliacao() {
 
 
                 <form
-                    onSubmit={handleSalvarAvaliacao}
-                    className="bg-white rounded-2xl shadow-md p-8 space-y-6"
+                    onSubmit={
+                        handleSalvarAvaliacao
+                    }
+                    className="space-y-6 rounded-2xl bg-white p-8 shadow-md"
                 >
 
 
@@ -210,7 +315,7 @@ export default function CadastrarAvaliacao() {
 
                     <div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
+                        <label className="mb-2 block font-medium text-gray-700">
 
                             Aluno
 
@@ -221,17 +326,22 @@ export default function CadastrarAvaliacao() {
 
                             <User
                                 size={18}
-                                className="absolute left-4 top-4 text-gray-400"
+                                className="absolute top-4 left-4 text-gray-400"
                             />
 
 
                             <select
                                 value={usuarioId}
                                 onChange={(e) =>
-                                    setUsuarioId(e.target.value)
+                                    setUsuarioId(
+                                        e.target.value
+                                    )
                                 }
-                                disabled={carregando}
-                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                disabled={
+                                    carregando ||
+                                    salvando
+                                }
+                                className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none disabled:bg-gray-100"
                             >
 
                                 <option value="">
@@ -243,18 +353,24 @@ export default function CadastrarAvaliacao() {
                                 </option>
 
 
-                                {alunos.map((aluno) => (
+                                {alunos.map(
+                                    (aluno) => (
 
-                                    <option
-                                        key={aluno.id}
-                                        value={aluno.id}
-                                    >
+                                        <option
+                                            key={
+                                                aluno.id
+                                            }
+                                            value={
+                                                aluno.id
+                                            }
+                                        >
 
-                                        {aluno.nome}
+                                            {aluno.nome}
 
-                                    </option>
+                                        </option>
 
-                                ))}
+                                    )
+                                )}
 
                             </select>
 
@@ -263,12 +379,11 @@ export default function CadastrarAvaliacao() {
                     </div>
 
 
-
                     {/* DATA */}
 
                     <div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
+                        <label className="mb-2 block font-medium text-gray-700">
 
                             Data da Avaliação
 
@@ -279,17 +394,22 @@ export default function CadastrarAvaliacao() {
 
                             <Calendar
                                 size={18}
-                                className="absolute left-4 top-4 text-gray-400"
+                                className="absolute top-4 left-4 text-gray-400"
                             />
 
 
                             <input
                                 type="date"
-                                value={dataAvaliacao}
-                                onChange={(e) =>
-                                    setDataAvaliacao(e.target.value)
+                                value={
+                                    dataAvaliacao
                                 }
-                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                onChange={(e) =>
+                                    setDataAvaliacao(
+                                        e.target.value
+                                    )
+                                }
+                                disabled={salvando}
+                                className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none disabled:bg-gray-100"
                             />
 
                         </div>
@@ -297,15 +417,14 @@ export default function CadastrarAvaliacao() {
                     </div>
 
 
-
                     {/* PESO E ALTURA */}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
 
 
                         <div>
 
-                            <label className="block text-gray-700 font-medium mb-2">
+                            <label className="mb-2 block font-medium text-gray-700">
 
                                 Peso (kg)
 
@@ -316,7 +435,7 @@ export default function CadastrarAvaliacao() {
 
                                 <Weight
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute top-4 left-4 text-gray-400"
                                 />
 
 
@@ -326,10 +445,13 @@ export default function CadastrarAvaliacao() {
                                     min="1"
                                     value={peso}
                                     onChange={(e) =>
-                                        setPeso(e.target.value)
+                                        setPeso(
+                                            e.target.value
+                                        )
                                     }
+                                    disabled={salvando}
                                     placeholder="Ex: 80.50"
-                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                    className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none disabled:bg-gray-100"
                                 />
 
                             </div>
@@ -339,7 +461,7 @@ export default function CadastrarAvaliacao() {
 
                         <div>
 
-                            <label className="block text-gray-700 font-medium mb-2">
+                            <label className="mb-2 block font-medium text-gray-700">
 
                                 Altura (m)
 
@@ -350,7 +472,7 @@ export default function CadastrarAvaliacao() {
 
                                 <Ruler
                                     size={18}
-                                    className="absolute left-4 top-4 text-gray-400"
+                                    className="absolute top-4 left-4 text-gray-400"
                                 />
 
 
@@ -360,10 +482,13 @@ export default function CadastrarAvaliacao() {
                                     min="0.50"
                                     value={altura}
                                     onChange={(e) =>
-                                        setAltura(e.target.value)
+                                        setAltura(
+                                            e.target.value
+                                        )
                                     }
+                                    disabled={salvando}
                                     placeholder="Ex: 1.75"
-                                    className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                    className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none disabled:bg-gray-100"
                                 />
 
                             </div>
@@ -373,12 +498,11 @@ export default function CadastrarAvaliacao() {
                     </div>
 
 
-
                     {/* OBSERVAÇÕES */}
 
                     <div>
 
-                        <label className="block text-gray-700 font-medium mb-2">
+                        <label className="mb-2 block font-medium text-gray-700">
 
                             Observações
 
@@ -389,18 +513,23 @@ export default function CadastrarAvaliacao() {
 
                             <FileText
                                 size={18}
-                                className="absolute left-4 top-4 text-gray-400"
+                                className="absolute top-4 left-4 text-gray-400"
                             />
 
 
                             <textarea
                                 rows="4"
-                                value={observacoes}
-                                onChange={(e) =>
-                                    setObservacoes(e.target.value)
+                                value={
+                                    observacoes
                                 }
+                                onChange={(e) =>
+                                    setObservacoes(
+                                        e.target.value
+                                    )
+                                }
+                                disabled={salvando}
                                 placeholder="Digite observações da avaliação..."
-                                className="w-full border border-gray-300 rounded-xl py-3 pl-11 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-600"
+                                className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none disabled:bg-gray-100"
                             />
 
                         </div>
@@ -408,33 +537,45 @@ export default function CadastrarAvaliacao() {
                     </div>
 
 
+                    {/* IMC */}
 
-                    {/* INFORMAÇÃO DO IMC */}
-
-                    <div className="bg-purple-50 border border-purple-100 rounded-xl p-4">
+                    <div className="rounded-xl border border-purple-100 bg-purple-50 p-4">
 
                         <p className="text-sm text-purple-800">
 
-                            O IMC será calculado automaticamente
-                            com base no peso e na altura.
+                            O IMC será calculado automaticamente com base no peso e na altura.
 
                         </p>
+
+
+                        {imcPrevisto && (
+
+                            <p className="mt-2 text-lg font-bold text-purple-900">
+
+                                IMC previsto:{" "}
+                                {imcPrevisto}
+
+                            </p>
+
+                        )}
 
                     </div>
 
 
-
                     {/* BOTÕES */}
 
-                    <div className="flex justify-end gap-4 pt-8 border-t">
+                    <div className="flex justify-end gap-4 border-t pt-8">
 
 
                         <button
                             type="button"
                             onClick={() =>
-                                navigate("/avaliacoes")
+                                navigate(
+                                    "/avaliacoes"
+                                )
                             }
-                            className="border border-gray-300 text-gray-700 hover:bg-gray-100 px-8 py-3 rounded-xl font-semibold transition"
+                            disabled={salvando}
+                            className="cursor-pointer rounded-xl border border-gray-300 px-8 py-3 font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                         >
 
                             Cancelar
@@ -444,8 +585,11 @@ export default function CadastrarAvaliacao() {
 
                         <button
                             type="submit"
-                            disabled={salvando || carregando}
-                            className="bg-purple-700 hover:bg-purple-800 disabled:bg-purple-400 text-white px-8 py-3 rounded-xl font-semibold transition"
+                            disabled={
+                                salvando ||
+                                carregando
+                            }
+                            className="cursor-pointer rounded-xl bg-purple-700 px-8 py-3 font-semibold text-white transition hover:bg-purple-800 disabled:cursor-not-allowed disabled:bg-purple-400"
                         >
 
                             {salvando
