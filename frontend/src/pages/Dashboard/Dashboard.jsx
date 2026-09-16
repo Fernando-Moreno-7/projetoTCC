@@ -50,7 +50,10 @@ export default function Dashboard() {
                     );
 
 
-                setDashboard(response.data);
+                setDashboard(
+                    response.data
+                );
+
 
             } catch (error) {
 
@@ -72,6 +75,7 @@ export default function Dashboard() {
 
                 }
 
+
             } finally {
 
                 setCarregando(false);
@@ -85,6 +89,10 @@ export default function Dashboard() {
 
     }, []);
 
+
+    // =========================================
+    // CARREGANDO
+    // =========================================
 
     if (carregando) {
 
@@ -105,6 +113,10 @@ export default function Dashboard() {
     }
 
 
+    // =========================================
+    // ERRO AO CARREGAR
+    // =========================================
+
     if (!dashboard) {
 
         return (
@@ -124,6 +136,10 @@ export default function Dashboard() {
     }
 
 
+    // =========================================
+    // DADOS
+    // =========================================
+
     const {
         usuario,
         treino_hoje,
@@ -132,45 +148,71 @@ export default function Dashboard() {
     } = dashboard;
 
 
+    const imc =
+        usuario?.imc !== null &&
+        usuario?.imc !== undefined
+            ? Number(
+                usuario.imc
+            ).toFixed(2)
+            : "Não informado";
+
+
+    const maiorCarga =
+        estatisticas?.maior_carga !== null &&
+        estatisticas?.maior_carga !== undefined
+            ? `${estatisticas.maior_carga} kg`
+            : "Sem registro";
+
+
+    const dadosEvolucao =
+        Array.isArray(evolucao_carga)
+            ? evolucao_carga
+            : [];
+
+
     return (
 
         <Layout>
 
             <div>
 
-                <h1 className="text-4xl font-bold mb-2">
+
+                {/* CABEÇALHO */}
+
+                <h1 className="mb-2 text-4xl font-bold">
 
                     Dashboard
 
                 </h1>
 
 
-                <p className="text-gray-500 mb-8">
+                <p className="mb-8 text-gray-500">
 
                     Bem-vindo ao EvolutionFit,{" "}
-                    {usuario?.nome}!
+
+                    {usuario?.nome || "Aluno"}!
 
                 </p>
 
 
                 {/* CARDS */}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
 
+
+                    {/* IMC */}
 
                     <Card
                         titulo="IMC"
-                        valor={
-                            usuario?.imc
-                                ? usuario.imc
-                                : "Não informado"
-                        }
+                        valor={imc}
                         icone={
                             <Activity size={28} />
                         }
                         cor="bg-blue-500"
                     />
 
+
+                    {/* OBJETIVO */}
 
                     <Card
                         titulo="Objetivo"
@@ -184,6 +226,8 @@ export default function Dashboard() {
                         cor="bg-green-500"
                     />
 
+
+                    {/* TREINOS CONCLUÍDOS */}
 
                     <Card
                         titulo="Treinos Concluídos"
@@ -199,13 +243,11 @@ export default function Dashboard() {
                     />
 
 
+                    {/* MAIOR CARGA */}
+
                     <Card
                         titulo="Maior Carga"
-                        valor={
-                            estatisticas?.maior_carga
-                                ? `${estatisticas.maior_carga} kg`
-                                : "Sem registro"
-                        }
+                        valor={maiorCarga}
                         icone={
                             <Trophy size={28} />
                         }
@@ -218,17 +260,23 @@ export default function Dashboard() {
 
                 {/* TREINO + GRÁFICO */}
 
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-8">
+                <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-2">
 
+
+                    {/* TREINO DE HOJE */}
 
                     <TreinoHoje
-                        treino={treino_hoje}
+                        treino={
+                            treino_hoje
+                        }
                     />
 
 
-                    <div className="bg-white rounded-2xl shadow-md p-6">
+                    {/* EVOLUÇÃO */}
 
-                        <h2 className="text-2xl font-bold mb-4">
+                    <div className="rounded-2xl bg-white p-6 shadow-md">
+
+                        <h2 className="mb-4 text-2xl font-bold">
 
                             Evolução de Carga
 
@@ -237,7 +285,7 @@ export default function Dashboard() {
 
                         <GraficoEvolucao
                             dados={
-                                evolucao_carga || []
+                                dadosEvolucao
                             }
                         />
 
@@ -246,6 +294,7 @@ export default function Dashboard() {
 
 
                 </div>
+
 
             </div>
 

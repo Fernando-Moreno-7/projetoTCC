@@ -1,4 +1,4 @@
-import { Op, fn, col, where } from "sequelize";
+import { Op } from "sequelize";
 
 import Usuarios from "../models/Usuarios.js";
 import Agenda_treinos from "../models/Agenda_treinos.js";
@@ -6,6 +6,8 @@ import Treinos from "../models/Treinos.js";
 import Treino_exercicios from "../models/Treino_exercicios.js";
 import Exercicios from "../models/Exercicios.js";
 import Historico_cargas from "../models/Historico_cargas.js";
+import Avaliacoes from "../models/Avaliacoes.js";
+
 import Logger from "../db/logger.js";
 
 
@@ -15,30 +17,46 @@ export default class DashboardController {
 
         const { usuario_id } = req.params;
 
+
         try {
 
+            // =========================================
+            // USUÁRIO
+            // =========================================
+
             const usuario =
-                await Usuarios.findByPk(usuario_id);
+                await Usuarios.findByPk(
+                    usuario_id
+                );
 
 
             if (!usuario) {
 
                 return res.status(404).json({
-                    message: "Usuário não encontrado!"
+                    message:
+                        "Usuário não encontrado!"
                 });
 
             }
 
 
-            const hoje = new Date();
+            // =========================================
+            // DATA DE HOJE
+            // =========================================
+
+            const hoje =
+                new Date();
+
 
             const ano =
                 hoje.getFullYear();
+
 
             const mes =
                 String(
                     hoje.getMonth() + 1
                 ).padStart(2, "0");
+
 
             const dia =
                 String(
@@ -50,40 +68,48 @@ export default class DashboardController {
                 `${ano}-${mes}-${dia}`;
 
 
+            // =========================================
+            // AVALIAÇÃO MAIS RECENTE
+            // =========================================
+
+            const ultimaAvaliacao =
+                await Avaliacoes.findOne({
+
+                    where: {
+                        usuario_id
+                    },
+
+                    order: [
+                        ["data_avaliacao", "DESC"],
+                        ["id", "DESC"]
+                    ]
+
+                });
+
+
+            // =========================================
+            // TREINO DE HOJE
+            // =========================================
+
             const agenda =
                 await Agenda_treinos.findOne({
 
                     where: {
-
                         usuario_id,
-
-                        [Op.and]: [
-
-                            where(
-                                fn(
-                                    "DATE",
-                                    col("data")
-                                ),
-                                dataHoje
-                            )
-
-                        ]
-
+                        data: dataHoje
                     },
 
                     order: [
-                        ["data", "ASC"]
+                        ["id", "DESC"]
                     ]
 
                 });
 
 
             let treino = null;
-
             let exercicios = [];
 
             let maiorCarga = null;
-
             let ultimaCarga = null;
 
             let evolucaoCarga = [];
@@ -101,28 +127,24 @@ export default class DashboardController {
                     await Treino_exercicios.findAll({
 
                         where: {
-
                             treino_id:
                                 agenda.treino_id
-
                         },
 
                         include: [
-
                             {
-
                                 model: Exercicios,
 
                                 attributes: [
-
                                     "id",
                                     "nome",
                                     "grupo_muscular"
-
                                 ]
-
                             }
+                        ],
 
+                        order: [
+                            ["id", "ASC"]
                         ]
 
                     });
@@ -132,7 +154,8 @@ export default class DashboardController {
                     treinoExercicios.map(
                         (item) => ({
 
-                            id: item.id,
+                            id:
+                                item.id,
 
                             series:
                                 item.series,
@@ -154,6 +177,10 @@ export default class DashboardController {
                     );
 
 
+                // =========================================
+                // CARGAS DO USUÁRIO
+                // =========================================
+
                 if (
                     idsTreinoExercicios.length > 0
                 ) {
@@ -163,17 +190,18 @@ export default class DashboardController {
 
                             where: {
 
-                                treino_exercicios_id: {
+                                usuario_id,
 
+                                treino_exercicios_id: {
                                     [Op.in]:
                                         idsTreinoExercicios
-
                                 }
 
                             },
 
                             order: [
-                                ["data_inicial", "ASC"]
+                                ["data_inicial", "ASC"],
+                                ["id", "ASC"]
                             ]
 
                         });
@@ -184,21 +212,21 @@ export default class DashboardController {
                     ) {
 
                         ultimaCarga =
-                            historicos[
-                                historicos.length - 1
-                            ].peso;
+                            Number(
+                                historicos[
+                                    historicos.length - 1
+                                ].peso
+                            );
 
 
                         maiorCarga =
                             Math.max(
-
                                 ...historicos.map(
                                     (item) =>
                                         Number(
                                             item.peso
                                         )
                                 )
-
                             );
 
 
@@ -223,6 +251,10 @@ export default class DashboardController {
 
             }
 
+
+            // =========================================
+            // ESTATÍSTICAS DOS TREINOS
+            // =========================================
 
             const quantidadeTreinos =
                 await Agenda_treinos.count({
@@ -249,6 +281,10 @@ export default class DashboardController {
                 });
 
 
+            // =========================================
+            // RESPOSTA
+            // =========================================
+
             return res.status(200).json({
 
                 usuario: {
@@ -260,35 +296,48 @@ export default class DashboardController {
                         usuario.nome,
 
                     peso:
-                        usuario.peso,
+                        ultimaAvaliacao
+                            ? Number(
+                                ultimaAvaliacao.peso
+                            )
+                            : usuario.peso,
 
                     altura:
-                        usuario.altura,
+                        ultimaAvaliacao
+                            ? Number(
+                                ultimaAvaliacao.altura
+                            )
+                            : usuario.altura,
 
                     objetivo:
                         usuario.objetivo,
 
                     imc:
-                        usuario.imc
+                        ultimaAvaliacao
+                            ? Number(
+                                ultimaAvaliacao.imc
+                            )
+                            : usuario.imc
 
                 },
 
 
-                treino_hoje: treino
-                    ? {
+                treino_hoje:
+                    treino && agenda
+                        ? {
 
-                        ...treino.toJSON(),
+                            ...treino.toJSON(),
 
-                        agenda_id:
-                            agenda.id,
+                            agenda_id:
+                                agenda.id,
 
-                        status:
-                            agenda.status,
+                            status:
+                                agenda.status,
 
-                        exercicios
+                            exercicios
 
-                    }
-                    : null,
+                        }
+                        : null,
 
 
                 estatisticas: {

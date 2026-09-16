@@ -12,12 +12,17 @@ export default function TreinoHoje({ treino }) {
     const navigate = useNavigate();
 
 
+    // =========================================
+    // SEM TREINO
+    // =========================================
+
     if (!treino) {
 
         return (
-            <div className="bg-white rounded-2xl shadow-md p-6">
 
-                <div className="flex items-center gap-3 mb-6">
+            <div className="rounded-2xl bg-white p-6 shadow-md">
+
+                <div className="mb-6 flex items-center gap-3">
 
                     <Dumbbell
                         className="text-purple-700"
@@ -25,25 +30,44 @@ export default function TreinoHoje({ treino }) {
                     />
 
                     <h2 className="text-2xl font-bold">
+
                         Treino de Hoje
+
                     </h2>
 
                 </div>
 
+
                 <p className="text-gray-500">
+
                     Nenhum treino agendado para hoje.
+
                 </p>
 
             </div>
+
         );
+
     }
 
 
-    const exercicios = treino.exercicios || [];
+    // =========================================
+    // DADOS
+    // =========================================
+
+    const exercicios =
+        Array.isArray(treino.exercicios)
+            ? treino.exercicios
+            : [];
+
 
     const treinoConcluido =
         treino.status === "concluido";
 
+
+    // =========================================
+    // INICIAR TREINO
+    // =========================================
 
     function iniciarTreino() {
 
@@ -51,15 +75,22 @@ export default function TreinoHoje({ treino }) {
             return;
         }
 
-        navigate("/iniciar-treino");
+
+        navigate(
+            "/iniciar-treino"
+        );
+
     }
 
 
     return (
 
-        <div className="bg-white rounded-2xl shadow-md p-6">
+        <div className="rounded-2xl bg-white p-6 shadow-md">
 
-            <div className="flex items-center gap-3 mb-6">
+
+            {/* CABEÇALHO */}
+
+            <div className="mb-6 flex items-center gap-3">
 
                 <Dumbbell
                     className="text-purple-700"
@@ -67,24 +98,30 @@ export default function TreinoHoje({ treino }) {
                 />
 
                 <h2 className="text-2xl font-bold">
+
                     Treino de Hoje
+
                 </h2>
 
             </div>
 
+
+            {/* INFORMAÇÕES DO TREINO */}
 
             <div className="space-y-2">
 
                 <div className="flex items-center gap-3">
 
                     <h3 className="text-xl font-semibold">
+
                         {treino.nome}
+
                     </h3>
 
 
                     {treinoConcluido && (
 
-                        <span className="bg-green-100 text-green-700 text-sm font-semibold px-3 py-1 rounded-full">
+                        <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-700">
 
                             Concluído
 
@@ -98,7 +135,9 @@ export default function TreinoHoje({ treino }) {
                 {treino.descricao && (
 
                     <p className="text-gray-500">
+
                         {treino.descricao}
+
                     </p>
 
                 )}
@@ -106,17 +145,23 @@ export default function TreinoHoje({ treino }) {
             </div>
 
 
+            {/* EXERCÍCIOS */}
+
             <div className="mt-6 space-y-3">
 
                 <h4 className="font-semibold text-gray-700">
+
                     Exercícios
+
                 </h4>
 
 
                 {exercicios.length === 0 && (
 
                     <p className="text-gray-500">
+
                         Nenhum exercício cadastrado neste treino.
+
                     </p>
 
                 )}
@@ -126,7 +171,7 @@ export default function TreinoHoje({ treino }) {
 
                     <div
                         key={item.id}
-                        className="flex items-center justify-between bg-gray-50 rounded-xl p-4"
+                        className="flex items-center justify-between rounded-xl bg-gray-50 p-4"
                     >
 
                         <div className="flex items-center gap-3">
@@ -179,13 +224,15 @@ export default function TreinoHoje({ treino }) {
             </div>
 
 
+            {/* AÇÃO DO TREINO */}
+
             {exercicios.length > 0 && (
 
                 <div className="mt-8">
 
                     {treinoConcluido ? (
 
-                        <div className="w-full bg-green-100 text-green-700 font-semibold py-3 rounded-xl flex items-center justify-center gap-2">
+                        <div className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-100 py-3 font-semibold text-green-700">
 
                             <CheckCircle size={20} />
 
@@ -198,7 +245,7 @@ export default function TreinoHoje({ treino }) {
                         <button
                             type="button"
                             onClick={iniciarTreino}
-                            className="w-full bg-purple-700 hover:bg-purple-800 text-white font-semibold py-3 rounded-xl transition duration-300 shadow-md hover:shadow-lg cursor-pointer"
+                            className="w-full cursor-pointer rounded-xl bg-purple-700 py-3 font-semibold text-white shadow-md transition duration-300 hover:bg-purple-800 hover:shadow-lg"
                         >
 
                             <div className="flex items-center justify-center gap-2">
@@ -218,5 +265,7 @@ export default function TreinoHoje({ treino }) {
             )}
 
         </div>
+
     );
+
 }

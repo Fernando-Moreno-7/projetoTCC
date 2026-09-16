@@ -13,13 +13,29 @@ export default function GraficoEvolucao({
     dados = []
 }) {
 
+    // =========================================
+    // FORMATAR DATA
+    // =========================================
+
     function formatarData(data) {
 
         if (!data) {
             return "";
         }
 
-        const dataFormatada = new Date(data);
+
+        const dataFormatada =
+            new Date(data);
+
+
+        if (
+            Number.isNaN(
+                dataFormatada.getTime()
+            )
+        ) {
+            return "";
+        }
+
 
         return dataFormatada.toLocaleDateString(
             "pt-BR",
@@ -32,20 +48,37 @@ export default function GraficoEvolucao({
     }
 
 
-    const dadosFormatados = dados.map((item) => ({
+    // =========================================
+    // FORMATAR DADOS
+    // =========================================
 
-        ...item,
+    const dadosFormatados =
+        Array.isArray(dados)
+            ? dados.map((item) => ({
 
-        dataFormatada: formatarData(item.data)
+                ...item,
 
-    }));
+                carga:
+                    Number(item.carga),
 
+                dataFormatada:
+                    formatarData(
+                        item.data
+                    )
+
+            }))
+            : [];
+
+
+    // =========================================
+    // SEM HISTÓRICO
+    // =========================================
 
     if (dadosFormatados.length === 0) {
 
         return (
 
-            <div className="h-75 flex items-center justify-center">
+            <div className="flex h-75 items-center justify-center">
 
                 <p className="text-gray-500">
 
@@ -59,6 +92,10 @@ export default function GraficoEvolucao({
 
     }
 
+
+    // =========================================
+    // GRÁFICO
+    // =========================================
 
     return (
 
@@ -75,11 +112,16 @@ export default function GraficoEvolucao({
                     strokeDasharray="3 3"
                 />
 
+
                 <XAxis
                     dataKey="dataFormatada"
                 />
 
-                <YAxis />
+
+                <YAxis
+                    unit=" kg"
+                />
+
 
                 <Tooltip
                     formatter={(valor) => [
@@ -88,9 +130,11 @@ export default function GraficoEvolucao({
                     ]}
                 />
 
+
                 <Line
                     type="monotone"
                     dataKey="carga"
+                    name="Carga"
                     stroke="#7C3AED"
                     strokeWidth={3}
                 />
