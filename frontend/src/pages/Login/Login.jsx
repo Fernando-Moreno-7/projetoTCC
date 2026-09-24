@@ -10,7 +10,6 @@ import {
     Dumbbell
 } from "lucide-react";
 
-
 export default function Login() {
 
     const navigate = useNavigate();
@@ -19,7 +18,6 @@ export default function Login() {
     const [senha, setSenha] = useState("");
     const [mostrarSenha, setMostrarSenha] = useState(false);
     const [carregando, setCarregando] = useState(false);
-
 
     async function handleLogin(e) {
 
@@ -63,7 +61,7 @@ export default function Login() {
 
         } catch (error) {
 
-            console.error(error);
+            console.error("Erro no login:", error);
 
             if (error.response) {
 
@@ -85,9 +83,7 @@ export default function Login() {
             setCarregando(false);
 
         }
-
     }
-
 
     return (
 
@@ -115,7 +111,6 @@ export default function Login() {
                     </p>
 
                 </div>
-
 
                 <form
                     onSubmit={handleLogin}
@@ -148,7 +143,6 @@ export default function Login() {
                         </div>
 
                     </div>
-
 
                     <div>
 
@@ -196,7 +190,6 @@ export default function Login() {
 
                     </div>
 
-
                     <button
                         type="submit"
                         disabled={carregando}
@@ -209,7 +202,6 @@ export default function Login() {
                         }
 
                     </button>
-
 
                     <div className="text-center">
 
@@ -234,7 +226,5 @@ export default function Login() {
             </div>
 
         </div>
-
     );
-
 }
