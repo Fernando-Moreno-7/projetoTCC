@@ -1,6 +1,6 @@
+
 import { useNavigate } from "react-router-dom";
 
-// Importa os ícones utilizados no menu lateral
 import {
     LayoutDashboard,
     Dumbbell,
@@ -13,15 +13,11 @@ import {
     TrendingUp
 } from "lucide-react";
 
-// Componente responsável pelo menu lateral do EvolutionFit
 export default function Sidebar() {
-    // Permite navegar entre as páginas
     const navigate = useNavigate();
 
-    // Recupera o tipo do usuário armazenado no navegador
     const tipoUsuario = localStorage.getItem("tipoUsuario");
 
-    // Realiza o logout e retorna para a tela de login
     function sair() {
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
@@ -31,20 +27,19 @@ export default function Sidebar() {
     }
 
     return (
-        <aside className="flex h-screen w-64 flex-col bg-purple-800 text-white">
+        <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col overflow-y-auto bg-purple-800 text-white">
 
-            {/* Cabeçalho com o nome do aplicativo */}
+            {/* Cabeçalho do aplicativo */}
             <div className="border-b border-purple-700 p-6">
                 <h1 className="text-3xl font-bold">
                     EvolutionFit
                 </h1>
             </div>
 
-            {/* Área de navegação do menu lateral */}
+            {/* Menu lateral */}
             <nav className="flex-1 p-5">
                 <ul className="space-y-4">
 
-                    {/* Opção disponível para todos os usuários */}
                     <li
                         onClick={() => navigate("/dashboard")}
                         className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
@@ -53,7 +48,7 @@ export default function Sidebar() {
                         Painel
                     </li>
 
-                    {/* Exibe estas opções somente para o personal */}
+                    {/* Opções do personal */}
                     {tipoUsuario === "personal" && (
                         <>
                             <li
@@ -98,7 +93,7 @@ export default function Sidebar() {
                         </>
                     )}
 
-                    {/* Exibe estas opções somente para o aluno */}
+                    {/* Opções do aluno */}
                     {tipoUsuario === "aluno" && (
                         <>
                             <li
@@ -130,7 +125,7 @@ export default function Sidebar() {
                 </ul>
             </nav>
 
-            {/* Botão para sair do aplicativo */}
+            {/* Botão de sair */}
             <div className="border-t border-purple-700 p-5">
                 <button
                     type="button"
@@ -145,3 +140,4 @@ export default function Sidebar() {
         </aside>
     );
 }
+
