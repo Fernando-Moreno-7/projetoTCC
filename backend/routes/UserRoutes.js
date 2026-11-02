@@ -1,28 +1,66 @@
-// Importa o Express para criar e organizar as rotas
 import routerEX from "express";
 
-// Importa o controller responsável pela lógica dos usuários
 import UserController from "../controllers/UserController.js";
 
-// Cria o roteador do Express
+import {
+    permitirPerfis,
+    permitirProprioUsuarioOuPersonal
+} from "../middlewares/autorizacaoMiddleware.js";
+
 const router = routerEX.Router();
 
-// Cadastra um novo usuário
-// Rota completa: POST /user/register
-router.post("/register", UserController.register);
+// Cadastro público: permite somente criar contas de aluno.
+router.post(
+    "/register",
 
-// Atualiza os dados de um usuário
-router.post("/update", UserController.updateUser);
+    (req, res, next) => {
 
-// Exclui um usuário
-router.delete("/delete", UserController.deleteUser);
+        req.body = req.body || {};
 
-// Lista todos os usuários
-router.get("/list", UserController.getAllUsers);
+        // Impede solicitar o perfil personal pelo cadastro público.
+        if (
+            req.body.tipo_usuario !== undefined &&
+            req.body.tipo_usuario !== "aluno"
+        ) {
+            return res.status(403).json({
+                message: "O cadastro público permite somente contas de aluno!"
+            });
+        }
 
-// Busca um usuário específico através do ID
+        req.body.tipo_usuario = "aluno";
 
-router.get("/:id", UserController.getUserById);
+        return next();
+    },
 
-// Exporta as rotas para serem utilizadas no index.js
+    UserController.register
+);
+
+// Somente o personal pode atualizar os cadastros.
+router.post(
+    "/update",
+    permitirPerfis("personal"),
+    UserController.updateUser
+);
+
+// Somente o personal pode excluir usuários.
+router.delete(
+    "/delete",
+    permitirPerfis("personal"),
+    UserController.deleteUser
+);
+
+// Somente o personal pode listar todos os alunos.
+router.get(
+    "/list",
+    permitirPerfis("personal"),
+    UserController.getAllUsers
+);
+
+// Personal consulta cadastros; aluno consulta somente o próprio.
+router.get(
+    "/:id",
+    permitirProprioUsuarioOuPersonal,
+    UserController.getUserById
+);
+
 export default router;

@@ -4,7 +4,7 @@ import Usuarios from "../models/Usuarios.js";
 // Logger utilizado para registrar erros
 import Logger from "../db/logger.js";
 
-// Biblioteca utilizada para gerar o hash das senhas
+// Biblioteca utilizada para proteger as senhas
 import bcrypt from "bcrypt";
 
 // Model responsável pela agenda de treinos
@@ -18,7 +18,6 @@ export default class UserController {
 
     static async register(req, res) {
 
-        // Recebe os dados enviados no corpo da requisição
         const {
             nome,
             email,
@@ -58,7 +57,6 @@ export default class UserController {
             });
         }
 
-        // Verifica se a senha e a confirmação são iguais
         if (senha !== confSenha) {
             return res.status(422).json({
                 message: "As senhas não conferem!"
@@ -67,21 +65,20 @@ export default class UserController {
 
         try {
 
-            // Procura um usuário que já possua o e-mail informado
+            // Verifica se o e-mail já está cadastrado
             const usuarioExists = await Usuarios.findOne({
                 where: {
                     email
                 }
             });
 
-            // Impede o cadastro de e-mails duplicados
             if (usuarioExists) {
                 return res.status(422).json({
                     message: "Este e-mail já foi cadastrado!"
                 });
             }
 
-            // Gera o salt e o hash da senha utilizando bcrypt
+            // Gera o hash da senha
             const salt = await bcrypt.genSalt(12);
 
             const passwordHash = await bcrypt.hash(
@@ -89,72 +86,59 @@ export default class UserController {
                 salt
             );
 
-            // O IMC começa como nulo
+            // Neste cadastro, a altura continua em centímetros
             let imc = null;
 
-            // Calcula o IMC somente se peso e altura forem informados
             if (peso && altura) {
-
-                imc =
-                    peso /
-                    (
-                        (altura / 100) *
-                        (altura / 100)
-                    );
-
-                // Limita o IMC a duas casas decimais
-                imc = Number(
-                    imc.toFixed(2)
+                imc = peso / (
+                    (altura / 100) * (altura / 100)
                 );
+
+                imc = Number(imc.toFixed(2));
             }
 
-            // Cria o usuário no banco de dados
+            // Salva somente os campos definidos aqui
             await Usuarios.create({
                 nome,
                 email,
-
-                // Armazena o hash em vez da senha original
                 senha: passwordHash,
+
+                // O cadastro não permite criar contas de personal
+                tipo_usuario: "aluno",
 
                 peso,
                 altura,
                 genero,
                 idade,
                 objetivo,
-
-                // Caso não tenha telefone, salva null
                 telefone: telefone || null,
-
-                // Caso não tenha status, define como Ativo
                 status: status || "Ativo",
-
                 imc
             });
 
-            // Retorna sucesso para o frontend
             return res.status(200).json({
                 message: "Usuário cadastrado com sucesso!"
             });
 
         } catch (error) {
 
-            // Registra o erro no logger
             Logger.error(error);
 
             return res.status(500).json({
                 message: "Erro ao criar usuário!"
             });
-        }
-    }
 
+        }
+
+    }
 
     // =========================================
     // ATUALIZAR USUÁRIO
+    // A rota exige o perfil personal
     // =========================================
 
     static async updateUser(req, res) {
 
-        // Recebe os novos dados enviados na requisição
         const {
             nome,
             senha,
@@ -169,14 +153,12 @@ export default class UserController {
             status
         } = req.body;
 
-        // Verifica se um usuário foi selecionado
         if (!idUsuario) {
             return res.status(422).json({
                 message: "Selecione um usuário!"
             });
         }
 
-        // Valida o nome
         if (!nome) {
             return res.status(422).json({
                 message: "O nome é obrigatório!"
@@ -185,23 +167,18 @@ export default class UserController {
 
         try {
 
-            // Procura o usuário pela chave primária (ID)
             const usuario = await Usuarios.findByPk(
                 idUsuario
             );
 
-            // Retorna 404 caso o usuário não exista
             if (!usuario) {
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
             }
 
-            // =====================================
-            // DADOS QUE SERÃO ATUALIZADOS
-            // =====================================
-
-            // Cria um objeto com os novos dados
+            // Lista explícita dos campos permitidos.
+            // tipo_usuario não pode ser alterado por esta função.
             const dadosAtualizados = {
                 nome,
                 peso,
@@ -213,71 +190,44 @@ export default class UserController {
                 status: status || "Ativo"
             };
 
-            // =====================================
-            // ATUALIZAR SENHA SOMENTE SE INFORMADA
-            // =====================================
-
-            // Executa este bloco caso senha ou confirmação
-            // tenham sido informadas
+            // Atualiza a senha somente quando informada
             if (senha || confSenha) {
 
-                // Exige os dois campos
                 if (!senha || !confSenha) {
                     return res.status(422).json({
-                        message:
-                            "Preencha a nova senha e a confirmação!"
+                        message: "Preencha a nova senha e a confirmação!"
                     });
                 }
 
-                // Verifica se as senhas são iguais
                 if (senha !== confSenha) {
                     return res.status(422).json({
-                        message:
-                            "As senhas não conferem!"
+                        message: "As senhas não conferem!"
                     });
                 }
 
-                // Gera um novo hash para a nova senha
-                const salt =
-                    await bcrypt.genSalt(12);
+                const salt = await bcrypt.genSalt(12);
 
-                const passwordHash =
-                    await bcrypt.hash(
-                        senha,
-                        salt
-                    );
+                const passwordHash = await bcrypt.hash(
+                    senha,
+                    salt
+                );
 
-                // Adiciona a nova senha protegida
-                // ao objeto de atualização
-                dadosAtualizados.senha =
-                    passwordHash;
+                dadosAtualizados.senha = passwordHash;
             }
 
-            // =====================================
-            // CALCULAR IMC
-            // =====================================
-
+            // Recalcula o IMC
             let imc = null;
 
-            // O cálculo só acontece se houver peso e altura
             if (peso && altura) {
-
-                imc =
-                    peso /
-                    (
-                        (altura / 100) *
-                        (altura / 100)
-                    );
-
-                imc = Number(
-                    imc.toFixed(2)
+                imc = peso / (
+                    (altura / 100) * (altura / 100)
                 );
+
+                imc = Number(imc.toFixed(2));
             }
 
-            // Adiciona o IMC aos dados que serão atualizados
             dadosAtualizados.imc = imc;
 
-            // Atualiza o usuário correspondente ao ID informado
             await Usuarios.update(
                 dadosAtualizados,
                 {
@@ -298,21 +248,20 @@ export default class UserController {
             return res.status(500).json({
                 message: "Erro ao atualizar usuário!"
             });
-        }
-    }
 
+        }
+
+    }
 
     // =========================================
     // EXCLUIR USUÁRIO
+    // A rota exige o perfil personal
     // =========================================
 
     static async deleteUser(req, res) {
 
-        // Recebe o ID do usuário enviado na requisição
-        const idUsuario =
-            req.body.idUsuario;
+        const idUsuario = req.body.idUsuario;
 
-        // Verifica se o ID foi informado
         if (!idUsuario) {
             return res.status(422).json({
                 message: "Selecione um usuário!"
@@ -321,29 +270,26 @@ export default class UserController {
 
         try {
 
-            // Procura o usuário pelo ID
-            const usuario =
-                await Usuarios.findOne({
-                    where: {
-                        id: idUsuario
-                    }
-                });
+            const usuario = await Usuarios.findOne({
+                where: {
+                    id: idUsuario
+                }
+            });
 
-            // Verifica se o usuário existe
             if (!usuario) {
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
             }
 
-            // Exclui os registros da agenda relacionados ao usuário
+            // Remove os agendamentos relacionados
             await Agenda_treinos.destroy({
                 where: {
                     usuario_id: idUsuario
                 }
             });
 
-            // Exclui o usuário do banco de dados
+            // Remove o usuário
             await Usuarios.destroy({
                 where: {
                     id: idUsuario
@@ -358,46 +304,42 @@ export default class UserController {
 
             Logger.error(error);
 
+            // Detalhes internos ficam somente no logger
             return res.status(500).json({
-                message: "Erro ao excluir usuário!",
-                error: error.message
+                message: "Erro ao excluir usuário!"
             });
-        }
-    }
 
+        }
+
+    }
 
     // =========================================
     // LISTAR ALUNOS
+    // A rota exige o perfil personal
     // =========================================
 
     static async getAllUsers(req, res) {
 
         try {
 
-            // Busca todos os usuários do tipo aluno
-            const usuarios =
-                await Usuarios.findAll({
+            const usuarios = await Usuarios.findAll({
 
-                    // Filtra somente usuários do tipo aluno
-                    where: {
-                        tipo_usuario: "aluno"
-                    },
+                where: {
+                    tipo_usuario: "aluno"
+                },
 
-                    // Não retorna a senha na resposta
-                    attributes: {
-                        exclude: ["senha"]
-                    },
+                // Não devolve o hash da senha
+                attributes: {
+                    exclude: ["senha"]
+                },
 
-                    // Ordena os alunos pelo nome em ordem crescente
-                    order: [
-                        ["nome", "ASC"]
-                    ]
-                });
+                order: [
+                    ["nome", "ASC"]
+                ]
 
-            // Retorna a lista de alunos em JSON
-            return res.status(200).json(
-                usuarios
-            );
+            });
+
+            return res.status(200).json(usuarios);
 
         } catch (error) {
 
@@ -406,46 +348,38 @@ export default class UserController {
             return res.status(500).json({
                 message: "Erro ao buscar alunos!"
             });
-        }
-    }
 
+        }
+
+    }
 
     // =========================================
     // BUSCAR USUÁRIO PELO ID
+    // A rota verifica se é personal ou o próprio aluno
     // =========================================
 
     static async getUserById(req, res) {
 
-        // Obtém o ID enviado como parâmetro na URL
-    
-        const idUsuario =
-            req.params.id;
+        const idUsuario = req.params.id;
 
         try {
 
-            // Busca o usuário pela chave primária (ID)
-            const usuario =
-                await Usuarios.findByPk(
-                    idUsuario,
-                    {
-                        // Não retorna a senha
-                        attributes: {
-                            exclude: ["senha"]
-                        }
+            const usuario = await Usuarios.findByPk(
+                idUsuario,
+                {
+                    attributes: {
+                        exclude: ["senha"]
                     }
-                );
+                }
+            );
 
-            // Retorna 404 caso o usuário não seja encontrado
             if (!usuario) {
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
             }
 
-            // Retorna os dados do usuário encontrado
-            return res.status(200).json(
-                usuario
-            );
+            return res.status(200).json(usuario);
 
         } catch (error) {
 
@@ -454,6 +388,9 @@ export default class UserController {
             return res.status(500).json({
                 message: "Erro ao buscar usuário!"
             });
+
         }
+
     }
+
 }

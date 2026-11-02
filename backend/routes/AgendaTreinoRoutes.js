@@ -1,64 +1,77 @@
 import express from "express";
 
-import AgendaTreinoController from "../controllers/AgendaTreinoController.js";
+import AgendaTreinoController
+    from "../controllers/AgendaTreinoController.js";
+
+import {
+    permitirPerfis
+} from "../middlewares/autorizacaoMiddleware.js";
+
+import {
+    permitirAcessoAoUsuarioDaAgenda,
+    permitirAcessoAoAgendamento
+} from "../middlewares/agendaAutorizacaoMiddleware.js";
 
 const router = express.Router();
 
-
-// Criar agendamento
+// Somente o personal pode criar agendamentos.
 router.post(
     "/create",
+    permitirPerfis("personal"),
     AgendaTreinoController.agendar
 );
 
-
-// Listar todos os agendamentos
+// Somente o personal pode listar todos os agendamentos.
 router.get(
     "/list",
+    permitirPerfis("personal"),
     AgendaTreinoController.list
 );
 
-
-// Buscar treino do usuário
+// Personal pode consultar os alunos.
+// Aluno pode consultar somente o próprio treino.
 router.get(
     "/usuario/:usuario_id",
+    permitirAcessoAoUsuarioDaAgenda,
     AgendaTreinoController.getTreinoDoUsuario
 );
 
-
-// Histórico de treinos concluídos do usuário
+// Personal pode consultar os alunos.
+// Aluno pode consultar somente o próprio histórico.
 router.get(
     "/historico/:usuario_id",
+    permitirAcessoAoUsuarioDaAgenda,
     AgendaTreinoController.historico
 );
 
-
-// Buscar agendamento pelo ID
+// Personal consulta qualquer agendamento.
+// Aluno consulta somente um agendamento que lhe pertence.
 router.get(
     "/:id",
+    permitirAcessoAoAgendamento,
     AgendaTreinoController.getById
 );
 
-
-// Atualizar agendamento
+// Somente o personal pode editar agendamentos.
 router.post(
     "/update",
+    permitirPerfis("personal"),
     AgendaTreinoController.update
 );
 
-
-// Excluir agendamento
+// Somente o personal pode excluir agendamentos.
 router.delete(
     "/delete",
+    permitirPerfis("personal"),
     AgendaTreinoController.delete
 );
 
-
-// Finalizar treino
+// Personal possui acesso administrativo.
+// Aluno só pode finalizar um agendamento próprio.
 router.post(
     "/finalizar",
+    permitirAcessoAoAgendamento,
     AgendaTreinoController.finalizarTreino
 );
-
 
 export default router;

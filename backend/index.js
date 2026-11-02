@@ -3,6 +3,9 @@ import dotenv from "dotenv";
 import express from "express";
 import cors from "cors";
 
+// Middleware que verifica o token JWT
+import authMiddleware from "./middlewares/authMiddleware.js";
+
 // Importa as rotas da aplicação
 import UserRoutes from "./routes/UserRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
@@ -14,59 +17,98 @@ import HistoricoCargasRoutes from "./routes/HistoricoCargasRoutes.js";
 import DashboardRoutes from "./routes/DashboardRoutes.js";
 import AvaliacaoRoutes from "./routes/AvaliacaoRoutes.js";
 
-// Carrega as variáveis de ambiente do arquivo .env
+// Carrega as variáveis de ambiente
 dotenv.config();
 
 // Cria a aplicação Express
 const app = express();
 
-// Obtém a porta do servidor através do .env
+// Obtém a porta do servidor
 const port_server = process.env.PORT_SERVER;
 
-// Configura o CORS para permitir requisições entre origens diferentes
+// Permite a comunicação com o frontend
 app.use(cors());
 
-// Permite que o Express interprete dados JSON recebidos nas requisições
+// Permite receber dados JSON
 app.use(express.json());
 
-// ==================== ROTAS ====================
+// ==================== LOGIN ====================
 
-// Rotas relacionadas aos usuários
-app.use("/user", UserRoutes);
-
-// Rotas relacionadas à autenticação/login
+// O login é público, pois é ele que gera o token.
 app.use("/", AuthRoutes);
 
-// Rotas relacionadas aos treinos
-app.use("/treino", TreinoRoutes);
+// ==================== USUÁRIOS ====================
 
-// Rotas relacionadas aos exercícios
-app.use("/exercicio", ExercicioRoutes);
+app.use(
+    "/user",
 
-// Rotas relacionadas à agenda de treinos
-app.use("/agenda", AgendaTreinoRoutes);
+    (req, res, next) => {
 
-// Rotas responsáveis pela relação entre treinos e exercícios
-app.use("/treino-exercicio", TreinoExercicioRoutes);
+        // Permite criar uma conta sem estar conectado.
+        // As regras do cadastro serão conferidas na próxima etapa.
+        if (
+            req.method === "POST" &&
+            req.path === "/register"
+        ) {
+            return next();
+        }
 
-// Rotas relacionadas ao histórico de cargas dos exercícios
-app.use("/historico-cargas", HistoricoCargasRoutes);
+        // As demais rotas de usuários exigem token válido.
+        return authMiddleware(req, res, next);
 
-// Rotas responsáveis pelos dados do dashboard
-app.use("/dashboard", DashboardRoutes);
+    },
 
-// Rotas relacionadas às avaliações e evolução dos alunos
-app.use("/avaliacao", AvaliacaoRoutes);
+    UserRoutes
+);
+
+// ==================== ROTAS PROTEGIDAS ====================
+
+// Todas estas rotas exigem um token válido.
+
+app.use(
+    "/treino",
+    authMiddleware,
+    TreinoRoutes
+);
+
+app.use(
+    "/exercicio",
+    authMiddleware,
+    ExercicioRoutes
+);
+
+app.use(
+    "/agenda",
+    authMiddleware,
+    AgendaTreinoRoutes
+);
+
+app.use(
+    "/treino-exercicio",
+    authMiddleware,
+    TreinoExercicioRoutes
+);
+
+app.use(
+    "/historico-cargas",
+    authMiddleware,
+    HistoricoCargasRoutes
+);
+
+app.use(
+    "/dashboard",
+    authMiddleware,
+    DashboardRoutes
+);
+
+app.use(
+    "/avaliacao",
+    authMiddleware,
+    AvaliacaoRoutes
+);
 
 // ==================== SERVIDOR ====================
 
-// Inicia o servidor na porta definida no arquivo .env
 app.listen(port_server, () => {
     console.log(`Servidor rodando na porta ${port_server}`);
 });
-
-
-
-
-
-

@@ -1,32 +1,60 @@
-// Importa o Express para criar e organizar as rotas
-import routerEX from "express";
+import express from "express";
 
-// Importa o Controller responsável pela lógica do histórico de cargas
 import HistoricoCargasController from "../controllers/HistoricoCargasController.js";
 
-// Cria o roteador do Express
-const router = routerEX.Router();
+import authMiddleware from "../middlewares/authMiddleware.js";
 
-// REGISTRAR CARGA
+const router = express.Router();
 
+// Exige um token válido em todas as rotas deste arquivo.
+router.use(authMiddleware);
 
-// Registra uma nova carga no histórico
+// Permite consultar o próprio histórico.
+// O personal pode consultar o histórico dos alunos.
+function permitirHistoricoDoUsuario(req, res, next) {
+    const usuarioId = Number(req.params.usuario_id);
+
+    if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
+        return res.status(422).json({
+            message: "Informe um ID de usuário válido!"
+        });
+    }
+
+    if (req.usuario.tipo_usuario === "personal") {
+        return next();
+    }
+
+    if (
+        req.usuario.tipo_usuario === "aluno" &&
+        usuarioId === Number(req.usuario.id)
+    ) {
+        return next();
+    }
+
+    return res.status(403).json({
+        message: "Você não pode consultar o histórico de outro usuário!"
+    });
+}
+
+// Registrar carga.
+// A propriedade do registro também deverá ser validada no controller.
 router.post(
     "/create",
     HistoricoCargasController.create
 );
-// HISTÓRICO DE UM EXERCÍCIO
 
-// Busca o histórico de cargas de um exercício
+// Consultar histórico de um exercício.
+// O controller deverá filtrar os registros pelo usuário autorizado.
 router.get(
     "/exercicio/:id",
     HistoricoCargasController.getHistoricoPorExercicio
 );
-// HISTÓRICO DE CARGAS DE UM ALUNO
-// Busca o histórico de cargas de um usuário/aluno
+
+// Consultar histórico de um usuário.
 router.get(
     "/usuario/:usuario_id",
+    permitirHistoricoDoUsuario,
     HistoricoCargasController.getHistoricoPorUsuario
 );
-// Exporta as rotas para serem utilizadas no index.js
+
 export default router;
