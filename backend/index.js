@@ -1,12 +1,9 @@
-// Importa as dependências principais
-import dotenv from "dotenv";
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
-// Middleware que verifica o token JWT
 import authMiddleware from "./middlewares/authMiddleware.js";
 
-// Importa as rotas da aplicação
 import UserRoutes from "./routes/UserRoutes.js";
 import AuthRoutes from "./routes/AuthRoutes.js";
 import TreinoRoutes from "./routes/TreinoRoutes.js";
@@ -17,35 +14,28 @@ import HistoricoCargasRoutes from "./routes/HistoricoCargasRoutes.js";
 import DashboardRoutes from "./routes/DashboardRoutes.js";
 import AvaliacaoRoutes from "./routes/AvaliacaoRoutes.js";
 
-// Carrega as variáveis de ambiente
-dotenv.config();
-
-// Cria a aplicação Express
 const app = express();
 
-// Obtém a porta do servidor
-const port_server = process.env.PORT_SERVER;
+const port_server = process.env.PORT_SERVER || 5000;
 
-// Permite a comunicação com o frontend
+// Interrompe a inicialização se a chave JWT estiver ausente.
+if (!process.env.JWT_SECRET?.trim()) {
+    throw new Error(
+        "Configure JWT_SECRET no arquivo .env do backend."
+    );
+}
+
 app.use(cors());
-
-// Permite receber dados JSON
 app.use(express.json());
 
-// ==================== LOGIN ====================
-
-// O login é público, pois é ele que gera o token.
+// Login público.
 app.use("/", AuthRoutes);
 
-// ==================== USUÁRIOS ====================
-
+// Cadastro público; demais operações exigem autenticação.
+// O cadastro deve continuar criando somente contas de aluno.
 app.use(
     "/user",
-
     (req, res, next) => {
-
-        // Permite criar uma conta sem estar conectado.
-        // As regras do cadastro serão conferidas na próxima etapa.
         if (
             req.method === "POST" &&
             req.path === "/register"
@@ -53,61 +43,26 @@ app.use(
             return next();
         }
 
-        // As demais rotas de usuários exigem token válido.
         return authMiddleware(req, res, next);
-
     },
-
     UserRoutes
 );
 
-// ==================== ROTAS PROTEGIDAS ====================
-
-// Todas estas rotas exigem um token válido.
-
-app.use(
-    "/treino",
-    authMiddleware,
-    TreinoRoutes
-);
-
-app.use(
-    "/exercicio",
-    authMiddleware,
-    ExercicioRoutes
-);
-
+// A agenda recebe autenticação aqui, pois o arquivo
+// AgendaTreinoRoutes.js enviado anteriormente não possui router.use.
 app.use(
     "/agenda",
     authMiddleware,
     AgendaTreinoRoutes
 );
 
-app.use(
-    "/treino-exercicio",
-    authMiddleware,
-    TreinoExercicioRoutes
-);
-
-app.use(
-    "/historico-cargas",
-    authMiddleware,
-    HistoricoCargasRoutes
-);
-
-app.use(
-    "/dashboard",
-    authMiddleware,
-    DashboardRoutes
-);
-
-app.use(
-    "/avaliacao",
-    authMiddleware,
-    AvaliacaoRoutes
-);
-
-// ==================== SERVIDOR ====================
+// Estes arquivos já possuem router.use(authMiddleware).
+app.use("/treino", TreinoRoutes);
+app.use("/exercicio", ExercicioRoutes);
+app.use("/treino-exercicio", TreinoExercicioRoutes);
+app.use("/historico-cargas", HistoricoCargasRoutes);
+app.use("/dashboard", DashboardRoutes);
+app.use("/avaliacao", AvaliacaoRoutes);
 
 app.listen(port_server, () => {
     console.log(`Servidor rodando na porta ${port_server}`);

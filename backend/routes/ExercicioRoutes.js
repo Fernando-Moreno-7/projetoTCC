@@ -1,43 +1,51 @@
-// Importa o Express para criar e organizar as rotas
-import routerEX from "express";
+import express from "express";
 
-// Importa o controller responsável pela lógica dos exercícios
 import ExercicioController from "../controllers/ExercicioController.js";
 
-// Cria o roteador do Express
-const router = routerEX.Router();
+import authMiddleware from "../middlewares/authMiddleware.js";
 
+import {
+    permitirPerfis
+} from "../middlewares/autorizacaoMiddleware.js";
 
-// CRIAR EXERCÍCIO
-// Cria um novo exercício
-// Rota completa: POST /exercicio/create
-router.post("/create", ExercicioController.createExercicio);
+const router = express.Router();
 
+// Exige autenticação em todas as rotas.
+router.use(authMiddleware);
 
-// LISTAR EXERCÍCIOS
-// Busca e lista todos os exercícios
-// Rota completa: GET /exercicio/list
-router.get("/list", ExercicioController.getAllExercicios);
+// Criar exercício: somente personal.
+router.post(
+    "/create",
+    permitirPerfis("personal"),
+    ExercicioController.createExercicio
+);
 
+// Consultar o catálogo de exercícios.
+router.get(
+    "/list",
+    permitirPerfis("personal", "aluno"),
+    ExercicioController.getAllExercicios
+);
 
-// BUSCAR EXERCÍCIO PELO ID
-// Busca um exercício específico através do ID
-// :id é um parâmetro dinâmico da URL
-// Exemplo: GET /exercicio/10
-router.get("/:id", ExercicioController.getExercicioById);
+// Consultar um exercício pelo ID.
+router.get(
+    "/:id",
+    permitirPerfis("personal", "aluno"),
+    ExercicioController.getExercicioById
+);
 
+// Atualizar exercício: somente personal.
+router.post(
+    "/update",
+    permitirPerfis("personal"),
+    ExercicioController.updateExercicio
+);
 
-// ATUALIZAR EXERCÍCIO
-// Atualiza os dados de um exercício
-// Rota completa: POST /exercicio/update
-router.post("/update", ExercicioController.updateExercicio);
+// Excluir exercício: somente personal.
+router.delete(
+    "/delete",
+    permitirPerfis("personal"),
+    ExercicioController.deleteExercicio
+);
 
-
-// EXCLUIR EXERCÍCIO
-// Exclui um exercício
-// Rota completa: DELETE /exercicio/delete
-router.delete("/delete", ExercicioController.deleteExercicio);
-
-
-// Exporta as rotas para serem utilizadas no index.js
 export default router;

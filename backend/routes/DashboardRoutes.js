@@ -1,17 +1,46 @@
-// Importa o Express para criar e organizar as rotas
-import routerEX from "express";
+import express from "express";
 
-// Importa o Controller responsável pela lógica do Dashboard
 import DashboardController from "../controllers/DashboardController.js";
 
-// Cria o roteador do Express
-const router = routerEX.Router();
-// BUSCAR DADOS DO DASHBOARD
-// Busca os dados do Dashboard de um usuário
-// :usuario_id é um parâmetro dinâmico que representa o ID do usuário
+import authMiddleware from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
+
+// Exige autenticação em todas as rotas.
+router.use(authMiddleware);
+
+// Aluno consulta somente o próprio dashboard.
+// Personal pode consultar o dashboard dos alunos.
+function permitirDashboardDoUsuario(req, res, next) {
+    const usuarioId = Number(req.params.usuario_id);
+
+    if (!Number.isSafeInteger(usuarioId) || usuarioId <= 0) {
+        return res.status(422).json({
+            message: "Informe um ID de usuário válido!"
+        });
+    }
+
+    if (req.usuario.tipo_usuario === "personal") {
+        return next();
+    }
+
+    if (
+        req.usuario.tipo_usuario === "aluno" &&
+        usuarioId === Number(req.usuario.id)
+    ) {
+        return next();
+    }
+
+    return res.status(403).json({
+        message: "Você não pode acessar o dashboard de outro usuário!"
+    });
+}
+
+// Buscar dados do usuário autorizado.
 router.get(
     "/:usuario_id",
+    permitirDashboardDoUsuario,
     DashboardController.getDashboard
 );
-// Exporta as rotas para serem utilizadas no index.js
+
 export default router;
