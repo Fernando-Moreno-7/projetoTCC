@@ -2,43 +2,96 @@ import Treino_exercicios from "../models/Treino_exercicios.js";
 import Historico_cargas from "../models/Historico_cargas.js";
 import Exercicios from "../models/Exercicios.js";
 import Treinos from "../models/Treinos.js";
+import Agenda_treinos from "../models/Agenda_treinos.js";
 import Logger from "../db/logger.js";
+import { Op } from "sequelize";
+
+// Valida IDs, séries e repetições como inteiros positivos.
+function inteiroPositivo(valor) {
+    if (
+        typeof valor !== "string" &&
+        typeof valor !== "number"
+    ) {
+        return false;
+    }
+
+    return Number.isSafeInteger(Number(valor)) && Number(valor) > 0;
+}
+
+// Confere a identificação adicionada pelo middleware JWT.
+function verificarSessao(req, res) {
+    if (!req.usuario || !inteiroPositivo(req.usuario.id)) {
+        res.status(401).json({
+            message: "Faça login para continuar!"
+        });
+        return false;
+    }
+
+    if (
+        req.usuario.tipo_usuario !== "personal" &&
+        req.usuario.tipo_usuario !== "aluno"
+    ) {
+        res.status(403).json({
+            message: "Perfil sem permissão de acesso!"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Operações de alteração são exclusivas do personal.
+function verificarPersonal(req, res) {
+    if (!verificarSessao(req, res)) {
+        return false;
+    }
+
+    if (req.usuario.tipo_usuario !== "personal") {
+        res.status(403).json({
+            message: "Somente o personal pode realizar esta ação!"
+        });
+        return false;
+    }
+
+    return true;
+}
 
 export default class TreinoExercicioController {
 
-    // =========================================
-    // ADICIONAR EXERCÍCIO AO TREINO
-    // =========================================
-
+    // Adicionar exercício ao treino: somente personal.
     static async add(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
         const {
             treino_id,
             exercicio_id,
             series,
             repeticoes
-        } = req.body;
+        } = req.body || {};
 
         if (
-            !treino_id ||
-            !exercicio_id ||
-            !series ||
-            !repeticoes
+            !inteiroPositivo(treino_id) ||
+            !inteiroPositivo(exercicio_id)
         ) {
             return res.status(422).json({
-                message: "Preencha todos os campos!"
+                message: "Informe um treino e um exercício válidos!"
             });
         }
 
-        if (Number(series) <= 0 || Number(repeticoes) <= 0) {
+        if (
+            !inteiroPositivo(series) ||
+            !inteiroPositivo(repeticoes)
+        ) {
             return res.status(422).json({
-                message: "Séries e repetições devem ser maiores que zero!"
+                message:
+                    "Séries e repetições devem ser números inteiros maiores que zero!"
             });
         }
 
         try {
-
-            const treino = await Treinos.findByPk(treino_id);
+            const treino = await Treinos.findByPk(Number(treino_id));
 
             if (!treino) {
                 return res.status(404).json({
@@ -46,7 +99,9 @@ export default class TreinoExercicioController {
                 });
             }
 
-            const exercicio = await Exercicios.findByPk(exercicio_id);
+            const exercicio = await Exercicios.findByPk(
+                Number(exercicio_id)
+            );
 
             if (!exercicio) {
                 return res.status(404).json({
@@ -54,13 +109,11 @@ export default class TreinoExercicioController {
                 });
             }
 
-            // Evita adicionar o mesmo exercício duas vezes
-            // no mesmo treino
             const exercicioJaAdicionado =
                 await Treino_exercicios.findOne({
                     where: {
-                        treino_id,
-                        exercicio_id
+                        treino_id: treino.id,
+                        exercicio_id: exercicio.id
                     }
                 });
 
@@ -72,10 +125,10 @@ export default class TreinoExercicioController {
             }
 
             await Treino_exercicios.create({
-                treino_id,
-                exercicio_id,
-                series,
-                repeticoes
+                treino_id: treino.id,
+                exercicio_id: exercicio.id,
+                series: Number(series),
+                repeticoes: Number(repeticoes)
             });
 
             return res.status(201).json({
@@ -84,38 +137,76 @@ export default class TreinoExercicioController {
             });
 
         } catch (error) {
-
             Logger.error(
                 `Erro ao adicionar exercício ao treino: ${error}`
             );
 
             return res.status(500).json({
-                message:
-                    "Erro ao adicionar exercício ao treino!"
+                message: "Erro ao adicionar exercício ao treino!"
             });
         }
     }
 
-    // =========================================
-    // LISTAR EXERCÍCIOS DO TREINO
-    // =========================================
-
+    // Listar exercícios dos treinos autorizados.
     static async list(req, res) {
+        if (!verificarSessao(req, res)) {
+            return;
+        }
 
-        const treino_id = req.query.treino_id;
+        const treinoIdInformado = req.query.treino_id;
+        const possuiFiltro = treinoIdInformado !== undefined;
+
+        if (
+            possuiFiltro &&
+            !inteiroPositivo(treinoIdInformado)
+        ) {
+            return res.status(422).json({
+                message: "Informe um ID de treino válido!"
+            });
+        }
 
         try {
-
             const where = {};
 
-            if (treino_id) {
-                where.treino_id = treino_id;
+            if (req.usuario.tipo_usuario === "aluno") {
+                // A identidade do aluno vem da sessão autenticada.
+                const agendamentos = await Agenda_treinos.findAll({
+                    where: {
+                        usuario_id: Number(req.usuario.id)
+                    },
+                    attributes: ["treino_id"],
+                    raw: true
+                });
+
+                const idsTreinos = [
+                    ...new Set(
+                        agendamentos.map((item) => item.treino_id)
+                    )
+                ];
+
+                if (idsTreinos.length === 0) {
+                    return res.status(200).json([]);
+                }
+
+                // Sempre limita aos treinos do aluno.
+                where.treino_id = {
+                    [Op.in]: idsTreinos
+                };
+
+                // Se houver filtro, aplica as duas condições.
+                if (possuiFiltro) {
+                    where.treino_id[Op.eq] =
+                        Number(treinoIdInformado);
+                }
+
+            } else if (possuiFiltro) {
+                // Personal pode consultar qualquer treino.
+                where.treino_id = Number(treinoIdInformado);
             }
 
             const treinoExercicios =
                 await Treino_exercicios.findAll({
                     where,
-
                     include: [
                         {
                             model: Exercicios,
@@ -128,142 +219,125 @@ export default class TreinoExercicioController {
                             ]
                         }
                     ],
-
                     order: [
                         ["id", "ASC"]
                     ]
                 });
 
-            return res.status(200).json(
-                treinoExercicios
-            );
+            return res.status(200).json(treinoExercicios);
 
         } catch (error) {
-
             Logger.error(
                 `Erro ao listar exercícios do treino: ${error}`
             );
 
             return res.status(500).json({
-                message:
-                    "Erro ao listar exercícios do treino!"
+                message: "Erro ao listar exercícios do treino!"
             });
         }
     }
 
-    // =========================================
-    // ATUALIZAR SÉRIES E REPETIÇÕES
-    // =========================================
-
+    // Atualizar séries e repetições: somente personal.
     static async update(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
-        const {
-            id,
-            series,
-            repeticoes
-        } = req.body;
+        const { id, series, repeticoes } = req.body || {};
 
-        if (!id) {
+        if (!inteiroPositivo(id)) {
             return res.status(422).json({
-                message: "Informe o ID!"
+                message: "Informe um ID de registro válido!"
             });
         }
 
-        if (!series || !repeticoes) {
+        if (
+            !inteiroPositivo(series) ||
+            !inteiroPositivo(repeticoes)
+        ) {
             return res.status(422).json({
                 message:
-                    "Informe séries e repetições!"
-            });
-        }
-
-        if (Number(series) <= 0 || Number(repeticoes) <= 0) {
-            return res.status(422).json({
-                message:
-                    "Séries e repetições devem ser maiores que zero!"
+                    "Séries e repetições devem ser números inteiros maiores que zero!"
             });
         }
 
         try {
-
             const treinoExercicio =
-                await Treino_exercicios.findByPk(id);
+                await Treino_exercicios.findByPk(Number(id));
 
             if (!treinoExercicio) {
                 return res.status(404).json({
-                    message:
-                        "Registro não encontrado!"
+                    message: "Registro não encontrado!"
                 });
             }
 
-            await Treino_exercicios.update(
-                {
-                    series,
-                    repeticoes
-                },
-                {
-                    where: {
-                        id
-                    }
-                }
-            );
+            await treinoExercicio.update({
+                series: Number(series),
+                repeticoes: Number(repeticoes)
+            });
 
             return res.status(200).json({
-                message:
-                    "Registro atualizado com sucesso!"
+                message: "Registro atualizado com sucesso!"
             });
 
         } catch (error) {
-
-            Logger.error(
-                `Erro ao atualizar registro: ${error}`
-            );
+            Logger.error(`Erro ao atualizar registro: ${error}`);
 
             return res.status(500).json({
-                message:
-                    "Erro ao atualizar registro!"
+                message: "Erro ao atualizar registro!"
             });
         }
     }
 
-    // =========================================
-    // REMOVER EXERCÍCIO DO TREINO
-    // =========================================
-
+    // Remover exercício do treino: somente personal.
     static async delete(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
-        const { id } = req.body;
+        const { id } = req.body || {};
 
-        if (!id) {
+        if (!inteiroPositivo(id)) {
             return res.status(422).json({
-                message: "Informe o ID!"
+                message: "Informe um ID de registro válido!"
             });
         }
 
         try {
+            // Exclui o histórico e o vínculo na mesma transação.
+            const excluido =
+                await Treino_exercicios.sequelize.transaction(
+                    async (transaction) => {
+                        const treinoExercicio =
+                            await Treino_exercicios.findByPk(
+                                Number(id),
+                                { transaction }
+                            );
 
-            const treinoExercicio =
-                await Treino_exercicios.findByPk(id);
+                        if (!treinoExercicio) {
+                            return false;
+                        }
 
-            if (!treinoExercicio) {
+                        await Historico_cargas.destroy({
+                            where: {
+                                treino_exercicios_id: treinoExercicio.id
+                            },
+                            transaction
+                        });
+
+                        await treinoExercicio.destroy({
+                            transaction
+                        });
+
+                        return true;
+                    }
+                );
+
+            if (!excluido) {
                 return res.status(404).json({
-                    message:
-                        "Registro não encontrado!"
+                    message: "Registro não encontrado!"
                 });
             }
-
-            // Remove os históricos de carga associados
-            // antes de remover a relação treino/exercício
-            await Historico_cargas.destroy({
-                where: {
-                    treino_exercicios_id: id
-                }
-            });
-
-            await Treino_exercicios.destroy({
-                where: {
-                    id
-                }
-            });
 
             return res.status(200).json({
                 message:
@@ -271,14 +345,10 @@ export default class TreinoExercicioController {
             });
 
         } catch (error) {
-
-            Logger.error(
-                `Erro ao excluir registro: ${error}`
-            );
+            Logger.error(`Erro ao excluir registro: ${error}`);
 
             return res.status(500).json({
-                message:
-                    "Erro ao remover exercício do treino!"
+                message: "Erro ao remover exercício do treino!"
             });
         }
     }

@@ -1,708 +1,428 @@
-// Importa o model de Avaliações
 import Avaliacoes from "../models/Avaliacoes.js";
-
-// Importa o model de Usuários
 import Usuarios from "../models/Usuarios.js";
-
-// Importa o Logger para registrar erros
 import Logger from "../db/logger.js";
 
+// Valida IDs recebidos nas requisições.
+function idValido(valor) {
+    if (
+        typeof valor !== "string" &&
+        typeof valor !== "number"
+    ) {
+        return false;
+    }
+
+    return Number.isSafeInteger(Number(valor)) && Number(valor) > 0;
+}
+
+// Confere a sessão criada pelo middleware JWT.
+function verificarSessao(req, res) {
+    if (!req.usuario || !idValido(req.usuario.id)) {
+        res.status(401).json({
+            message: "Faça login para continuar!"
+        });
+        return false;
+    }
+
+    if (
+        req.usuario.tipo_usuario !== "personal" &&
+        req.usuario.tipo_usuario !== "aluno"
+    ) {
+        res.status(403).json({
+            message: "Perfil sem permissão de acesso!"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Restringe as operações administrativas ao personal.
+function verificarPersonal(req, res) {
+    if (!verificarSessao(req, res)) {
+        return false;
+    }
+
+    if (req.usuario.tipo_usuario !== "personal") {
+        res.status(403).json({
+            message: "Somente o personal pode realizar esta ação!"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Valida os dados utilizados no cadastro e na atualização.
+function validarDados(body, res) {
+    const {
+        usuario_id,
+        peso,
+        altura,
+        data_avaliacao,
+        observacoes
+    } = body || {};
+
+    if (!idValido(usuario_id)) {
+        res.status(422).json({
+            message: "Selecione um aluno válido!"
+        });
+        return null;
+    }
+
+    const numeroPositivo = (valor) =>
+        (typeof valor === "string" || typeof valor === "number") &&
+        String(valor).trim() !== "" &&
+        Number.isFinite(Number(valor)) &&
+        Number(valor) > 0;
+
+    if (!numeroPositivo(peso)) {
+        res.status(422).json({
+            message: "Informe um peso válido!"
+        });
+        return null;
+    }
+
+    if (!numeroPositivo(altura)) {
+        res.status(422).json({
+            message: "Informe uma altura válida!"
+        });
+        return null;
+    }
+
+    if (
+        typeof data_avaliacao !== "string" ||
+        data_avaliacao.trim() === ""
+    ) {
+        res.status(422).json({
+            message: "Informe a data da avaliação!"
+        });
+        return null;
+    }
+
+    if (
+        observacoes !== undefined &&
+        observacoes !== null &&
+        typeof observacoes !== "string"
+    ) {
+        res.status(422).json({
+            message: "As observações devem ser um texto!"
+        });
+        return null;
+    }
+
+    const pesoNumero = Number(peso);
+    const alturaNumero = Number(altura);
+
+    // Mantém a unidade utilizada neste controller:
+    // peso em quilogramas e altura em metros.
+    const imc = pesoNumero / (alturaNumero * alturaNumero);
+
+    if (!Number.isFinite(imc)) {
+        res.status(422).json({
+            message: "Peso e altura inválidos para calcular o IMC!"
+        });
+        return null;
+    }
+
+    return {
+        usuario_id: Number(usuario_id),
+        peso: pesoNumero,
+        altura: alturaNumero,
+        imc: Number(imc.toFixed(2)),
+        data_avaliacao: data_avaliacao.trim(),
+        observacoes: observacoes?.trim() || ""
+    };
+}
 
 export default class AvaliacaoController {
 
-
-    // =========================================
-    // CRIAR AVALIAÇÃO
-    // =========================================
-
+    // Criar avaliação: somente personal.
     static async create(req, res) {
-
-        // Recebe os dados enviados no corpo da requisição
-        const {
-            usuario_id,
-            peso,
-            altura,
-            data_avaliacao,
-            observacoes
-        } = req.body;
-
-
-        // Verifica se o aluno foi informado
-        if (!usuario_id) {
-
-            return res.status(422).json({
-                message: "Selecione um aluno!"
-            });
-
+        if (!verificarPersonal(req, res)) {
+            return;
         }
 
+        const dados = validarDados(req.body, res);
 
-        // Verifica se o peso foi informado
-        if (!peso) {
-
-            return res.status(422).json({
-                message: "Informe o peso!"
-            });
-
+        if (!dados) {
+            return;
         }
-
-
-        // Verifica se a altura foi informada
-        if (!altura) {
-
-            return res.status(422).json({
-                message: "Informe a altura!"
-            });
-
-        }
-
-
-        // Verifica se a data da avaliação foi informada
-        if (!data_avaliacao) {
-
-            return res.status(422).json({
-                message: "Informe a data da avaliação!"
-            });
-
-        }
-
 
         try {
+            const usuario = await Usuarios.findByPk(dados.usuario_id);
 
-            // Busca o usuário pela chave primária
-            const usuario =
-                await Usuarios.findByPk(
-                    usuario_id
-                );
-
-
-            // Verifica se o usuário existe
             if (!usuario) {
-
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
-
             }
 
-
-            // Verifica se o usuário é do tipo aluno
             if (usuario.tipo_usuario !== "aluno") {
-
                 return res.status(422).json({
                     message: "A avaliação deve pertencer a um aluno!"
                 });
-
             }
 
+            const avaliacao = await Avaliacoes.create(dados);
 
-            // Converte o peso para número
-            const pesoNumero =
-                Number(peso);
-
-            // Converte a altura para número
-            const alturaNumero =
-                Number(altura);
-
-
-            // Verifica se o peso é um número válido
-            // e maior que zero
-            if (
-                Number.isNaN(pesoNumero) ||
-                pesoNumero <= 0
-            ) {
-
-                return res.status(422).json({
-                    message: "Informe um peso válido!"
-                });
-
-            }
-
-
-            // Verifica se a altura é um número válido
-            // e maior que zero
-            if (
-                Number.isNaN(alturaNumero) ||
-                alturaNumero <= 0
-            ) {
-
-                return res.status(422).json({
-                    message: "Informe uma altura válida!"
-                });
-
-            }
-
-
-            // Calcula o IMC:
-            // peso / (altura * altura)
-            const imc =
-                pesoNumero /
-                (alturaNumero * alturaNumero);
-
-
-            // Cria e salva uma nova avaliação
-            // no banco de dados
-            const avaliacao =
-                await Avaliacoes.create({
-
-                    usuario_id,
-
-                    peso:
-                        pesoNumero,
-
-                    altura:
-                        alturaNumero,
-
-                    // Salva o IMC com duas casas decimais
-                    imc:
-                        Number(
-                            imc.toFixed(2)
-                        ),
-
-                    data_avaliacao,
-
-                    // Remove espaços do começo e do fim.
-                    // Caso não tenha observação, salva uma string vazia.
-                    observacoes:
-                        observacoes?.trim() || ""
-
-                });
-
-
-            // Retorna status 201 indicando
-            // que a avaliação foi criada com sucesso
             return res.status(201).json({
-
-                message:
-                    "Avaliação cadastrada com sucesso!",
-
+                message: "Avaliação cadastrada com sucesso!",
                 avaliacao
-
             });
 
-
         } catch (error) {
+            Logger.error(`Erro ao cadastrar avaliação: ${error}`);
 
-            // Registra o erro no Logger
-            Logger.error(
-                `Erro ao cadastrar avaliação: ${error}`
-            );
-
-
-            // Retorna erro interno do servidor
             return res.status(500).json({
                 message: "Erro ao cadastrar avaliação!"
             });
-
         }
-
     }
 
-
-    // =========================================
-    // LISTAR TODAS AS AVALIAÇÕES
-    // =========================================
-
+    // Listar todas as avaliações: somente personal.
     static async list(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
         try {
+            const avaliacoes = await Avaliacoes.findAll({
+                include: [
+                    {
+                        model: Usuarios,
+                        attributes: ["id", "nome", "email"]
+                    }
+                ],
+                order: [
+                    ["data_avaliacao", "DESC"],
+                    ["id", "DESC"]
+                ]
+            });
 
-            // Busca todas as avaliações cadastradas
-            const avaliacoes =
-                await Avaliacoes.findAll({
-
-                    // Traz também os dados do usuário
-                    // relacionado a cada avaliação
-                    include: [
-
-                        {
-                            model: Usuarios,
-
-                            // Define quais dados do usuário
-                            // serão retornados
-                            attributes: [
-                                "id",
-                                "nome",
-                                "email"
-                            ]
-                        }
-
-                    ],
-
-                    // Ordena pelas avaliações mais recentes
-                    // para as mais antigas
-                    order: [
-                        ["data_avaliacao", "DESC"],
-                        ["id", "DESC"]
-                    ]
-
-                });
-
-
-            // Retorna as avaliações encontradas
-            return res.status(200).json(
-                avaliacoes
-            );
-
+            return res.status(200).json(avaliacoes);
 
         } catch (error) {
-
-            // Registra o erro no Logger
-            Logger.error(
-                `Erro ao listar avaliações: ${error}`
-            );
-
+            Logger.error(`Erro ao listar avaliações: ${error}`);
 
             return res.status(500).json({
                 message: "Erro ao listar avaliações!"
             });
-
         }
-
     }
 
-
-    // =========================================
-    // BUSCAR AVALIAÇÃO PELO ID
-    // =========================================
-
+    // Buscar avaliação pelo ID respeitando o proprietário.
     static async getById(req, res) {
-
-        // Recebe o ID da avaliação através
-        // dos parâmetros da rota
-        const id =
-            req.params.id;
-
-
-        // Verifica se o ID foi informado
-        if (!id) {
-
-            return res.status(422).json({
-                message: "Informe o ID da avaliação!"
-            });
-
+        if (!verificarSessao(req, res)) {
+            return;
         }
 
+        const { id } = req.params;
+
+        if (!idValido(id)) {
+            return res.status(422).json({
+                message: "Informe um ID de avaliação válido!"
+            });
+        }
+
+        const where = {
+            id: Number(id)
+        };
+
+        // O aluno só encontra avaliações que pertencem a ele.
+        if (req.usuario.tipo_usuario === "aluno") {
+            where.usuario_id = Number(req.usuario.id);
+        }
 
         try {
-
-            // Busca a avaliação pela chave primária
-            const avaliacao =
-                await Avaliacoes.findByPk(
-                    id,
+            const avaliacao = await Avaliacoes.findOne({
+                where,
+                include: [
                     {
-
-                        // Traz também os dados
-                        // do usuário relacionado
-                        include: [
-
-                            {
-                                model: Usuarios,
-
-                                attributes: [
-                                    "id",
-                                    "nome",
-                                    "email"
-                                ]
-                            }
-
-                        ]
+                        model: Usuarios,
+                        attributes: ["id", "nome", "email"]
                     }
-                );
+                ]
+            });
 
-
-            // Verifica se a avaliação existe
             if (!avaliacao) {
-
                 return res.status(404).json({
                     message: "Avaliação não encontrada!"
                 });
-
             }
 
-
-            // Retorna a avaliação encontrada
-            return res.status(200).json(
-                avaliacao
-            );
-
+            return res.status(200).json(avaliacao);
 
         } catch (error) {
-
-            Logger.error(
-                `Erro ao buscar avaliação: ${error}`
-            );
-
+            Logger.error(`Erro ao buscar avaliação: ${error}`);
 
             return res.status(500).json({
                 message: "Erro ao buscar avaliação!"
             });
-
         }
-
     }
 
-
-    // =========================================
-    // LISTAR AVALIAÇÕES DE UM ALUNO
-    // =========================================
-
+    // Listar avaliações do usuário autorizado.
     static async listByUsuario(req, res) {
-
-        // Recebe o ID do usuário através
-        // dos parâmetros da rota
-        const usuario_id =
-            req.params.usuario_id;
-
-
-        // Verifica se o usuário foi informado
-        if (!usuario_id) {
-
-            return res.status(422).json({
-                message: "Informe o aluno!"
-            });
-
+        if (!verificarSessao(req, res)) {
+            return;
         }
 
+        const idInformado = req.params.usuario_id;
+
+        if (!idValido(idInformado)) {
+            return res.status(422).json({
+                message: "Informe um ID de aluno válido!"
+            });
+        }
+
+        const aluno = req.usuario.tipo_usuario === "aluno";
+
+        if (
+            aluno &&
+            Number(idInformado) !== Number(req.usuario.id)
+        ) {
+            return res.status(403).json({
+                message:
+                    "Você não pode consultar as avaliações de outro usuário!"
+            });
+        }
+
+        // Para o aluno, a identidade da consulta vem da sessão.
+        const usuarioId = aluno
+            ? Number(req.usuario.id)
+            : Number(idInformado);
 
         try {
+            const usuario = await Usuarios.findByPk(usuarioId);
 
-            // Busca o usuário pela chave primária
-            const usuario =
-                await Usuarios.findByPk(
-                    usuario_id
-                );
-
-
-            // Verifica se o usuário existe
             if (!usuario) {
-
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
-
             }
 
-
-            // Verifica se o usuário é um aluno
             if (usuario.tipo_usuario !== "aluno") {
-
                 return res.status(422).json({
                     message: "O usuário informado não é um aluno!"
                 });
-
             }
 
+            const avaliacoes = await Avaliacoes.findAll({
+                where: {
+                    usuario_id: usuarioId
+                },
+                order: [
+                    ["data_avaliacao", "DESC"],
+                    ["id", "DESC"]
+                ]
+            });
 
-            // Busca todas as avaliações
-            // relacionadas ao usuário
-            const avaliacoes =
-                await Avaliacoes.findAll({
-
-                    // Filtra somente as avaliações
-                    // daquele usuário
-                    where: {
-                        usuario_id
-                    },
-
-                    // Ordena das avaliações mais recentes
-                    // para as mais antigas
-                    order: [
-                        ["data_avaliacao", "DESC"],
-                        ["id", "DESC"]
-                    ]
-
-                });
-
-
-            // Retorna as avaliações do aluno
-            return res.status(200).json(
-                avaliacoes
-            );
-
+            return res.status(200).json(avaliacoes);
 
         } catch (error) {
-
-            Logger.error(
-                `Erro ao buscar avaliações do aluno: ${error}`
-            );
-
+            Logger.error(`Erro ao buscar avaliações do aluno: ${error}`);
 
             return res.status(500).json({
                 message: "Erro ao buscar avaliações do aluno!"
             });
-
         }
-
     }
 
-
-    // =========================================
-    // ATUALIZAR AVALIAÇÃO
-    // =========================================
-
+    // Atualizar avaliação: somente personal.
     static async update(req, res) {
-
-        // Recebe os dados enviados
-        // no corpo da requisição
-        const {
-            id,
-            usuario_id,
-            peso,
-            altura,
-            data_avaliacao,
-            observacoes
-        } = req.body;
-
-
-        // Verifica se o ID da avaliação foi informado
-        if (!id) {
-
-            return res.status(422).json({
-                message: "Informe o ID da avaliação!"
-            });
-
+        if (!verificarPersonal(req, res)) {
+            return;
         }
 
+        const { id } = req.body || {};
 
-        // Verifica se o aluno foi informado
-        if (!usuario_id) {
-
+        if (!idValido(id)) {
             return res.status(422).json({
-                message: "Selecione um aluno!"
+                message: "Informe um ID de avaliação válido!"
             });
-
         }
 
+        const dados = validarDados(req.body, res);
 
-        // Verifica se o peso foi informado
-        if (!peso) {
-
-            return res.status(422).json({
-                message: "Informe o peso!"
-            });
-
+        if (!dados) {
+            return;
         }
-
-
-        // Verifica se a altura foi informada
-        if (!altura) {
-
-            return res.status(422).json({
-                message: "Informe a altura!"
-            });
-
-        }
-
-
-        // Verifica se a data foi informada
-        if (!data_avaliacao) {
-
-            return res.status(422).json({
-                message: "Informe a data da avaliação!"
-            });
-
-        }
-
 
         try {
+            const avaliacao = await Avaliacoes.findByPk(Number(id));
 
-            // Busca a avaliação pela chave primária
-            const avaliacao =
-                await Avaliacoes.findByPk(
-                    id
-                );
-
-
-            // Verifica se a avaliação existe
             if (!avaliacao) {
-
                 return res.status(404).json({
                     message: "Avaliação não encontrada!"
                 });
-
             }
 
+            const usuario = await Usuarios.findByPk(dados.usuario_id);
 
-            // Busca o usuário pela chave primária
-            const usuario =
-                await Usuarios.findByPk(
-                    usuario_id
-                );
-
-
-            // Verifica se o usuário existe
             if (!usuario) {
-
                 return res.status(404).json({
                     message: "Usuário não encontrado!"
                 });
-
             }
 
-
-            // Verifica se o usuário é um aluno
             if (usuario.tipo_usuario !== "aluno") {
-
                 return res.status(422).json({
                     message: "A avaliação deve pertencer a um aluno!"
                 });
-
             }
 
+            await avaliacao.update(dados);
 
-            // Converte peso e altura para número
-            const pesoNumero =
-                Number(peso);
-
-            const alturaNumero =
-                Number(altura);
-
-
-            // Valida o peso
-            if (
-                Number.isNaN(pesoNumero) ||
-                pesoNumero <= 0
-            ) {
-
-                return res.status(422).json({
-                    message: "Informe um peso válido!"
-                });
-
-            }
-
-
-            // Valida a altura
-            if (
-                Number.isNaN(alturaNumero) ||
-                alturaNumero <= 0
-            ) {
-
-                return res.status(422).json({
-                    message: "Informe uma altura válida!"
-                });
-
-            }
-
-
-            // Recalcula o IMC
-            const imc =
-                pesoNumero /
-                (alturaNumero * alturaNumero);
-
-
-            // Atualiza os dados da avaliação
-            await avaliacao.update({
-
-                usuario_id,
-
-                peso:
-                    pesoNumero,
-
-                altura:
-                    alturaNumero,
-
-                // Salva o IMC com duas casas decimais
-                imc:
-                    Number(
-                        imc.toFixed(2)
-                    ),
-
-                data_avaliacao,
-
-                observacoes:
-                    observacoes?.trim() || ""
-
-            });
-
-
-            // Retorna sucesso na atualização
             return res.status(200).json({
                 message: "Avaliação atualizada com sucesso!"
             });
 
-
         } catch (error) {
-
-            Logger.error(
-                `Erro ao atualizar avaliação: ${error}`
-            );
-
+            Logger.error(`Erro ao atualizar avaliação: ${error}`);
 
             return res.status(500).json({
                 message: "Erro ao atualizar avaliação!"
             });
-
         }
-
     }
 
-
-    // =========================================
-    // EXCLUIR AVALIAÇÃO
-    // =========================================
-
+    // Excluir avaliação: somente personal.
     static async delete(req, res) {
-
-        // Recebe o ID da avaliação
-        // através do corpo da requisição
-        const {
-            id
-        } = req.body;
-
-
-        // Verifica se o ID foi informado
-        if (!id) {
-
-            return res.status(422).json({
-                message: "Informe o ID da avaliação!"
-            });
-
+        if (!verificarPersonal(req, res)) {
+            return;
         }
 
+        const { id } = req.body || {};
+
+        if (!idValido(id)) {
+            return res.status(422).json({
+                message: "Informe um ID de avaliação válido!"
+            });
+        }
 
         try {
+            const removidos = await Avaliacoes.destroy({
+                where: {
+                    id: Number(id)
+                }
+            });
 
-            // Busca a avaliação pela chave primária
-            const avaliacao =
-                await Avaliacoes.findByPk(
-                    id
-                );
-
-
-            // Verifica se a avaliação existe
-            if (!avaliacao) {
-
+            if (!removidos) {
                 return res.status(404).json({
                     message: "Avaliação não encontrada!"
                 });
-
             }
 
-
-            // Exclui a avaliação do banco de dados
-            await avaliacao.destroy();
-
-
-            // Retorna sucesso na exclusão
             return res.status(200).json({
                 message: "Avaliação excluída com sucesso!"
             });
 
-
         } catch (error) {
-
-            Logger.error(
-                `Erro ao excluir avaliação: ${error}`
-            );
-
+            Logger.error(`Erro ao excluir avaliação: ${error}`);
 
             return res.status(500).json({
                 message: "Erro ao excluir avaliação!"
             });
-
         }
-
     }
-
 }

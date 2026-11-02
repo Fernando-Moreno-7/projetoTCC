@@ -1,58 +1,51 @@
-// Importa o Express para criar e organizar as rotas
-import routerEX from "express";
+import express from "express";
 
-// Importa o controller responsável pela lógica dos treinos
 import TreinoController from "../controllers/TreinoController.js";
 
-// Cria o roteador do Express
-const router = routerEX.Router();
+import authMiddleware from "../middlewares/authMiddleware.js";
 
+import {
+    permitirPerfis
+} from "../middlewares/autorizacaoMiddleware.js";
 
-// =========================================
-// CRIAR TREINO
-// =========================================
+const router = express.Router();
 
-// Cria um novo treino
-// Rota completa: POST /treino/create
-router.post("/create", TreinoController.createTreino);
+// Exige autenticação em todas as rotas de treinos.
+router.use(authMiddleware);
 
+// Criar treino: somente personal.
+router.post(
+    "/create",
+    permitirPerfis("personal"),
+    TreinoController.createTreino
+);
 
-// =========================================
-// LISTAR TREINOS
-// =========================================
+// Listar treinos.
+// O controller deverá limitar os resultados para alunos.
+router.get(
+    "/list",
+    TreinoController.getAllTreinos
+);
 
-// Busca e lista os treinos
-// Rota completa: GET /treino/list
-router.get("/list", TreinoController.getAllTreinos);
+// Buscar treino pelo ID.
+// O controller deverá verificar o vínculo com o aluno.
+router.get(
+    "/:id",
+    TreinoController.getTreinoById
+);
 
+// Atualizar treino: somente personal.
+router.post(
+    "/update",
+    permitirPerfis("personal"),
+    TreinoController.updateTreino
+);
 
-// =========================================
-// BUSCAR TREINO PELO ID
-// =========================================
+// Excluir treino: somente personal.
+router.delete(
+    "/delete",
+    permitirPerfis("personal"),
+    TreinoController.deleteTreino
+);
 
-// Busca um treino específico através do ID
-// :id é um parâmetro dinâmico da URL
-// Exemplo: GET /treino/10
-router.get("/:id", TreinoController.getTreinoById);
-
-
-// =========================================
-// ATUALIZAR TREINO
-// =========================================
-
-// Atualiza os dados de um treino
-// Rota completa: POST /treino/update
-router.post("/update", TreinoController.updateTreino);
-
-
-// =========================================
-// EXCLUIR TREINO
-// =========================================
-
-// Exclui um treino
-// Rota completa: DELETE /treino/delete
-router.delete("/delete", TreinoController.deleteTreino);
-
-
-// Exporta as rotas para serem utilizadas no index.js
 export default router;

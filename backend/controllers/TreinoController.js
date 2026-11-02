@@ -1,60 +1,129 @@
-// Importa o model de Treinos
 import Treinos from "../models/Treinos.js";
-
-// Importa a tabela intermediária que relaciona treinos e exercícios
 import Treino_exercicios from "../models/Treino_exercicios.js";
-
-// Importa o histórico de cargas dos exercícios
 import Historico_cargas from "../models/Historico_cargas.js";
-
-// Importa a agenda de treinos dos usuários
 import Agenda_treinos from "../models/Agenda_treinos.js";
-
-// Importa o model de Exercícios
 import Exercicios from "../models/Exercicios.js";
-
-// Importa o Logger para registrar erros
 import Logger from "../db/logger.js";
-
-// Importa os operadores do Sequelize
 import { Op } from "sequelize";
+
+// Valida IDs recebidos nas requisições.
+function idValido(valor) {
+    if (
+        typeof valor !== "string" &&
+        typeof valor !== "number"
+    ) {
+        return false;
+    }
+
+    return Number.isSafeInteger(Number(valor)) && Number(valor) > 0;
+}
+
+// Verifica a identificação adicionada pelo middleware JWT.
+function verificarSessao(req, res) {
+    if (!req.usuario || !idValido(req.usuario.id)) {
+        res.status(401).json({
+            message: "Faça login para continuar!"
+        });
+        return false;
+    }
+
+    if (
+        req.usuario.tipo_usuario !== "personal" &&
+        req.usuario.tipo_usuario !== "aluno"
+    ) {
+        res.status(403).json({
+            message: "Perfil sem permissão de acesso!"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Restringe as operações administrativas ao personal.
+function verificarPersonal(req, res) {
+    if (!verificarSessao(req, res)) {
+        return false;
+    }
+
+    if (req.usuario.tipo_usuario !== "personal") {
+        res.status(403).json({
+            message: "Somente o personal pode realizar esta ação!"
+        });
+        return false;
+    }
+
+    return true;
+}
+
+// Valida os campos usados no cadastro e na atualização.
+function validarDados(body, res) {
+    const { nome, descricao } = body || {};
+
+    if (typeof nome !== "string" || !nome.trim()) {
+        res.status(422).json({
+            message: "O nome do treino é obrigatório!"
+        });
+        return null;
+    }
+
+    if (
+        descricao !== undefined &&
+        descricao !== null &&
+        typeof descricao !== "string"
+    ) {
+        res.status(422).json({
+            message: "A descrição deve ser um texto!"
+        });
+        return null;
+    }
+
+    return {
+        nome: nome.trim(),
+        descricao: descricao?.trim() || ""
+    };
+}
+
+// Busca os IDs dos treinos vinculados ao aluno autenticado.
+async function buscarIdsDosTreinosDoAluno(usuarioId) {
+    const agendamentos = await Agenda_treinos.findAll({
+        where: {
+            usuario_id: usuarioId
+        },
+        attributes: ["treino_id"],
+        raw: true
+    });
+
+    return [
+        ...new Set(
+            agendamentos.map((item) => item.treino_id)
+        )
+    ];
+}
 
 export default class TreinoController {
 
-    // CRIAR TREINO
+    // Criar treino: somente personal.
     static async createTreino(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
-        // Recebe nome e descrição através do corpo da requisição
-        const { nome, descricao } = req.body;
+        const dados = validarDados(req.body, res);
 
-        // Valida se o nome foi informado
-        if (!nome || !nome.trim()) {
-            return res.status(422).json({
-                message: "O nome do treino é obrigatório!"
-            });
+        if (!dados) {
+            return;
         }
 
         try {
+            const treino = await Treinos.create(dados);
 
-            // Cria o treino no banco de dados
-            const treino = await Treinos.create({
-                // trim() remove espaços do início e do final
-                nome: nome.trim(),
-
-                // Se a descrição existir, remove os espaços.
-                // Caso contrário, salva uma string vazia
-                descricao: descricao?.trim() || ""
-            });
-
-            // Retorna sucesso e o ID do treino criado
             return res.status(201).json({
                 message: "Treino cadastrado com sucesso!",
                 treinoId: treino.id
             });
 
         } catch (error) {
-
-            // Registra o erro no Logger
             Logger.error(`Erro ao criar treino: ${error}`);
 
             return res.status(500).json({
@@ -63,35 +132,44 @@ export default class TreinoController {
         }
     }
 
-
-    // LISTAR TODOS OS TREINOS
+    // Personal consulta todos.
+    // Aluno consulta somente os vinculados à própria agenda.
     static async getAllTreinos(req, res) {
+        if (!verificarSessao(req, res)) {
+            return;
+        }
 
         try {
+            const where = {};
 
-            // Busca todos os treinos cadastrados
+            if (req.usuario.tipo_usuario === "aluno") {
+                const ids = await buscarIdsDosTreinosDoAluno(
+                    Number(req.usuario.id)
+                );
+
+                if (ids.length === 0) {
+                    return res.status(200).json([]);
+                }
+
+                where.id = {
+                    [Op.in]: ids
+                };
+            }
+
             const treinos = await Treinos.findAll({
-
-                // include traz dados relacionados de outras tabelas
+                where,
                 include: [
                     {
-                        // Tabela intermediária entre treinos e exercícios
                         model: Treino_exercicios,
-
-                        // Define quais campos serão retornados
                         attributes: [
                             "id",
                             "series",
                             "repeticoes",
                             "exercicio_id"
                         ],
-
-                        // Busca também os dados dos exercícios relacionados
                         include: [
                             {
                                 model: Exercicios,
-
-                                // Campos do exercício que serão retornados
                                 attributes: [
                                     "id",
                                     "nome",
@@ -101,18 +179,14 @@ export default class TreinoController {
                         ]
                     }
                 ],
-
-                // Ordena os treinos pelo nome em ordem crescente
                 order: [
                     ["nome", "ASC"]
                 ]
             });
 
-            // Retorna os treinos encontrados
             return res.status(200).json(treinos);
 
         } catch (error) {
-
             Logger.error(`Erro ao buscar treinos: ${error}`);
 
             return res.status(500).json({
@@ -121,30 +195,57 @@ export default class TreinoController {
         }
     }
 
-
-    // BUSCAR TREINO PELO ID
+    // Buscar um treino respeitando o vínculo com o aluno.
     static async getTreinoById(req, res) {
+        if (!verificarSessao(req, res)) {
+            return;
+        }
 
-        // Recebe o ID através dos parâmetros da URL
         const idTreino = req.params.id;
 
+        if (!idValido(idTreino)) {
+            return res.status(422).json({
+                message: "Informe um ID de treino válido!"
+            });
+        }
+
         try {
+            const where = {
+                id: Number(idTreino)
+            };
 
-            // Busca o treino pela chave primária
-            const treino = await Treinos.findByPk(idTreino);
+            if (req.usuario.tipo_usuario === "aluno") {
+                const ids = await buscarIdsDosTreinosDoAluno(
+                    Number(req.usuario.id)
+                );
 
-            // Verifica se o treino existe
+                if (ids.length === 0) {
+                    return res.status(404).json({
+                        message: "Treino não encontrado!"
+                    });
+                }
+
+                // A própria consulta exige que o treino solicitado
+                // esteja entre os treinos do aluno autenticado.
+                where.id = {
+                    [Op.eq]: Number(idTreino),
+                    [Op.in]: ids
+                };
+            }
+
+            const treino = await Treinos.findOne({
+                where
+            });
+
             if (!treino) {
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
             }
 
-            // Retorna o treino encontrado
             return res.status(200).json(treino);
 
         } catch (error) {
-
             Logger.error(`Erro ao buscar treino: ${error}`);
 
             return res.status(500).json({
@@ -153,59 +254,42 @@ export default class TreinoController {
         }
     }
 
-
-    // ATUALIZAR TREINO
+    // Atualizar treino: somente personal.
     static async updateTreino(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
-        // Recebe os dados enviados no corpo da requisição
-        const { idTreino, nome, descricao } = req.body;
+        const { idTreino } = req.body || {};
 
-        // Verifica se um treino foi selecionado
-        if (!idTreino) {
+        if (!idValido(idTreino)) {
             return res.status(422).json({
-                message: "Selecione um treino!"
+                message: "Selecione um treino válido!"
             });
         }
 
-        // Verifica se o nome foi informado
-        if (!nome || !nome.trim()) {
-            return res.status(422).json({
-                message: "O nome do treino é obrigatório!"
-            });
+        const dados = validarDados(req.body, res);
+
+        if (!dados) {
+            return;
         }
 
         try {
+            const treino = await Treinos.findByPk(Number(idTreino));
 
-            // Busca o treino pela chave primária
-            const treino = await Treinos.findByPk(idTreino);
-
-            // Verifica se o treino existe
             if (!treino) {
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
             }
 
-            // Atualiza os dados do treino
-            await Treinos.update(
-                {
-                    nome: nome.trim(),
-                    descricao: descricao?.trim() || ""
-                },
-                {
-                    // Define qual treino será atualizado
-                    where: {
-                        id: idTreino
-                    }
-                }
-            );
+            await treino.update(dados);
 
             return res.status(200).json({
                 message: "Treino atualizado com sucesso!"
             });
 
         } catch (error) {
-
             Logger.error(`Erro ao atualizar treino: ${error}`);
 
             return res.status(500).json({
@@ -214,103 +298,94 @@ export default class TreinoController {
         }
     }
 
-
-    // EXCLUIR TREINO
+    // Excluir treino e dependências: somente personal.
     static async deleteTreino(req, res) {
+        if (!verificarPersonal(req, res)) {
+            return;
+        }
 
-        // Recebe o ID do treino através do corpo da requisição
-        const idTreino = req.body.idTreino;
+        const { idTreino } = req.body || {};
 
-        // Verifica se um treino foi selecionado
-        if (!idTreino) {
+        if (!idValido(idTreino)) {
             return res.status(422).json({
-                message: "Selecione um treino!"
+                message: "Selecione um treino válido!"
             });
         }
 
         try {
+            // Todas as exclusões são confirmadas juntas.
+            // Se alguma falhar, a transação desfaz as anteriores.
+            const excluido = await Treinos.sequelize.transaction(
+                async (transaction) => {
+                    const treino = await Treinos.findByPk(
+                        Number(idTreino),
+                        { transaction }
+                    );
 
-            // Busca o treino pela chave primária
-            const treino = await Treinos.findByPk(idTreino);
+                    if (!treino) {
+                        return false;
+                    }
 
-            // Verifica se o treino existe
-            if (!treino) {
+                    const treinoExercicios =
+                        await Treino_exercicios.findAll({
+                            where: {
+                                treino_id: treino.id
+                            },
+                            attributes: ["id"],
+                            transaction
+                        });
+
+                    const idsTreinoExercicios =
+                        treinoExercicios.map((item) => item.id);
+
+                    if (idsTreinoExercicios.length > 0) {
+                        await Historico_cargas.destroy({
+                            where: {
+                                treino_exercicios_id: {
+                                    [Op.in]: idsTreinoExercicios
+                                }
+                            },
+                            transaction
+                        });
+                    }
+
+                    await Treino_exercicios.destroy({
+                        where: {
+                            treino_id: treino.id
+                        },
+                        transaction
+                    });
+
+                    await Agenda_treinos.destroy({
+                        where: {
+                            treino_id: treino.id
+                        },
+                        transaction
+                    });
+
+                    await treino.destroy({
+                        transaction
+                    });
+
+                    return true;
+                }
+            );
+
+            if (!excluido) {
                 return res.status(404).json({
                     message: "Treino não encontrado!"
                 });
             }
-
-
-            // Busca as relações entre o treino e seus exercícios
-            const treinoExercicios = await Treino_exercicios.findAll({
-                where: {
-                    treino_id: idTreino
-                },
-
-                // Retorna apenas os IDs dessas relações
-                attributes: ["id"]
-            });
-
-
-            // Cria uma lista contendo apenas os IDs
-            // Exemplo: [{id: 1}, {id: 2}] -> [1, 2]
-            const idsTreinoExercicios = treinoExercicios.map(
-                (item) => item.id
-            );
-
-
-            // Verifica se existem relações treino/exercício
-            if (idsTreinoExercicios.length > 0) {
-
-                // Exclui os históricos de carga relacionados
-                await Historico_cargas.destroy({
-                    where: {
-
-                        // Op.in verifica se o ID está dentro da lista de IDs
-                        treino_exercicios_id: {
-                            [Op.in]: idsTreinoExercicios
-                        }
-                    }
-                });
-            }
-
-
-            // Exclui as relações entre o treino e os exercícios
-            await Treino_exercicios.destroy({
-                where: {
-                    treino_id: idTreino
-                }
-            });
-
-
-            // Exclui os registros da agenda relacionados ao treino
-            await Agenda_treinos.destroy({
-                where: {
-                    treino_id: idTreino
-                }
-            });
-
-
-            // Depois de limpar as dependências,
-            // exclui o próprio treino
-            await Treinos.destroy({
-                where: {
-                    id: idTreino
-                }
-            });
-
 
             return res.status(200).json({
                 message: "Treino excluído com sucesso!"
             });
 
         } catch (error) {
-
             Logger.error(`Erro ao excluir treino: ${error}`);
 
             return res.status(500).json({
-                message: "Erro ao excluir treino!",
-                error: error.message
+                message: "Erro ao excluir treino!"
             });
         }
     }
