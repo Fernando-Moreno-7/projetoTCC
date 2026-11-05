@@ -53,7 +53,7 @@ CREATE TABLE `avaliacoes` (
   `id` int NOT NULL AUTO_INCREMENT,
   `usuario_id` int NOT NULL,
   `peso` decimal(6,2) NOT NULL,
-  `altura` decimal(4,2) NOT NULL,
+  `altura` int NOT NULL,
   `imc` decimal(5,2) NOT NULL,
   `data_avaliacao` date NOT NULL,
   `observacoes` text,
