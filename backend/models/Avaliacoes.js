@@ -14,7 +14,6 @@ import Usuarios from "./Usuarios.js";
 const Avaliacoes = db.define(
     "avaliacoes",
     {
-
         // ID da avaliação
         id: {
             // Número inteiro
@@ -58,10 +57,10 @@ const Avaliacoes = db.define(
         },
 
 
-        // Peso registrado na avaliação
+        // Peso corporal registrado em quilogramas
         peso: {
-            // Número decimal
-            // com duas casas decimais
+            // Número decimal com duas casas decimais
+            // Exemplo: 80.50 representa 80,50 kg
             type: DataTypes.DECIMAL(6, 2),
 
             // O peso é obrigatório
@@ -69,21 +68,43 @@ const Avaliacoes = db.define(
         },
 
 
-        // Altura registrada na avaliação
+        // Altura registrada em centímetros inteiros
+        // Usa a mesma unidade do cadastro de usuários
         altura: {
-            // Número decimal
-            // com duas casas decimais
-            type: DataTypes.DECIMAL(4, 2),
+            // Número inteiro
+            // Exemplo: 175 representa 1,75 metro
+            type: DataTypes.INTEGER,
 
             // A altura é obrigatória
-            allowNull: false
+            allowNull: false,
+
+            // Valida a altura antes de salvar pelo Sequelize
+            validate: {
+                // Não permite casas decimais
+                isInt: {
+                    msg: "A altura deve ser informada em centímetros inteiros."
+                },
+
+                // Define a menor altura aceita pela aplicação
+                min: {
+                    args: [50],
+                    msg: "A altura mínima é de 50 centímetros."
+                },
+
+                // Define a maior altura aceita pela aplicação
+                max: {
+                    args: [300],
+                    msg: "A altura máxima é de 300 centímetros."
+                }
+            }
         },
 
 
-        // IMC calculado na avaliação
+        // IMC calculado a partir do peso e da altura
+        // O controller deve converter a altura de
+        // centímetros para metros antes do cálculo
         imc: {
-            // Número decimal
-            // com duas casas decimais
+            // Número decimal com duas casas decimais
             type: DataTypes.DECIMAL(5, 2),
 
             // O IMC é obrigatório
@@ -133,7 +154,11 @@ Avaliacoes.belongsTo(
     Usuarios,
     {
         // Define usuario_id como chave estrangeira
-        foreignKey: "usuario_id"
+        foreignKey: "usuario_id",
+
+        // Mantém o relacionamento alinhado à FK do banco
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE"
     }
 );
 
@@ -143,7 +168,13 @@ Usuarios.hasMany(
     Avaliacoes,
     {
         // Define usuario_id como chave estrangeira
-        foreignKey: "usuario_id"
+        foreignKey: "usuario_id",
+
+        // Atualiza a referência quando o ID mudar
+        onUpdate: "CASCADE",
+
+        // Remove as avaliações se o usuário for excluído
+        onDelete: "CASCADE"
     }
 );
 

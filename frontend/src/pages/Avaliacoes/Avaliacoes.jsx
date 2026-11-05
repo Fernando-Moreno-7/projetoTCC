@@ -1,4 +1,3 @@
-
 import Layout from "../../components/Layout/Layout";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -34,15 +33,15 @@ export default function Avaliacoes() {
 
     // Função assíncrona para consultar as avaliações no backend
     async function carregarAvaliacoes() {
-
         try {
+
             // Realiza uma requisição HTTP GET
             const response = await axios.get(
                 "http://localhost:5000/avaliacao/list"
             );
 
-            // Verifica se o backend retornou um array
-            // Se não retornou, utiliza uma lista vazia
+            // Verifica se o backend retornou um array.
+            // Se não retornou, utiliza uma lista vazia.
             setAvaliacoes(
                 Array.isArray(response.data)
                     ? response.data
@@ -54,13 +53,14 @@ export default function Avaliacoes() {
             // Registra o erro no console
             console.error(error);
 
-            // Verifica se houve uma resposta de erro do servidor
+            // Mostra a mensagem retornada pelo servidor
             if (error.response) {
                 alert(
-                    error.response.data.message ||
+                    error.response.data?.message ||
                     "Erro ao carregar avaliações!"
                 );
             } else {
+
                 // Trata problemas de conexão
                 alert(
                     "Não foi possível conectar ao servidor."
@@ -104,8 +104,8 @@ export default function Avaliacoes() {
                 response.data.message
             );
 
-            // Atualiza o estado removendo a avaliação excluída
-            // O filter mantém apenas os IDs diferentes do excluído
+            // Remove a avaliação excluída da lista exibida.
+            // O filter mantém os registros com IDs diferentes.
             setAvaliacoes(
                 (avaliacoesAtuais) =>
                     avaliacoesAtuais.filter(
@@ -121,10 +121,11 @@ export default function Avaliacoes() {
             // Mostra o erro retornado pelo backend, se existir
             if (error.response) {
                 alert(
-                    error.response.data.message ||
+                    error.response.data?.message ||
                     "Erro ao excluir avaliação!"
                 );
             } else {
+
                 // Mostra uma mensagem quando não há conexão
                 alert(
                     "Não foi possível conectar ao servidor."
@@ -142,12 +143,10 @@ export default function Avaliacoes() {
         }
 
         // Remove a parte do horário, caso exista
-        const dataSomente =
-            data.split("T")[0];
+        const dataSomente = data.split("T")[0];
 
         // Separa a data em ano, mês e dia
-        const partes =
-            dataSomente.split("-");
+        const partes = dataSomente.split("-");
 
         // Retorna a data original se o formato for inesperado
         if (partes.length !== 3) {
@@ -159,39 +158,30 @@ export default function Avaliacoes() {
     }
 
     // Remove espaços das extremidades e converte para minúsculas
-    const textoPesquisa =
-        pesquisa.trim().toLowerCase();
+    const textoPesquisa = pesquisa.trim().toLowerCase();
 
     // Filtra as avaliações pelo nome do aluno
-    const avaliacoesFiltradas =
-        avaliacoes.filter(
-            (avaliacao) => {
+    const avaliacoesFiltradas = avaliacoes.filter(
+        (avaliacao) => {
 
-                // Acessa o nome do aluno com segurança
-                // Se não existir, utiliza uma string vazia
-                const nomeAluno =
-                    avaliacao.usuario?.nome
-                        ?.toLowerCase() || "";
+            // Acessa o nome do aluno com segurança.
+            // Se não existir, utiliza uma string vazia.
+            const nomeAluno =
+                avaliacao.usuario?.nome?.toLowerCase() || "";
 
-                // Verifica se o nome contém o texto pesquisado
-                return nomeAluno.includes(
-                    textoPesquisa
-                );
-            }
-        );
+            // Verifica se o nome contém o texto pesquisado
+            return nomeAluno.includes(textoPesquisa);
+        }
+    );
 
     // Interface visual da página
     return (
-
         <Layout>
-
             <div>
 
                 {/* CABEÇALHO */}
                 <div className="mb-8 flex items-center justify-between">
-
                     <div>
-
                         <h1 className="text-4xl font-bold">
                             Avaliações
                         </h1>
@@ -199,26 +189,19 @@ export default function Avaliacoes() {
                         <p className="mt-2 text-gray-500">
                             Gerencie as avaliações físicas dos alunos.
                         </p>
-
                     </div>
 
                     {/* Botão que abre a página de cadastro */}
                     <button
                         type="button"
                         onClick={() =>
-                            navigate(
-                                "/cadastrar-avaliacao"
-                            )
+                            navigate("/cadastrar-avaliacao")
                         }
                         className="flex cursor-pointer items-center gap-2 rounded-xl bg-purple-700 px-6 py-3 text-white transition hover:bg-purple-800"
                     >
-
-                        <Plus size={20} />
-
+                        <Plus size={20} aria-hidden="true" />
                         Nova Avaliação
-
                     </button>
-
                 </div>
 
                 {/* PESQUISA */}
@@ -227,6 +210,7 @@ export default function Avaliacoes() {
                     {/* Ícone de pesquisa */}
                     <Search
                         size={18}
+                        aria-hidden="true"
                         className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400"
                     />
 
@@ -235,170 +219,129 @@ export default function Avaliacoes() {
                         type="text"
                         value={pesquisa}
                         onChange={(e) =>
-                            setPesquisa(
-                                e.target.value
-                            )
+                            setPesquisa(e.target.value)
                         }
+                        aria-label="Pesquisar avaliações pelo nome do aluno"
                         placeholder="Pesquisar aluno..."
                         className="w-full rounded-xl border border-gray-300 py-3 pr-4 pl-11 focus:ring-2 focus:ring-purple-600 focus:outline-none"
                     />
-
                 </div>
 
-                {/* CARREGANDO */}
                 {/* Exibe uma mensagem enquanto os dados são buscados */}
                 {carregando && (
-
-                    <p className="text-gray-500">
+                    <p className="text-gray-500" role="status">
                         Carregando avaliações...
                     </p>
-
                 )}
 
-                {/* NENHUMA AVALIAÇÃO */}
                 {/* Exibe esta mensagem se o carregamento terminou
                     e não existem avaliações no resultado */}
                 {!carregando &&
                     avaliacoesFiltradas.length === 0 && (
-
                         <div className="rounded-2xl bg-white p-8 text-center shadow-md">
-
                             <p className="text-gray-500">
                                 Nenhuma avaliação encontrada.
                             </p>
-
                         </div>
-
                     )}
 
-                {/* LISTAGEM */}
                 {/* Exibe a lista quando o carregamento termina */}
                 {!carregando && (
-
                     <div className="space-y-5">
 
-                        {/* Percorre o array e cria um card para cada avaliação */}
-                        {avaliacoesFiltradas.map(
-                            (avaliacao) => (
+                        {/* Cria um card para cada avaliação */}
+                        {avaliacoesFiltradas.map((avaliacao) => (
+                            <div
+                                key={avaliacao.id}
+                                className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-md md:flex-row md:items-center md:justify-between"
+                            >
 
-                                <div
-                                    key={avaliacao.id}
-                                    className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-md md:flex-row md:items-center md:justify-between"
-                                >
+                                {/* DADOS DA AVALIAÇÃO */}
+                                <div>
 
-                                    {/* DADOS DA AVALIAÇÃO */}
-                                    <div>
+                                    {/* Nome do aluno associado à avaliação */}
+                                    <h2 className="text-xl font-bold">
+                                        {avaliacao.usuario?.nome ||
+                                            "Aluno não encontrado"}
+                                    </h2>
 
-                                        {/* Nome do aluno associado à avaliação */}
-                                        <h2 className="text-xl font-bold">
+                                    {/* Peso registrado em quilogramas */}
+                                    <p className="mt-2 text-gray-500">
+                                        Peso: {avaliacao.peso} kg
+                                    </p>
 
-                                            {avaliacao.usuario?.nome ||
-                                                "Aluno não encontrado"}
+                                    {/* A altura agora é armazenada e exibida
+                                        em centímetros, assim como em usuarios */}
+                                    <p className="text-gray-500">
+                                        Altura: {avaliacao.altura} cm
+                                    </p>
 
-                                        </h2>
+                                    {/* IMC calculado e retornado pelo backend */}
+                                    <p className="text-gray-500">
+                                        IMC: {avaliacao.imc}
+                                    </p>
 
-                                        {/* Peso registrado na avaliação */}
+                                    {/* Mostra as observações somente se existirem */}
+                                    {avaliacao.observacoes && (
                                         <p className="mt-2 text-gray-500">
-
-                                            Peso:{" "}
-                                            {avaliacao.peso} kg
-
+                                            Observações:{" "}
+                                            {avaliacao.observacoes}
                                         </p>
-
-                                        {/* Altura registrada na avaliação */}
-                                        <p className="text-gray-500">
-
-                                            Altura:{" "}
-                                            {avaliacao.altura} m
-
-                                        </p>
-
-                                        {/* IMC registrado na avaliação */}
-                                        <p className="text-gray-500">
-
-                                            IMC:{" "}
-                                            {avaliacao.imc}
-
-                                        </p>
-
-                                        {/* Mostra as observações somente se existirem */}
-                                        {avaliacao.observacoes && (
-
-                                            <p className="mt-2 text-gray-500">
-
-                                                Observações:{" "}
-                                                {avaliacao.observacoes}
-
-                                            </p>
-
-                                        )}
-
-                                    </div>
-
-                                    {/* DATA E BOTÕES */}
-                                    <div className="flex flex-col gap-4 md:items-end">
-
-                                        {/* Data formatada para o padrão brasileiro */}
-                                        <span className="rounded-full bg-blue-100 px-4 py-2 font-semibold text-blue-700">
-
-                                            {formatarData(
-                                                avaliacao.data_avaliacao
-                                            )}
-
-                                        </span>
-
-                                        <div className="flex gap-4">
-
-                                            {/* Botão para editar a avaliação selecionada */}
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/editar-avaliacao/${avaliacao.id}`
-                                                    )
-                                                }
-                                                className="flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900"
-                                            >
-
-                                                <Pencil size={18} />
-
-                                                Editar
-
-                                            </button>
-
-                                            {/* Botão para excluir a avaliação selecionada */}
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    excluirAvaliacao(
-                                                        avaliacao.id
-                                                    )
-                                                }
-                                                className="flex cursor-pointer items-center gap-2 text-red-600 transition hover:text-red-800"
-                                            >
-
-                                                <Trash2 size={18} />
-
-                                                Excluir
-
-                                            </button>
-
-                                        </div>
-
-                                    </div>
-
+                                    )}
                                 </div>
 
-                            )
-                        )}
+                                {/* DATA E BOTÕES */}
+                                <div className="flex flex-col gap-4 md:items-end">
 
+                                    {/* Data formatada para o padrão brasileiro */}
+                                    <span className="rounded-full bg-blue-100 px-4 py-2 font-semibold text-blue-700">
+                                        {formatarData(
+                                            avaliacao.data_avaliacao
+                                        )}
+                                    </span>
+
+                                    <div className="flex gap-4">
+
+                                        {/* Abre a edição da avaliação selecionada */}
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                navigate(
+                                                    `/editar-avaliacao/${avaliacao.id}`
+                                                )
+                                            }
+                                            className="flex cursor-pointer items-center gap-2 text-purple-700 transition hover:text-purple-900"
+                                        >
+                                            <Pencil
+                                                size={18}
+                                                aria-hidden="true"
+                                            />
+                                            Editar
+                                        </button>
+
+                                        {/* Exclui a avaliação selecionada */}
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                excluirAvaliacao(
+                                                    avaliacao.id
+                                                )
+                                            }
+                                            className="flex cursor-pointer items-center gap-2 text-red-600 transition hover:text-red-800"
+                                        >
+                                            <Trash2
+                                                size={18}
+                                                aria-hidden="true"
+                                            />
+                                            Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-
                 )}
-
             </div>
-
         </Layout>
-
     );
 }
