@@ -1,32 +1,28 @@
-// Importa o componente responsável pelo menu lateral
+// Importa o menu de navegação.
 import Sidebar from "../Sidebar/Sidebar";
 
-// Importa o componente responsável pela barra superior
+// Importa a barra superior.
 import Navbar from "../Navbar/Navbar";
 
-// Cria e exporta o componente Layout
-// children representa o conteúdo das páginas exibidas dentro do Layout
+// children representa o conteúdo da página atual.
 export default function Layout({ children }) {
     return (
-        // Organiza os elementos com Flexbox, define a altura mínima
-        // da tela e aplica um fundo cinza-claro
-        <div className="flex min-h-screen bg-gray-100">
+        // No celular, organiza menu e conteúdo em coluna.
+        // A partir de 1024 px, posiciona o menu ao lado do conteúdo.
+        <div className="flex min-h-screen flex-col bg-gray-100 lg:flex-row">
 
-            {/* Exibe o menu lateral */}
+            {/* Menu adaptado para celular e computador */}
             <Sidebar />
 
-            {/* Ocupa o espaço disponível ao lado da Sidebar */}
-            <div className="flex-1">
+            {/* min-w-0 permite que o conteúdo encolha dentro do Flexbox */}
+            <div className="min-w-0 flex-1">
 
-                {/* Exibe a barra superior */}
+                {/* Barra superior da aplicação */}
                 <Navbar />
 
-                {/* Área principal com espaçamento interno */}
-                <main className="p-8">
-
-                    {/* Exibe o conteúdo da página atual */}
+                {/* Usa menos espaçamento nas telas pequenas */}
+                <main className="min-w-0 p-4 sm:p-6 lg:p-8">
                     {children}
-
                 </main>
             </div>
         </div>

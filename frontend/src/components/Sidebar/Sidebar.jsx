@@ -1,23 +1,19 @@
-
 /*
  * Componente Sidebar
  *
- * Responsável pelo menu lateral do EvolutionFit.
- *
- * Permite navegar entre as páginas do aplicativo,
- * apresenta opções diferentes para personal e aluno
- * e disponibiliza a função de logout.
- *
- * Utiliza:
- * - React Router para navegação.
- * - Lucide React para os ícones.
- * - Tailwind CSS para estilização.
+ * Apresenta os links de navegação de cada perfil.
+ * No celular, o menu pode ser aberto e fechado.
+ * No computador, permanece visível na lateral.
  */
 
-// Importa o hook responsável pela navegação.
-import { useNavigate } from "react-router-dom";
+// Controla a abertura do menu no celular.
+import { useState } from "react";
 
-// Importa os ícones utilizados no menu lateral.
+// NavLink cria links e identifica a página atual.
+// useNavigate permite redirecionar após sair.
+import { NavLink, useNavigate } from "react-router-dom";
+
+// Ícones utilizados na navegação.
 import {
     LayoutDashboard,
     Dumbbell,
@@ -27,314 +23,220 @@ import {
     LogOut,
     Activity,
     Play,
-    TrendingUp
+    TrendingUp,
+    Menu,
+    X
 } from "lucide-react";
 
-// Exporta o componente Sidebar.
 export default function Sidebar() {
 
-    // =========================================
-    // NAVEGAÇÃO
-    // =========================================
-
-    // useNavigate permite navegar entre
-    // as páginas do EvolutionFit.
+    // Permite navegar para o login após o logout.
     const navigate = useNavigate();
 
-    // =========================================
-    // IDENTIFICAR TIPO DE USUÁRIO
-    // =========================================
+    // O menu começa fechado no celular.
+    const [menuAberto, setMenuAberto] = useState(false);
 
-    // Recupera o tipo de usuário armazenado
-    // no navegador após o login.
-    //
-    // Valores esperados:
-    // "personal" ou "aluno".
+    // Define quais opções serão apresentadas.
+    // A autorização das requisições continua sendo feita pela API.
     const tipoUsuario = localStorage.getItem("tipoUsuario");
 
-    // =========================================
-    // FUNÇÃO DE LOGOUT
-    // =========================================
+    // O painel aparece para os dois perfis.
+    const itensComuns = [
+        {
+            caminho: "/dashboard",
+            titulo: "Painel",
+            icone: LayoutDashboard
+        }
+    ];
 
-    // Executada quando o usuário clica em Sair.
-    function sair() {
+    // Opções de gerenciamento do personal.
+    const itensPersonal = [
+        {
+            caminho: "/alunos",
+            titulo: "Alunos",
+            icone: Users
+        },
+        {
+            caminho: "/treinos",
+            titulo: "Treinos",
+            icone: Dumbbell
+        },
+        {
+            caminho: "/exercicios",
+            titulo: "Exercícios",
+            icone: Activity
+        },
+        {
+            caminho: "/agenda",
+            titulo: "Agenda",
+            icone: CalendarDays
+        },
+        {
+            caminho: "/avaliacoes",
+            titulo: "Avaliações",
+            icone: ClipboardCheck
+        }
+    ];
 
-        // Remove o token armazenado no navegador.
-        localStorage.removeItem("token");
+    // Opções de acompanhamento e execução do aluno.
+    const itensAluno = [
+        {
+            caminho: "/meu-treino",
+            titulo: "Meu Treino",
+            icone: Dumbbell
+        },
+        {
+            caminho: "/iniciar-treino",
+            titulo: "Iniciar Treino",
+            icone: Play
+        },
+        {
+            caminho: "/minha-evolucao",
+            titulo: "Minha Evolução",
+            icone: TrendingUp
+        }
+    ];
 
-        // Remove o ID do usuário.
-        localStorage.removeItem("userId");
+    // Seleciona somente os links do perfil identificado.
+    const itensPerfil =
+        tipoUsuario === "personal"
+            ? itensPersonal
+            : tipoUsuario === "aluno"
+                ? itensAluno
+                : [];
 
-        // Remove o tipo de usuário.
-        localStorage.removeItem("tipoUsuario");
+    // Reúne os links comuns e os links específicos do perfil.
+    const itensMenu = [...itensComuns, ...itensPerfil];
 
-        // Redireciona para a tela de login.
-        navigate("/");
+    // Fecha o menu após selecionar uma página no celular.
+    function fecharMenu() {
+        setMenuAberto(false);
     }
 
-    // =========================================
-    // INTERFACE DO MENU LATERAL
-    // =========================================
+    // Encerra a sessão armazenada no navegador.
+    function sair() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("tipoUsuario");
+
+        fecharMenu();
+
+        // replace evita manter a página atual no histórico imediato.
+        navigate("/", { replace: true });
+    }
 
     return (
+        // No celular, ocupa a largura disponível acima do conteúdo.
+        // No computador, utiliza largura fixa e altura da janela.
+        <aside className="w-full shrink-0 bg-purple-800 text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:w-64 lg:flex-col lg:overflow-y-auto">
 
-        // aside: representa a área lateral.
-        //
-        // sticky: mantém o menu posicionado
-        // durante a rolagem, conforme o contêiner.
-        //
-        // top-0: posiciona no topo.
-        // flex: utiliza Flexbox.
-        // h-screen: altura da tela.
-        // w-64: largura do menu.
-        // shrink-0: impede que o menu encolha.
-        // flex-col: organiza elementos em coluna.
-        // overflow-y-auto: permite rolagem vertical.
-        // bg-purple-800: fundo roxo.
-        // text-white: texto branco.
-        <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col overflow-y-auto bg-purple-800 text-white">
-
-            {/* =====================================
-                CABEÇALHO DO APLICATIVO
-               ===================================== */}
-
-            {/* border-b: adiciona borda inferior.
-                border-purple-700: cor da borda.
-                p-6: espaçamento interno. */}
-            <div className="border-b border-purple-700 p-6">
-
-                {/* Nome do aplicativo.
-                    text-3xl: tamanho do texto.
-                    font-bold: texto em negrito. */}
-                <h1 className="text-3xl font-bold">
-
+            {/* Nome do aplicativo e botão do menu móvel */}
+            <div className="flex items-center justify-between gap-3 border-b border-purple-700 p-4 lg:p-6">
+                <h1 className="text-2xl font-bold lg:text-3xl">
                     EvolutionFit
-
                 </h1>
 
-            </div>
-
-            {/* =====================================
-                ÁREA DE NAVEGAÇÃO
-               ===================================== */}
-
-            {/* nav: identifica a área de navegação.
-                flex-1: ocupa o espaço disponível.
-                p-5: espaçamento interno. */}
-            <nav className="flex-1 p-5">
-
-                {/* ul: lista não ordenada.
-                    space-y-4: espaço vertical
-                    entre os itens do menu. */}
-                <ul className="space-y-4">
-
-                    {/* =================================
-                        PAINEL
-                       ================================= */}
-
-                    {/* Opção disponível no menu,
-                        independentemente do tipo
-                        de usuário identificado.
-
-                        onClick: executa a navegação.
-                        cursor-pointer: cursor de clique.
-                        items-center: alinha os elementos.
-                        gap-3: espaço entre ícone e texto.
-                        transition: suaviza mudanças.
-                        hover:text-purple-300: muda a cor
-                        ao passar o mouse. */}
-                    <li
-                        onClick={() => navigate("/dashboard")}
-                        className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                    >
-                        {/* Ícone do painel.
-                            size={20}: tamanho de 20px. */}
-                        <LayoutDashboard size={20} />
-
-                        Painel
-                    </li>
-
-                    {/* =================================
-                        OPÇÕES DO PERSONAL
-                       ================================= */}
-
-                    {/* Renderização condicional.
-
-                        As opções abaixo aparecem
-                        somente quando tipoUsuario
-                        é igual a "personal".
-
-                        && significa que o conteúdo
-                        será renderizado apenas
-                        se a condição for verdadeira. */}
-                    {tipoUsuario === "personal" && (
-
-                        // Fragmento React.
-                        // Agrupa vários elementos JSX
-                        // sem criar uma div adicional.
-                        <>
-
-                            {/* ALUNOS */}
-
-                            {/* Navega para a página
-                                de gerenciamento de alunos. */}
-                            <li
-                                onClick={() => navigate("/alunos")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <Users size={20} />
-
-                                Alunos
-                            </li>
-
-                            {/* TREINOS */}
-
-                            {/* Navega para a página
-                                de gerenciamento de treinos. */}
-                            <li
-                                onClick={() => navigate("/treinos")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <Dumbbell size={20} />
-
-                                Treinos
-                            </li>
-
-                            {/* EXERCÍCIOS */}
-
-                            {/* Navega para a página
-                                de gerenciamento de exercícios. */}
-                            <li
-                                onClick={() => navigate("/exercicios")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <Activity size={20} />
-
-                                Exercícios
-                            </li>
-
-                            {/* AGENDA */}
-
-                            {/* Navega para a agenda
-                                de treinos do sistema. */}
-                            <li
-                                onClick={() => navigate("/agenda")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <CalendarDays size={20} />
-
-                                Agenda
-                            </li>
-
-                            {/* AVALIAÇÕES */}
-
-                            {/* Navega para a página
-                                de avaliações dos alunos. */}
-                            <li
-                                onClick={() => navigate("/avaliacoes")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <ClipboardCheck size={20} />
-
-                                Avaliações
-                            </li>
-
-                        </>
-
-                    )}
-
-                    {/* =================================
-                        OPÇÕES DO ALUNO
-                       ================================= */}
-
-                    {/* As opções abaixo aparecem
-                        somente quando tipoUsuario
-                        é igual a "aluno". */}
-                    {tipoUsuario === "aluno" && (
-
-                        // Agrupa os itens sem adicionar
-                        // elementos extras ao HTML.
-                        <>
-
-                            {/* MEU TREINO */}
-
-                            {/* Permite ao aluno acessar
-                                seus treinos. */}
-                            <li
-                                onClick={() => navigate("/meu-treino")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <Dumbbell size={20} />
-
-                                Meu Treino
-                            </li>
-
-                            {/* INICIAR TREINO */}
-
-                            {/* Permite navegar para
-                                a tela de execução do treino. */}
-                            <li
-                                onClick={() => navigate("/iniciar-treino")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <Play size={20} />
-
-                                Iniciar Treino
-                            </li>
-
-                            {/* MINHA EVOLUÇÃO */}
-
-                            {/* Permite acessar a página
-                                de acompanhamento da evolução. */}
-                            <li
-                                onClick={() => navigate("/minha-evolucao")}
-                                className="flex cursor-pointer items-center gap-3 transition hover:text-purple-300"
-                            >
-                                <TrendingUp size={20} />
-
-                                Minha Evolução
-                            </li>
-
-                        </>
-
-                    )}
-
-                </ul>
-
-            </nav>
-
-            {/* =====================================
-                BOTÃO DE SAIR
-               ===================================== */}
-
-            {/* border-t: borda superior.
-                border-purple-700: cor da borda.
-                p-5: espaçamento interno. */}
-            <div className="border-t border-purple-700 p-5">
-
-                {/* Botão responsável pelo logout.
-
-                    type="button": botão comum.
-                    onClick={sair}: executa a função sair.
-
-                    hover:text-red-300: altera a cor
-                    ao passar o mouse. */}
+                {/* Botão acessível por mouse, toque e teclado */}
                 <button
                     type="button"
-                    onClick={sair}
-                    className="flex cursor-pointer items-center gap-3 transition hover:text-red-300"
+                    aria-label={
+                        menuAberto
+                            ? "Fechar menu de navegação"
+                            : "Abrir menu de navegação"
+                    }
+                    aria-expanded={menuAberto}
+                    aria-controls="menu-principal"
+                    onClick={() =>
+                        setMenuAberto((aberto) => !aberto)
+                    }
+                    className="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white lg:hidden"
                 >
-
-                    {/* Ícone de saída. */}
-                    <LogOut size={20} />
-
-                    Sair
-
+                    {menuAberto ? (
+                        <X size={24} aria-hidden="true" />
+                    ) : (
+                        <Menu size={24} aria-hidden="true" />
+                    )}
                 </button>
-
             </div>
 
-        </aside>
+            {/* No celular, aparece somente quando o menu está aberto.
+                No computador, permanece visível. */}
+            <div
+                id="menu-principal"
+                onKeyDown={(event) => {
+                    // Escape fecha o menu e devolve o foco ao botão.
+                    if (event.key === "Escape" && menuAberto) {
+                        fecharMenu();
 
+                        event.currentTarget
+                            .previousElementSibling
+                            ?.querySelector("button")
+                            ?.focus();
+                    }
+                }}
+                className={`${
+                    menuAberto ? "flex" : "hidden"
+                } flex-col lg:flex lg:min-h-0 lg:flex-1`}
+            >
+
+                {/* Links de navegação */}
+                <nav
+                    aria-label="Navegação principal"
+                    className="flex-1 p-4 lg:p-5"
+                >
+                    <ul className="space-y-2">
+                        {itensMenu.map((item) => {
+
+                            // Cada item informa qual ícone será exibido.
+                            const Icone = item.icone;
+
+                            return (
+                                <li key={item.caminho}>
+
+                                    {/* NavLink permite navegação por teclado
+                                        e marca a página atual com aria-current. */}
+                                    <NavLink
+                                        to={item.caminho}
+                                        onClick={fecharMenu}
+                                        className={({ isActive }) =>
+                                            `flex min-h-11 items-center gap-3 rounded-lg px-3 py-2 transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
+                                                isActive
+                                                    ? "bg-purple-700 font-semibold"
+                                                    : "hover:bg-purple-700"
+                                            }`
+                                        }
+                                    >
+                                        <Icone
+                                            size={20}
+                                            aria-hidden="true"
+                                            className="shrink-0"
+                                        />
+
+                                        <span>{item.titulo}</span>
+                                    </NavLink>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </nav>
+
+                {/* Botão de saída ao final do menu */}
+                <div className="border-t border-purple-700 p-4 lg:p-5">
+                    <button
+                        type="button"
+                        onClick={sair}
+                        className="flex min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left transition hover:bg-purple-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                    >
+                        <LogOut
+                            size={20}
+                            aria-hidden="true"
+                            className="shrink-0"
+                        />
+
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </aside>
     );
 }
