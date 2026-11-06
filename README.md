@@ -83,6 +83,8 @@ Para uma instalação inicial:
 
 **Atenção:** o script contém comandos `DROP TABLE` que apagam e recriam as tabelas. Utilize-o somente em uma instalação inicial, sem dados que precisem ser preservados. Não o execute novamente no banco utilizado pela aplicação.
 
+Para testar uma instalação do zero preservando os dados existentes, utilize uma instância separada do MySQL ou adapte previamente o script e a configuração para um banco de teste.
+
 A importação cria somente a estrutura. Alunos, treinos, exercícios e demais registros devem ser cadastrados depois.
 
 ## Configuração do backend
@@ -114,7 +116,7 @@ Os valores acima são exemplos. O arquivo `.env` com as credenciais reais e a ch
 
 ## Execução do backend
 
-Em um terminal, entre na pasta `backend`:
+Em um terminal aberto na pasta principal do projeto, execute:
 
 ```bash
 cd backend
@@ -166,6 +168,8 @@ WHERE email = 'email_da_conta_que_voce_cadastrou';
 
 Substitua o e-mail do exemplo pelo e-mail exato da conta cadastrada.
 
+Se estiver utilizando um banco de teste com outro nome, ajuste também o comando `USE`.
+
 Saia da aplicação, caso esteja conectado, e faça login novamente.
 
 Essa configuração inicial é realizada diretamente pelo responsável pelo banco. O cadastro público não permite escolher o perfil de personal.
@@ -184,14 +188,18 @@ As rotas protegidas verificam o token JWT e as permissões no backend. Alterar i
 
 ## Medidas e cálculo do IMC
 
-No cadastro e na edição de alunos:
+No cadastro e na edição de alunos e de avaliações físicas:
 
 - Peso em quilogramas, com até duas casas decimais.
 - Altura em centímetros inteiros: por exemplo, `175`.
 - Altura aceita pela aplicação entre 50 e 300 centímetros.
 - IMC calculado com a altura convertida para metros.
 
-Nas avaliações físicas, a altura é informada em metros: por exemplo, `1.75`.
+Exemplo de conversão:
+
+```text
+175 cm / 100 = 1,75 m
+```
 
 A fórmula utilizada é:
 
@@ -199,9 +207,27 @@ A fórmula utilizada é:
 IMC = peso / (altura_em_metros × altura_em_metros)
 ```
 
-Os campos de peso e IMC da tabela `usuarios` utilizam duas casas decimais. A carga dos exercícios na tabela `historico_cargas` utiliza números inteiros.
+Os campos de peso e IMC utilizam duas casas decimais. A carga dos exercícios na tabela `historico_cargas` utiliza números inteiros.
+
+## Finalização de treinos
+
+A interface envia o identificador do agendamento e as cargas informadas em uma única requisição para a API.
+
+O backend verifica a autorização do usuário, o estado do agendamento, os exercícios vinculados ao treino e a validade das cargas.
+
+O registro das cargas e a alteração do agendamento para `concluido` são realizados na mesma transação do banco de dados:
+
+- Se todas as etapas forem concluídas, a transação é confirmada.
+- Se ocorrer uma falha antes da confirmação, as alterações da transação são desfeitas.
+- Uma tentativa de finalizar novamente um agendamento já concluído é recusada.
+
+As cargas devem ser números inteiros positivos.
+
+Se a interface informar que não foi possível confirmar a finalização, consulte o status em **Meu Treino** antes de tentar novamente. A ausência de resposta pode ocorrer mesmo quando o servidor já processou a requisição.
 
 ## Comandos adicionais do frontend
+
+Execute os comandos abaixo dentro da pasta `frontend`.
 
 Gerar a versão de produção:
 
@@ -221,9 +247,9 @@ Executar a análise estática:
 npm run lint
 ```
 
-Execute esses comandos dentro da pasta `frontend`.
-
 O comando `preview` serve para conferir o build localmente. A API e o MySQL continuam necessários.
+
+O build validado apresentou um aviso sobre o tamanho do arquivo JavaScript gerado. Esse aviso não impediu a conclusão do build e indica uma possibilidade futura de otimização.
 
 ## Validação
 
@@ -233,10 +259,22 @@ Foram realizados testes manuais de integração entre a interface, a API e o MyS
 - Restrições de acesso por perfil e por usuário.
 - Cadastro, consulta, edição e exclusão nos módulos principais.
 - Registro de cargas.
-- Conclusão de agendamentos.
+- Conclusão de agendamentos e recusa de repetição.
 - Persistência de medidas e cálculo do IMC.
+- Conferência dos gráficos com registros consultados no MySQL.
+- Responsividade nos tamanhos de tela selecionados.
+- Falhas de comunicação durante a finalização de treinos.
+- Rollback após falha controlada dentro da transação.
+- Recuperação após a remoção da falha controlada.
 
-As evidências e os limites dos testes são registrados na documentação do TCC.
+As evidências, os dados utilizados e os limites dos testes são registrados na documentação do TCC.
+
+Na última verificação do frontend:
+
+- `npm run build`: concluído com sucesso, com aviso sobre tamanho de chunk.
+- `npm run lint`: concluído sem avisos e sem erros.
+
+Essas verificações não substituem os testes manuais nem comprovam o funcionamento de todos os cenários possíveis.
 
 O script `npm test` do backend ainda é o comando padrão de aviso e não executa uma suíte automatizada.
 
@@ -263,9 +301,22 @@ Confira:
 
 Confira se o backend está em execução em `http://localhost:5000`.
 
+Se estiver utilizando o bloqueio de requisições do DevTools para testes, desative as regras de bloqueio antes de voltar ao uso normal.
+
 ### Falha de autenticação
 
 Faça login novamente. As rotas protegidas exigem um token válido.
+
+### Erro ao finalizar treino
+
+Confira:
+
+- Se o backend e o MySQL estão em execução.
+- Se o agendamento ainda está pendente.
+- Se as cargas são números inteiros positivos.
+- Se não existem regras de bloqueio de requisições ativas no DevTools.
+
+Se a mensagem indicar que não foi possível confirmar a finalização, consulte o status em **Meu Treino** antes de repetir a operação.
 
 ### Alterações no arquivo .env
 
@@ -274,3 +325,5 @@ Reinicie o backend para carregar a nova configuração.
 ## Finalidade acadêmica
 
 Projeto desenvolvido para demonstrar a integração entre interface web, API, autenticação, regras de acesso e banco de dados relacional.
+
+Os resultados apresentados correspondem ao ambiente e aos cenários registrados na documentação do TCC.
