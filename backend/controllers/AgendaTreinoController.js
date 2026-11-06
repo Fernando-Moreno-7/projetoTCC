@@ -6,12 +6,27 @@ import Treino_exercicios from "../models/Treino_exercicios.js";
 import Exercicios from "../models/Exercicios.js";
 import Historico_cargas from "../models/Historico_cargas.js";
 
+// Valida IDs recebidos nas requisições.
+function idValido(valor) {
+    if (
+        typeof valor !== "string" &&
+        typeof valor !== "number"
+    ) {
+        return false;
+    }
+
+    const numero = Number(valor);
+
+    return Number.isSafeInteger(numero) && numero > 0;
+}
+
 // Confere a identificação adicionada pelo middleware JWT.
 function verificarSessao(req, res) {
-    if (!req.usuario) {
+    if (!req.usuario || !idValido(req.usuario.id)) {
         res.status(401).json({
             message: "Faça login para continuar!"
         });
+
         return false;
     }
 
@@ -22,6 +37,7 @@ function verificarSessao(req, res) {
         res.status(403).json({
             message: "Perfil sem permissão de acesso!"
         });
+
         return false;
     }
 
@@ -38,33 +54,31 @@ function verificarPersonal(req, res) {
         res.status(403).json({
             message: "Somente o personal pode realizar esta ação!"
         });
+
         return false;
     }
 
     return true;
 }
 
-// Valida IDs recebidos nas requisições.
-function idValido(valor) {
-    const numero = Number(valor);
-    return Number.isSafeInteger(numero) && numero > 0;
-}
-
 // Define qual usuário pode ser consultado.
-// Para alunos, a identidade usada vem da sessão autenticada.
+// Para alunos, a identidade utilizada vem da sessão.
 function obterUsuarioAutorizado(req, res) {
     if (!verificarSessao(req, res)) {
         return null;
     }
 
-    const usuarioId = Number(req.params.usuario_id);
+    const idInformado = req.params.usuario_id;
 
-    if (!idValido(usuarioId)) {
+    if (!idValido(idInformado)) {
         res.status(422).json({
             message: "Informe um ID de usuário válido!"
         });
+
         return null;
     }
+
+    const usuarioId = Number(idInformado);
 
     if (req.usuario.tipo_usuario === "personal") {
         return usuarioId;
@@ -74,18 +88,21 @@ function obterUsuarioAutorizado(req, res) {
         res.status(403).json({
             message: "Você não pode acessar os dados de outro usuário!"
         });
+
         return null;
     }
 
     return Number(req.usuario.id);
 }
 
-// Inclui a propriedade do registro na própria consulta ao banco.
+// Inclui a propriedade do registro na consulta ao banco.
 function filtroAgendamento(req, id) {
-    const where = { id: Number(id) };
+    const where = {
+        id: Number(id)
+    };
 
     if (req.usuario.tipo_usuario === "aluno") {
-        where.usuario_id = req.usuario.id;
+        where.usuario_id = Number(req.usuario.id);
     }
 
     return where;
@@ -93,7 +110,7 @@ function filtroAgendamento(req, id) {
 
 export default class AgendaTreinoController {
 
-    // Criar agendamento
+    // Criar agendamento: somente personal.
     static async agendar(req, res) {
         if (!verificarPersonal(req, res)) {
             return;
@@ -104,6 +121,14 @@ export default class AgendaTreinoController {
         if (!idValido(usuario_id) || !idValido(treino_id) || !data) {
             return res.status(422).json({
                 message: "Preencha aluno, treino e data corretamente!"
+            });
+        }
+
+        const statusAgenda = status || "pendente";
+
+        if (!["pendente", "concluido"].includes(statusAgenda)) {
+            return res.status(422).json({
+                message: "Informe um status de agendamento válido!"
             });
         }
 
@@ -134,7 +159,7 @@ export default class AgendaTreinoController {
                 usuario_id,
                 treino_id,
                 data,
-                status: status || "pendente"
+                status: statusAgenda
             });
 
             return res.status(201).json({
@@ -151,7 +176,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Listar todos os agendamentos: somente personal
+    // Listar todos os agendamentos: somente personal.
     static async list(req, res) {
         if (!verificarPersonal(req, res)) {
             return;
@@ -186,7 +211,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Buscar agendamento respeitando o proprietário
+    // Buscar agendamento respeitando o proprietário.
     static async getById(req, res) {
         if (!verificarSessao(req, res)) {
             return;
@@ -232,7 +257,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Atualizar agendamento: somente personal
+    // Atualizar agendamento: somente personal.
     static async update(req, res) {
         if (!verificarPersonal(req, res)) {
             return;
@@ -264,9 +289,9 @@ export default class AgendaTreinoController {
             });
         }
 
-        if (!status) {
+        if (!["pendente", "concluido"].includes(status)) {
             return res.status(422).json({
-                message: "Informe o status do agendamento!"
+                message: "Informe um status de agendamento válido!"
             });
         }
 
@@ -319,7 +344,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Excluir agendamento: somente personal
+    // Excluir agendamento: somente personal.
     static async delete(req, res) {
         if (!verificarPersonal(req, res)) {
             return;
@@ -357,7 +382,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Buscar o treino de hoje do usuário autorizado
+    // Buscar o treino de hoje do usuário autorizado.
     static async getTreinoDoUsuario(req, res) {
         const usuarioId = obterUsuarioAutorizado(req, res);
 
@@ -366,6 +391,7 @@ export default class AgendaTreinoController {
         }
 
         try {
+            // Usa a data local do servidor.
             const hoje = new Date();
             const ano = hoje.getFullYear();
             const mes = String(hoje.getMonth() + 1).padStart(2, "0");
@@ -415,7 +441,10 @@ export default class AgendaTreinoController {
                         treino_exercicios_id: item.id,
                         usuario_id: usuarioId
                     },
-                    order: [["data_inicial", "DESC"]]
+                    order: [
+                        ["data_inicial", "DESC"],
+                        ["id", "DESC"]
+                    ]
                 });
 
                 exercicios.push({
@@ -446,13 +475,13 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Finalizar somente um agendamento autorizado
+    // Salvar cargas e concluir o agendamento na mesma transação.
     static async finalizarTreino(req, res) {
         if (!verificarSessao(req, res)) {
             return;
         }
 
-        const { id } = req.body;
+        const { id, cargas } = req.body;
 
         if (!idValido(id)) {
             return res.status(422).json({
@@ -460,53 +489,157 @@ export default class AgendaTreinoController {
             });
         }
 
+        // Lançar um erro interrompe a transação.
+        function interromper(status, message) {
+            const error = new Error(message);
+            error.statusHttp = status;
+            throw error;
+        }
+
         try {
-            const where = filtroAgendamento(req, id);
+            await Agenda_treinos.sequelize.transaction(
+                async (transaction) => {
+                    // Bloqueia o agendamento até o fim da transação.
+                    // Duas finalizações não podem gravar ao mesmo tempo.
+                    const agenda = await Agenda_treinos.findOne({
+                        where: filtroAgendamento(req, id),
+                        transaction,
+                        lock: transaction.LOCK.UPDATE
+                    });
 
-            const agenda = await Agenda_treinos.findOne({
-                where
-            });
-
-            if (!agenda) {
-                return res.status(404).json({
-                    message: "Agendamento não encontrado!"
-                });
-            }
-
-            if (agenda.status === "concluido") {
-                return res.status(409).json({
-                    message: "Este treino já foi concluído!"
-                });
-            }
-
-            // Repete a propriedade e o status na atualização.
-            // Se o registro mudar entre a consulta e a escrita,
-            // a operação não altera o agendamento.
-            const [alterados] = await Agenda_treinos.update(
-                {
-                    status: "concluido"
-                },
-                {
-                    where: {
-                        ...where,
-                        usuario_id: agenda.usuario_id,
-                        status: agenda.status
+                    if (!agenda) {
+                        interromper(
+                            404,
+                            "Agendamento não encontrado!"
+                        );
                     }
+
+                    if (agenda.status === "concluido") {
+                        interromper(
+                            409,
+                            "Este treino já foi concluído!"
+                        );
+                    }
+
+                    if (agenda.status !== "pendente") {
+                        interromper(
+                            409,
+                            "O agendamento não está pendente!"
+                        );
+                    }
+
+                    if (!Array.isArray(cargas) || cargas.length === 0) {
+                        interromper(
+                            422,
+                            "Informe pelo menos uma carga!"
+                        );
+                    }
+
+                    // Busca os exercícios do treino agendado.
+                    const itens = await Treino_exercicios.findAll({
+                        where: {
+                            treino_id: agenda.treino_id
+                        },
+                        attributes: ["id"],
+                        transaction,
+                        lock: transaction.LOCK.SHARE
+                    });
+
+                    const idsPermitidos = new Set(
+                        itens.map((item) => Number(item.id))
+                    );
+
+                    const idsRecebidos = new Set();
+                    const registros = [];
+
+                    // Valida todos os itens antes de salvar.
+                    for (const carga of cargas) {
+                        if (
+                            !carga ||
+                            typeof carga !== "object" ||
+                            Array.isArray(carga) ||
+                            !idValido(carga.treino_exercicios_id)
+                        ) {
+                            interromper(
+                                422,
+                                "Informe um exercício do treino válido!"
+                            );
+                        }
+
+                        const itemId = Number(
+                            carga.treino_exercicios_id
+                        );
+
+                        if (!idsPermitidos.has(itemId)) {
+                            interromper(
+                                422,
+                                "Um dos exercícios não pertence ao treino agendado!"
+                            );
+                        }
+
+                        if (idsRecebidos.has(itemId)) {
+                            interromper(
+                                422,
+                                "Não envie cargas repetidas para o mesmo exercício!"
+                            );
+                        }
+
+                        const peso = Number(carga.peso);
+
+                        // A coluna peso utiliza INT no MySQL.
+                        if (
+                            !["string", "number"].includes(
+                                typeof carga.peso
+                            ) ||
+                            !Number.isSafeInteger(peso) ||
+                            peso <= 0 ||
+                            peso > 2147483647
+                        ) {
+                            interromper(
+                                422,
+                                "Informe cargas inteiras maiores que zero!"
+                            );
+                        }
+
+                        idsRecebidos.add(itemId);
+
+                        registros.push({
+                            peso,
+                            treino_exercicios_id: itemId,
+
+                            // O usuário vem do agendamento autorizado.
+                            usuario_id: agenda.usuario_id
+                        });
+                    }
+
+                    // Salva as cargas dentro da transação.
+                    await Historico_cargas.bulkCreate(registros, {
+                        transaction,
+                        validate: true
+                    });
+                    // Conclui o agendamento na mesma transação.
+                    await agenda.update(
+                        { status: "concluido" },
+                        { transaction }
+                    );
+
+                    // Ao terminar sem erros, o Sequelize faz o commit.
+                    // Se ocorrer um erro, ele desfaz as alterações.
                 }
             );
 
-            if (alterados === 0) {
-                return res.status(409).json({
-                    message:
-                        "O agendamento foi alterado ou já foi concluído. Atualize a página!"
-                });
-            }
-
+            // Só informa sucesso depois do commit.
             return res.status(200).json({
                 message: "Treino finalizado com sucesso!"
             });
 
         } catch (error) {
+            if (error.statusHttp) {
+                return res.status(error.statusHttp).json({
+                    message: error.message
+                });
+            }
+
             Logger.error(`Erro ao finalizar treino: ${error}`);
 
             return res.status(500).json({
@@ -515,7 +648,7 @@ export default class AgendaTreinoController {
         }
     }
 
-    // Histórico do usuário autorizado
+    // Histórico do usuário autorizado.
     static async historico(req, res) {
         const usuarioId = obterUsuarioAutorizado(req, res);
 
